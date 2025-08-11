@@ -21,7 +21,7 @@ try {
 // Helper untuk set cookie JWT
 function setTokenCookie(res, token) {
     res.cookie("token", token, {
-        httpOnly: true,
+        httpOnly: false,
         secure: true,
         sameSite: "none",
         maxAge: 30 * 60 * 1000 // 30 menit
