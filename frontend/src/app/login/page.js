@@ -61,15 +61,35 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Cek token di cookie sebelum render login
+  // Cek token di cookie lalu validasi ke backend sebelum render login
   useEffect(() => {
-    const token = getTokenFromCookie();
-    if (token) {
-      router.replace("/dashboard");
-      // Jangan render login page sama sekali, biar langsung redirect
-      return;
+    let cancelled = false;
+    async function checkTokenAndValidate() {
+      const token = getTokenFromCookie();
+      if (token) {
+        try {
+          // Ganti endpoint sesuai backend Anda, misal /me atau /profile
+          await axios.get(
+            "https://tugasakhir-production-6c6c.up.railway.app/me",
+            {
+              withCredentials: true,
+              headers: { "Content-Type": "application/json" },
+            }
+          );
+          if (!cancelled) {
+            router.replace("/dashboard");
+            return;
+          }
+        } catch (err) {
+          // Token tidak valid, lanjutkan render login
+        }
+      }
+      if (!cancelled) setCheckingToken(false);
     }
-    setCheckingToken(false);
+    checkTokenAndValidate();
+    return () => {
+      cancelled = true;
+    };
   }, [router]);
 
   const handleSubmit = async (e) => {
