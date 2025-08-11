@@ -58,7 +58,7 @@ export default function TambahAlumniPage() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim-xls", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim-xls", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -103,7 +103,7 @@ export default function TambahAlumniPage() {
       return;
     }
     try {
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

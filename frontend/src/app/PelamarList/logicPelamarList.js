@@ -180,7 +180,7 @@ export default function PelamarListPage() {
     }
     try {
       // Ganti endpoint ke /lowongan/me/:id
-      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/me/${id}`, {
+      const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/${id}`, {
         method: "GET",
         headers: {
           "Content-Type": "application/json",
@@ -234,7 +234,7 @@ export default function PelamarListPage() {
     }
     try {
       const res = await fetch(
-        `ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/pelamar`,
+        `https://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/pelamar`,
         {
           method: "GET",
           headers: {
@@ -294,7 +294,7 @@ export default function PelamarListPage() {
       return false;
     }
     try {
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan/notifikasi-hasil-lamaran", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/notifikasi-hasil-lamaran", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -360,7 +360,7 @@ export default function PelamarListPage() {
 
     try {
       const res = await fetch(
-        `ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/pelamar/${pelamarId}/${aksi === "tolak" ? "tolak" : "terima"}`,
+        `https://tugasakhir-production-6c6c.up.railway.app/lowongan/pelamar/${pelamarId}/${aksi === "tolak" ? "tolak" : "terima"}`,
         {
           method: "PATCH",
           headers: {

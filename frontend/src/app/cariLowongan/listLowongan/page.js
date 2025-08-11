@@ -37,7 +37,7 @@ async function incrementTrafficLowongan(lowonganId) {
   try {
     const token = getTokenFromCookie();
     if (!token) throw new Error("Token tidak ditemukan");
-    await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/traffic`, {
+    await fetch(`https://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/traffic`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -58,7 +58,7 @@ async function toggleSaveLowongan(lowonganId) {
   try {
     const token = getTokenFromCookie();
     if (!token) throw new Error("Token tidak ditemukan");
-    const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/toggle-save-lowongan", {
+    const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/toggle-save-lowongan", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -130,14 +130,14 @@ export default function ListLowonganPage({ search = "" }) {
       try {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Gagal mengambil data lowongan");
         const data = await res.json();
         if (isMounted) setLowongan(Array.isArray(data) ? data : []);
         // Ganti endpoint ke /alumni/me/saved-lowongan
-        const resSaved = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/saved-lowongan", {
+        const resSaved = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/saved-lowongan", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (resSaved.ok) {
@@ -319,7 +319,7 @@ export default function ListLowonganPage({ search = "" }) {
                       <img
                         src={item.perusahaan.logo_perusahaan.startsWith("http")
                           ? item.perusahaan.logo_perusahaan
-                          : `ttps://tugasakhir-production-6c6c.up.railway.app${item.perusahaan.logo_perusahaan}`
+                          : `https://tugasakhir-production-6c6c.up.railway.app${item.perusahaan.logo_perusahaan}`
                         }
                         alt={item.perusahaan?.nama_perusahaan || "Logo"}
                         className="w-12 h-12 object-cover rounded-lg"

@@ -88,7 +88,7 @@ export default function SettingPerusahaanPage() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -118,7 +118,7 @@ export default function SettingPerusahaanPage() {
     setSuccess("");
     const token = getTokenFromCookie();
     try {
-      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`, {
+      const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -184,7 +184,7 @@ export default function SettingPerusahaanPage() {
     setSuccess("");
     const token = getTokenFromCookie();
     try {
-      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`, {
+      const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -237,7 +237,7 @@ export default function SettingPerusahaanPage() {
 
     try {
       // Gunakan endpoint sesuai instruksi
-      const endpoint = `ttps://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`;
+      const endpoint = `https://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`;
       const res = await fetch(endpoint, {
         method: "DELETE",
         headers: {

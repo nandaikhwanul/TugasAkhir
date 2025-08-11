@@ -1,5 +1,5 @@
 ### Create a new forum comment
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ3NTA3NTMsImV4cCI6MTc1NDc1MjU1M30.M3tX72IFoWrh7KGCHv_312jJJZg3v6AKJyepFPML2sB5d-Y4o-GnsFub5B_7uhM27I2a7j6tR5Tru7YPoQyqUxaF4m_CBs8LDqgZBSD7Sl311Ow-r5zJ8QPTUJjqIOuW9xZIqVErs5OFLCF9JWE4wKitiKiKWRD4EKmIUdaugkiNe4gNx6UjGQVZ03_4rFNksBGRzCZPRXfC7L4C2pc1CHGVgV1abiNdiFJiVcF94vL7JkZ6DQWy8ReybG0LsqgeQLp6nEVDwwIAnt7kvCYxoSG4g-qOO-mOe-vt4FewqDVTnU7n7QRgjcC9zYoT7GfRqpdiTTQuq4lOPcIlYjyDiw
 
@@ -9,26 +9,26 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczM
 }
 
 ### Get comments by post
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/68974a10f20510c8ed107a7c
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/68974a10f20510c8ed107a7c
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NDc4NDI1MiwiZXhwIjoxNzU0Nzg2MDUyfQ.MrC3p5xAN63j6VUAa76n9NM1gtGH_63Rpm98tNTQ3iWmpxoI0Tg033m1im7VWSvEauGyfoFTMkh8pOxdsZLjLKPY3XD5SoUgYvaU1GkjBVhMSA2UFB_y2UfcWVbmGxCld9SzG0GENsC0iVtec3pY3N0VUTeKd11QjaKS7BGZEkKbM2SvFELjZLcYxlV5tymsHiDdgeTsQJJ1ap4_hsSX2jsyfjsVXb-JzZdvwn5LEW7yTjJbc2Z5Ag70xVvnhoKnaaHk0gSNNlNf2RpngliaQrL03ueWnbRcru2hIb-sy3NHhjjLKwqQIccBJspLxeZwKnvm0NCbvxV8lDX3E0Jtuw
 
 ### Get comments by author
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/author/AUTHOR_ID_HERE
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/author/AUTHOR_ID_HERE
 
 ### Get recent comments
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/recent
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/recent
 
 ### Get popular comments
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/popular
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/popular
 
 ### Search comments
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/search?q=search_term
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/search?q=search_term
 
 ### Get comment by ID
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE
 
 ### Update a comment
-PUT ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE
+PUT https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE
 Content-Type: application/json
 
 {
@@ -36,31 +36,31 @@ Content-Type: application/json
 }
 
 ### Delete a comment
-DELETE ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE
+DELETE https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE
 
 ### Like a comment
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/like
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/like
 
 ### Unlike a comment
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/unlike
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/unlike
 
 ### Get replies by comment
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/replies
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/replies
 
 ### Pin a comment
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/pin
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/pin
 
 ### Unpin a comment
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/unpin
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/unpin
 
 ### Highlight a comment
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/highlight
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/highlight
 
 ### Unhighlight a comment
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/unhighlight
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/unhighlight
 
 ### Increment like count
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/increment-like
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/increment-like
 
 ### Decrement like count
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/decrement-like
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/COMMENT_ID_HERE/decrement-like

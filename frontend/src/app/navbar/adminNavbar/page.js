@@ -55,7 +55,7 @@ export default function AdminSidebar() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/admin/me", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/admin/me", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -93,7 +93,7 @@ export default function AdminSidebar() {
   // Fungsi logout
   const handleLogout = async () => {
     // Jika ada endpoint logout di backend, bisa dipanggil di sini
-    // await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/logout", { method: "POST", credentials: "include" });
+    // await fetch("https://tugasakhir-production-6c6c.up.railway.app/logout", { method: "POST", credentials: "include" });
     removeTokenCookie();
     setIsAdmin(false);
     setAdminUsername("");

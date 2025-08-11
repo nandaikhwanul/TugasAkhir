@@ -59,7 +59,7 @@ export default function AlumniProfileForm() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -230,7 +230,7 @@ export default function AlumniProfileForm() {
     ["_id", "__v", "createdAt", "updatedAt"].forEach((k) => delete payload[k]);
 
     try {
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -278,7 +278,7 @@ export default function AlumniProfileForm() {
     }
     try {
       // PATCH skill (array)
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

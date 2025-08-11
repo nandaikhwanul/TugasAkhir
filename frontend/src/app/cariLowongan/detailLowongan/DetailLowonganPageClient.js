@@ -56,7 +56,7 @@ export default function DetailLowonganPageClient() {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch(
-          `ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/preview/alumni/${id}`,
+          `https://tugasakhir-production-6c6c.up.railway.app/lowongan/preview/alumni/${id}`,
           {
             headers: { Authorization: `Bearer ${token}` },
           }
@@ -119,7 +119,7 @@ export default function DetailLowonganPageClient() {
       const token = getTokenFromCookie();
       if (!token) throw new Error("Token tidak ditemukan");
       if (!job || !job._id) throw new Error("ID lowongan tidak ditemukan");
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -199,7 +199,7 @@ export default function DetailLowonganPageClient() {
     if (logoPerusahaan) {
       const src = logoPerusahaan.startsWith("http")
         ? logoPerusahaan
-        : `ttps://tugasakhir-production-6c6c.up.railway.app${logoPerusahaan}`;
+        : `https://tugasakhir-production-6c6c.up.railway.app${logoPerusahaan}`;
       return (
         <img
           src={src}

@@ -33,7 +33,7 @@ export default function SuperAdminDashboard() {
           router.replace("/login");
           return;
         }
-        const res = await axios.get("ttps://tugasakhir-production-6c6c.up.railway.app/superadmin/me", {
+        const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/superadmin/me", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

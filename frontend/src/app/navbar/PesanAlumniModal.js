@@ -42,7 +42,7 @@ export default function PesanAlumniModal({ open, onClose }) {
           setLoading(false);
           return;
         }
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan/alumni/me", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/alumni/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

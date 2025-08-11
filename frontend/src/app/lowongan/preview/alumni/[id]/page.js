@@ -62,7 +62,7 @@ export default function PreviewLowongan() {
         }
         const headers = { Authorization: `Bearer ${token}` };
         const res = await fetch(
-          `ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/preview/alumni/${id}`,
+          `https://tugasakhir-production-6c6c.up.railway.app/lowongan/preview/alumni/${id}`,
           { headers }
         );
         if (res.status === 401 || res.status === 403) {
@@ -130,7 +130,7 @@ export default function PreviewLowongan() {
         }
         return;
       }
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

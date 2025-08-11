@@ -105,7 +105,7 @@ export default function LoginPage() {
       };
 
       await axios.post(
-        "ttps://tugasakhir-production-6c6c.up.railway.app/login",
+        "https://tugasakhir-production-6c6c.up.railway.app/login",
         payload,
         {
           withCredentials: true,

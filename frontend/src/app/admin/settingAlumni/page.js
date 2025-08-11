@@ -86,7 +86,7 @@ export default function SettingAlumniPage() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/admin/alumni", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/admin/alumni", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -171,7 +171,7 @@ export default function SettingAlumniPage() {
       payload.confpassword = editData.confpassword;
     }
     try {
-      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/admin/alumni/${a._id || a.nim}`, {
+      const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/admin/alumni/${a._id || a.nim}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -248,7 +248,7 @@ export default function SettingAlumniPage() {
       return;
     }
     try {
-      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/admin/alumni/${a._id || a.nim}`, {
+      const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/admin/alumni/${a._id || a.nim}`, {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

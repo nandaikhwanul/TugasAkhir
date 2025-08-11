@@ -138,7 +138,7 @@ function useTagKeys(tags) {
 async function likeForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/like`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/like`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -158,7 +158,7 @@ async function likeForumPost(postId) {
 async function unlikeForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unlike`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unlike`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -178,7 +178,7 @@ async function unlikeForumPost(postId) {
 async function saveForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/save`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/save`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -198,7 +198,7 @@ async function saveForumPost(postId) {
 async function unsaveForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unsave`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unsave`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -218,7 +218,7 @@ async function unsaveForumPost(postId) {
 async function pinForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/pin`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/pin`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -233,7 +233,7 @@ async function pinForumPost(postId) {
 async function unpinForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unpin`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unpin`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -248,7 +248,7 @@ async function unpinForumPost(postId) {
 async function highlightForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/highlight`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/highlight`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -263,7 +263,7 @@ async function highlightForumPost(postId) {
 async function unhighlightForumPost(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unhighlight`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/posts/${postId}/unhighlight`, {
     method: "POST",
     headers: {
       Authorization: `Bearer ${token}`,
@@ -280,7 +280,7 @@ async function unhighlightForumPost(postId) {
 async function createForumComment({ postId, content }) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments", {
+  const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/forum/comments", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -303,7 +303,7 @@ async function createForumComment({ postId, content }) {
 async function getCommentsByPostId(postId) {
   const token = getTokenFromCookie();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
-  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/${postId}`, {
+  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/forum/comments/post/${postId}`, {
     headers: {
       Authorization: `Bearer ${token}`,
     },
@@ -755,7 +755,7 @@ function ForumMain() {
         }
         const params = [];
         if (category) params.push(`category=${encodeURIComponent(category)}`);
-        const url = `ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts${params.length ? "?" + params.join("&") : ""}`;
+        const url = `https://tugasakhir-production-6c6c.up.railway.app/forum/posts${params.length ? "?" + params.join("&") : ""}`;
         const res = await fetch(url, {
           headers: {
             Authorization: `Bearer ${token}`,

@@ -25,7 +25,7 @@ export default function SidebarPesan() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/unread-count", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/unread-count", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

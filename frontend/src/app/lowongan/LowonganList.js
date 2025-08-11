@@ -50,9 +50,9 @@ function getLogoUrl(logo_perusahaan) {
   if (!logo_perusahaan || typeof logo_perusahaan !== "string") return "";
   if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
   if (logo_perusahaan.startsWith("/uploads/")) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
   }
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
 }
 
 // Helper untuk format gaji
@@ -91,7 +91,7 @@ export default function LowonganList() {
       setError("");
       try {
         const token = getTokenFromCookie();
-        const res = await axios.get("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan", {
+        const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
           headers: token
             ? { Authorization: `Bearer ${token}` }
             : {},
@@ -167,8 +167,8 @@ export default function LowonganList() {
                           const logo = extractLogoPerusahaan(l);
                           if (!logo) return "/no-company-logo.png";
                           if (/^https?:\/\//.test(logo)) return logo;
-                          if (logo.startsWith("/uploads/")) return `ttps://tugasakhir-production-6c6c.up.railway.app${logo}`;
-                          return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo}`;
+                          if (logo.startsWith("/uploads/")) return `https://tugasakhir-production-6c6c.up.railway.app${logo}`;
+                          return `https://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo}`;
                         })()
                       }
                       alt="Logo Perusahaan"

@@ -11,9 +11,9 @@ function getProfileImageUrl(logo_perusahaan) {
   if (!logo_perusahaan) return "";
   if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
   if (logo_perusahaan.startsWith("/uploads/")) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
   }
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
 }
 
 // Helper untuk mengambil inisial dari nama
@@ -102,7 +102,7 @@ export default function PerusahaanNavbar() {
 
     async function fetchProfileImage() {
       try {
-        const res = await axios.get("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
+        const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfileImage(getProfileImageUrl(res.data.logo_perusahaan));
@@ -224,7 +224,7 @@ export default function PerusahaanNavbar() {
       }
       try {
         const res = await axios.get(
-          `ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni?q=${encodeURIComponent(debouncedSearchQuery)}`,
+          `https://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni?q=${encodeURIComponent(debouncedSearchQuery)}`,
           {
             headers: {
               Authorization: `Bearer ${token}`,
@@ -350,7 +350,7 @@ export default function PerusahaanNavbar() {
                                 alumni.foto_profil
                                   ? alumni.foto_profil.startsWith("http")
                                     ? alumni.foto_profil
-                                    : `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${alumni.foto_profil}`
+                                    : `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${alumni.foto_profil}`
                                   : "/default-profile.png"
                               }
                               alt={alumni.name}

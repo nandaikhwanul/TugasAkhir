@@ -134,7 +134,7 @@ function PreviewModal({ open, onClose, lowonganId }) {
       }
       try {
         const res = await fetch(
-          `ttps://tugasakhir-production-6c6c.up.railway.app/admin/lowongan/preview?id=${encodeURIComponent(lowonganId)}`,
+          `https://tugasakhir-production-6c6c.up.railway.app/admin/lowongan/preview?id=${encodeURIComponent(lowonganId)}`,
           {
             method: "GET",
             headers: {
@@ -311,7 +311,7 @@ export default function VerifikasiLowonganPage() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/pending/admin", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/pending/admin", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -363,7 +363,7 @@ export default function VerifikasiLowonganPage() {
 
     try {
       const res = await fetch(
-        `ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/verifikasi`,
+        `https://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/verifikasi`,
         {
           method: "PATCH",
           headers: {
@@ -408,7 +408,7 @@ export default function VerifikasiLowonganPage() {
 
     try {
       const res = await fetch(
-        `ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/verifikasi`,
+        `https://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/verifikasi`,
         {
           method: "PATCH",
           headers: {

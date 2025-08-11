@@ -12,7 +12,7 @@ function getTokenFromCookie() {
 }
 
 // Helper: get base API URL (for file serving)
-const API_BASE_URL = "ttps://tugasakhir-production-6c6c.up.railway.app/";
+const API_BASE_URL = "https://tugasakhir-production-6c6c.up.railway.app/";
 
 export default function UploadCV() {
   const [file, setFile] = useState(null);
@@ -33,7 +33,7 @@ export default function UploadCV() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/cv/", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/cv/", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -121,7 +121,7 @@ export default function UploadCV() {
       const formData = new FormData();
       formData.append("cv", file);
 
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/cv/upload", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/cv/upload", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -161,7 +161,7 @@ export default function UploadCV() {
     }
     setDeleting(true);
     try {
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/cv/", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/cv/", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,

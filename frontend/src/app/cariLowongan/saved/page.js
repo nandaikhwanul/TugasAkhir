@@ -37,7 +37,7 @@ function timeAgo(dateStr) {
 function getLogoUrl(logo) {
   if (!logo) return null;
   if (logo.startsWith("http")) return logo;
-  return `ttps://tugasakhir-production-6c6c.up.railway.app${logo}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app${logo}`;
 }
 
 export default function SavedLowonganPage() {
@@ -54,7 +54,7 @@ export default function SavedLowonganPage() {
     try {
       const token = getTokenFromCookie();
       const res = await fetch(
-        "ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/saved-lowongan",
+        "https://tugasakhir-production-6c6c.up.railway.app/alumni/me/saved-lowongan",
         {
           headers: {
             Authorization: token ? `Bearer ${token}` : "",
@@ -100,7 +100,7 @@ export default function SavedLowonganPage() {
     setUnsaving((prev) => ({ ...prev, [lowonganId]: true }));
     try {
       const token = getTokenFromCookie();
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/unsave-lowongan", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/unsave-lowongan", {
         method: "POST",
         headers: {
           Authorization: token ? `Bearer ${token}` : "",

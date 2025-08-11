@@ -72,7 +72,7 @@ export default function ApplicantsPage() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar/diterima-ditolak", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar/diterima-ditolak", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

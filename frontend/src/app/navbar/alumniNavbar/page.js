@@ -12,9 +12,9 @@ function getProfileImageUrl(foto_profil) {
   if (!foto_profil) return "";
   if (/^https?:\/\//.test(foto_profil)) return foto_profil;
   if (foto_profil.startsWith("/uploads/")) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
   }
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${foto_profil}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${foto_profil}`;
 }
 
 // Helper untuk mengambil inisial dari nama
@@ -84,7 +84,7 @@ export default function AlumniNavbar() {
 
     async function fetchProfileImage() {
       try {
-        const res = await axios.get("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
+        const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         setProfileImage(getProfileImageUrl(res.data.foto_profil));

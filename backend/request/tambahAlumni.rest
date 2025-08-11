@@ -1,5 +1,5 @@
 ### Tambah NIM lewat input text
-POST ttps://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim
+POST https://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NWMyYTRhNzM5MzMxODhiMGM3MmQyMSIsInVzZXJuYW1lIjoiYWRtaW4xIiwicm9sZSI6ImFkbWluIiwiaWF0IjoxNzU0NTM0NDY5LCJleHAiOjE3NTQ1MzYyNjl9.fadMElbZXIQIl2N1k8TIK70kKF2Fs2LwLDTezKfKKyjZpMf_t1YFBdzRuVF1Qzu7DGTXJkZCvCOmaF-bZXL9hR12q1Z_3rpoaEO_5EvZTdI2WR-yWBcZip7RtMk0DP-F2Lp3_cv7zoCfDYgCLJr_Jv6e2BuQCSEhFIX1sS-el5MZggGjQAU-VMSSAAqSMqy-OhoBRuxiFkr-vfm2CDqRfTnUeE8dRDtkTrBoFX_ijICqG6b0iei6Nxo75H7FM6IftX2Rv4aqUti7m_oON0yT7O4ridsxI13O0p4IwytAOfOU9K-xVAj6PqgYt3XM6Tsgu-5h8ifKVaJ-akjC9Piqiw
 
@@ -8,7 +8,7 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NWMyYTRhN
 }
 
 ### Tambah NIM lewat file XLS/XLSX
-POST ttps://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim-xls
+POST https://tugasakhir-production-6c6c.up.railway.app/tambah-alumni/tambah-nim-xls
 Content-Type: multipart/form-data
 Authorization: Bearer <your_token_here>
 

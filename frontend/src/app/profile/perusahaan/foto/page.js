@@ -124,7 +124,7 @@ export default function FotoPerusahaanPage() {
       }
       try {
         // Fetch data perusahaan untuk mendapatkan id perusahaan dan logo_perusahaan
-        const resPerusahaan = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
+        const resPerusahaan = await fetch("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -156,7 +156,7 @@ export default function FotoPerusahaanPage() {
         ) {
           // Fetch foto perusahaan dengan id yang didapat
           const res = await fetch(
-            `ttps://tugasakhir-production-6c6c.up.railway.app/foto-perusahaan/perusahaan/${id}`,
+            `https://tugasakhir-production-6c6c.up.railway.app/foto-perusahaan/perusahaan/${id}`,
             {
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -360,7 +360,7 @@ export default function FotoPerusahaanPage() {
       files.current.forEach((file) => {
         formData.append("foto", file);
       });
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/foto-perusahaan/upload", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/foto-perusahaan/upload", {
         method: "POST",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -412,7 +412,7 @@ export default function FotoPerusahaanPage() {
         toast.error("Token tidak ditemukan. Silakan login ulang.");
         return;
       }
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/foto-perusahaan/delete", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/foto-perusahaan/delete", {
         method: "DELETE",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -563,7 +563,7 @@ export default function FotoPerusahaanPage() {
               let url = foto.url && foto.url.startsWith("http")
                 ? foto.url
                 : foto.url
-                ? `ttps://tugasakhir-production-6c6c.up.railway.app${foto.url}`
+                ? `https://tugasakhir-production-6c6c.up.railway.app${foto.url}`
                 : "";
               const delStatus = deleteStatus[foto.url] || {};
               // Jangan render <img> sama sekali jika url kosong/null

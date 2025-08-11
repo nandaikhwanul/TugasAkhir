@@ -1,5 +1,5 @@
 ### Save/Unsave Lowongan oleh Alumni
-POST ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/toggle-save-lowongan
+POST https://tugasakhir-production-6c6c.up.railway.app/alumni/me/toggle-save-lowongan
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ0Mjk0NjQsImV4cCI6MTc1NDQzMTI2NH0.0FEcVl87hjfZYTcOEdala5QyTZbkGuPSZX1yHsAESvuEtiOGeHKzwbJxbcVPS_3msxxM9U3Jhmx7q4mrlccqW2PhrrD77_3xaL42aOtXo08zs8SFvn859Suqk2J-XiBBWLBujJrw_g8KqxJUA3BBszi5RxVmh2JtYUexyrBPfdNh-rKtWboZSGnc-418w9AyC9HuZ1-i6IfYP0DGtd1u_SlUIZ7-YSIcS0T8qqKNW-I_ehaPJMSXDzfhYZCMnie6d-Fa9lDqDE_QWXkJGnaxsi3gx27qPVDhoN7zRn2pIG_0tazxwy9t_KMvK_EhnUa-U0bPl4czVJ09UbBfsAzIKw
 
@@ -8,11 +8,11 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczM
 }
 
 ### Get Semua Lowongan yang Sudah di-Save oleh Alumni
-GET ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/saved-lowongan
+GET https://tugasakhir-production-6c6c.up.railway.app/alumni/me/saved-lowongan
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ1ODk3MTgsImV4cCI6MTc1NDU5MTUxOH0.ZrNIBgeXUhzp_QLa4mcKyx9YAzgRRpokCegN_3zp92jZ5-nCt6nbqmHNy-nGRNipKeL5fPd6aL3e59sezjEfA2P0g4ZGex1WyY0YoqtzQsL9QgZJKiixW_UAm_Bo8W6KwENGLJnq50FWLzqwX3d__2XdGAlxKyWCMK6vt9Q3Zo9o1qvfRipj7EHy2mGN0bhU3-WitYwCSVJbhHUauC47Jo1R0RgyVZCp8l1vjqRyyEx4sYaXuhwJrCc8xnCWoqT31TpThtoRNZeCMqDZzzUzlr0uDiBrSt0Jppcevh9YILpDP5iQawuxkP9X0mwVqgyc7707KeVgr3bg71z-Qg-a2A
 
 ### Save/Unsave Lowongan oleh Alumni (toggle)
-POST ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/unsave-lowongan
+POST https://tugasakhir-production-6c6c.up.railway.app/alumni/me/unsave-lowongan
 Content-Type: application/json
 Authorization: Bearer token
 

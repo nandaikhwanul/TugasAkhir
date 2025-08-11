@@ -37,7 +37,7 @@ function timeAgo(dateStr) {
 function getLogoUrl(logo) {
   if (!logo) return null;
   if (logo.startsWith("http")) return logo;
-  return `ttps://tugasakhir-production-6c6c.up.railway.app${logo}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app${logo}`;
 }
 
 // Helper: increment traffic lowongan
@@ -45,7 +45,7 @@ async function incrementTrafficLowongan(lowonganId) {
   try {
     const token = getTokenFromCookie();
     if (!token) throw new Error("Token tidak ditemukan");
-    await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/traffic`, {
+    await fetch(`https://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/traffic`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -78,7 +78,7 @@ export default function RekomendasiLowonganPage() {
           setLoading(false);
           return;
         }
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar/rekomendasi-lowongan", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar/rekomendasi-lowongan", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

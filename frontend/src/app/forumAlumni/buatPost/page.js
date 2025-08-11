@@ -82,7 +82,7 @@ export default function BuatPostForum() {
         throw new Error("Token autentikasi tidak ditemukan. Silakan login ulang.");
       }
 
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/forum/posts", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/forum/posts", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

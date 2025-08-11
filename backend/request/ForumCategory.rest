@@ -1,8 +1,8 @@
 ### Get all forum categories
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/categories
 
 ### Create a new forum category
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/categories
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ###
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/categories
 Content-Type: application/json
 
 {
@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ###
-POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
+POST https://tugasakhir-production-6c6c.up.railway.app/forum/categories
 Content-Type: application/json
 
 {
@@ -29,13 +29,13 @@ Content-Type: application/json
 }
 
 ### Search forum categories by name
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/search?name=karir
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/categories/search?name=karir
 
 ### Get category by ID
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
 
 ### Update category by ID
-PUT ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
+PUT https://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
 Content-Type: application/json
 
 {
@@ -44,7 +44,7 @@ Content-Type: application/json
 }
 
 ### Delete category by ID
-DELETE ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
+DELETE https://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
 
 ### Get all posts in a category
-GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}/posts
+GET https://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}/posts

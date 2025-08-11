@@ -49,7 +49,7 @@ export default function PengalamanCard() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -114,7 +114,7 @@ export default function PengalamanCard() {
     }
 
     try {
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -142,7 +142,7 @@ export default function PengalamanCard() {
       });
       // Refetch pengalaman
       setLoadingPengalaman(true);
-      const pengalamanRes = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
+      const pengalamanRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
         headers: {
           Authorization: `Bearer ${token}`,
         },

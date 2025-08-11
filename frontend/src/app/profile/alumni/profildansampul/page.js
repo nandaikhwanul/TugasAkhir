@@ -15,9 +15,9 @@ function getFotoProfilUrl(foto_profil) {
   if (!foto_profil) return "";
   if (/^https?:\/\//.test(foto_profil)) return foto_profil;
   if (foto_profil.startsWith("/uploads/")) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
   }
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${foto_profil}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${foto_profil}`;
 }
 
 // Helper untuk resolve URL foto_sampul alumni
@@ -25,9 +25,9 @@ function getFotoSampulUrl(foto_sampul) {
   if (!foto_sampul) return "";
   if (/^https?:\/\//.test(foto_sampul)) return foto_sampul;
   if (foto_sampul.startsWith("/uploads/")) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_sampul}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${foto_sampul}`;
   }
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/sampul/${foto_sampul}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/sampul/${foto_sampul}`;
 }
 
 export default function AlumniPreview() {
@@ -56,7 +56,7 @@ export default function AlumniPreview() {
         return;
       }
       try {
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -103,7 +103,7 @@ export default function AlumniPreview() {
       try {
         setSaving(true);
         setFormError("");
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/foto-sampul", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/foto-sampul", {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -130,7 +130,7 @@ export default function AlumniPreview() {
       try {
         setSaving(true);
         setFormError("");
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/foto-profil", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/foto-profil", {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -204,7 +204,7 @@ export default function AlumniPreview() {
     };
 
     try {
-      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

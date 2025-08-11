@@ -1,5 +1,5 @@
 ### Register Alumni
-POST ttps://tugasakhir-production-6c6c.up.railway.app/alumni
+POST https://tugasakhir-production-6c6c.up.railway.app/alumni
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ### Register Perusahaan
-POST ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan
+POST https://tugasakhir-production-6c6c.up.railway.app/perusahaan
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Content-Type: application/json
 }
 
 ### Register Admin
-POST ttps://tugasakhir-production-6c6c.up.railway.app/admin/register
+POST https://tugasakhir-production-6c6c.up.railway.app/admin/register
 Content-Type: application/json
 
 {

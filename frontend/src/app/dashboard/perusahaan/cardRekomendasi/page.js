@@ -17,10 +17,10 @@ function getFotoProfilUrl(foto_profil) {
     typeof foto_profil === "string" &&
     foto_profil.startsWith("/uploads/")
   ) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
   }
   // Asumsi path hanya nama file
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/foto_profil/${foto_profil}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/foto_profil/${foto_profil}`;
 }
 
 // Helper untuk foto sampul
@@ -36,9 +36,9 @@ function getFotoSampulUrl(foto_sampul) {
     typeof foto_sampul === "string" &&
     foto_sampul.startsWith("/uploads/")
   ) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_sampul}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${foto_sampul}`;
   }
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/foto_sampul/${foto_sampul}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/foto_sampul/${foto_sampul}`;
 }
 
 // Helper to get token from cookie
@@ -95,7 +95,7 @@ export default function CardRekomendasi() {
           setLoading(false);
           return;
         }
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni-pelamar", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni-pelamar", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

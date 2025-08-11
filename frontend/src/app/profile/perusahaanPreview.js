@@ -17,9 +17,9 @@ function getLogoUrl(logo_perusahaan) {
   if (!logo_perusahaan) return "";
   if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
   if (logo_perusahaan.startsWith("/uploads/")) {
-    return `ttps://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
+    return `https://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
   }
-  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
 }
 
 // Helper untuk mengambil inisial dari nama perusahaan
@@ -112,7 +112,7 @@ function PerusahaanUpdateModal({ onClose, initialProfile, onSaved }) {
       if (avatarFile && perusahaanId) {
         const formData = new FormData();
         formData.append("logo_perusahaan", avatarFile);
-        const uploadRes = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
+        const uploadRes = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -128,7 +128,7 @@ function PerusahaanUpdateModal({ onClose, initialProfile, onSaved }) {
       }
 
       // PATCH profil ke endpoint /perusahaan/:id
-      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
+      const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -391,7 +391,7 @@ function PerusahaanPreview() {
       try {
         const token = getTokenFromCookie("token");
         if (!token) throw new Error("Token not found");
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

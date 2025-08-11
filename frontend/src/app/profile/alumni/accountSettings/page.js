@@ -108,7 +108,7 @@ export default function AccountSettingsPage() {
           setLoading(false);
           return;
         }
-        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
+        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -163,7 +163,7 @@ export default function AccountSettingsPage() {
     };
 
     try {
-      const patchRes = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
+      const patchRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -211,7 +211,7 @@ export default function AccountSettingsPage() {
 
     // 1. Check old password
     try {
-      const checkRes = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/check-old-password", {
+      const checkRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/check-old-password", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -243,7 +243,7 @@ export default function AccountSettingsPage() {
         password: newPassword,
         confPassword: confirmPassword,
       };
-      const patchRes = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
+      const patchRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

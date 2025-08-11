@@ -34,7 +34,7 @@ export default function SearchAlumniPage() {
     try {
       // Gunakan endpoint yang diberikan dan token dari cookie
       const res = await axios.get(
-        `ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni?q=${encodeURIComponent(query)}`,
+        `https://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni?q=${encodeURIComponent(query)}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -84,7 +84,7 @@ export default function SearchAlumniPage() {
                     alumni.foto_profil
                       ? alumni.foto_profil.startsWith("http")
                         ? alumni.foto_profil
-                        : `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${alumni.foto_profil}`
+                        : `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${alumni.foto_profil}`
                       : "/default-profile.png"
                   }
                   alt={alumni.nama_lengkap}
