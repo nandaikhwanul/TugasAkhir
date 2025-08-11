@@ -182,34 +182,6 @@ export default function LoginPage() {
     }
   };
 
-  // Debug: cek apakah cookie token dikirim di request selanjutnya
-  const handleCheckTokenRequest = async () => {
-    setDebug((prev) => ({
-      ...prev,
-      checkTokenLoading: true,
-      checkTokenResult: null,
-      checkTokenError: null,
-    }));
-    try {
-      const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/protected", {
-        withCredentials: true,
-      });
-      setDebug((prev) => ({
-        ...prev,
-        checkTokenResult: res.data,
-        checkTokenHeaders: res.headers,
-        checkTokenLoading: false,
-      }));
-    } catch (err) {
-      setDebug((prev) => ({
-        ...prev,
-        checkTokenError: err?.response?.data || err.message,
-        checkTokenHeaders: err?.response?.headers,
-        checkTokenLoading: false,
-      }));
-    }
-  };
-
   const handleGoToRegister = () => {
     router.push("/register");
   };
@@ -354,40 +326,7 @@ export default function LoginPage() {
                 {debug?.afterLoginCookies || "(no cookies)"}
               </span>
             </div>
-            <div className="mt-2">
-              <button
-                type="button"
-                className="px-2 py-1 bg-blue-200 rounded hover:bg-blue-300"
-                onClick={handleCheckTokenRequest}
-                disabled={debug?.checkTokenLoading}
-              >
-                Cek apakah cookie token dikirim ke backend (GET /protected)
-              </button>
-            </div>
-            {debug?.checkTokenResult && (
-              <div>
-                <b>Response /protected:</b>
-                <pre className="whitespace-pre-wrap break-all">
-                  {JSON.stringify(debug.checkTokenResult, null, 2)}
-                </pre>
-                <b>Header response /protected:</b>
-                <pre className="whitespace-pre-wrap break-all">
-                  {JSON.stringify(debug.checkTokenHeaders, null, 2)}
-                </pre>
-              </div>
-            )}
-            {debug?.checkTokenError && (
-              <div>
-                <b>Error /protected:</b>
-                <pre className="whitespace-pre-wrap break-all">
-                  {JSON.stringify(debug.checkTokenError, null, 2)}
-                </pre>
-                <b>Header response /protected:</b>
-                <pre className="whitespace-pre-wrap break-all">
-                  {JSON.stringify(debug.checkTokenHeaders, null, 2)}
-                </pre>
-              </div>
-            )}
+            {/* Bagian debug cek token dihapus */}
           </div>
         </div>
 

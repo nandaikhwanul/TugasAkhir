@@ -11,7 +11,7 @@ import { cookies } from "next/headers";
 export function setTokenToCookie(token, options = {}) {
   if (!token) throw new Error("Token harus diberikan");
   const defaultOptions = {
-    httpOnly: true,
+    httpOnly: false,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
     path: "/",
