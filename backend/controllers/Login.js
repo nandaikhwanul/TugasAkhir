@@ -23,7 +23,7 @@ function setTokenCookie(res, token) {
     res.cookie("token", token, {
         httpOnly: false,
         secure: false,
-        sameSite: "lax",
+        sameSite: "none",
         maxAge: 30 * 60 * 1000 // 30 menit
     });
 }
