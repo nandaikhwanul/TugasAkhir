@@ -122,6 +122,7 @@ export default function RegisterPerusahaan({
         },
         {
           headers: { "Content-Type": "application/json" },
+          withCredentials: true, // <--- tambahkan ini agar credentials (cookie) dikirim
         }
       );
       setSuccess("Registrasi perusahaan berhasil! Silakan login.");
@@ -135,6 +136,14 @@ export default function RegisterPerusahaan({
             ...prev,
             ...err.response.data.errors,
           }));
+        }
+        // Jika ada pesan error global dari backend
+        if (err.response.data.message || err.response.data.msg) {
+          setError(
+            err.response.data.message ||
+            err.response.data.msg ||
+            "Registrasi perusahaan gagal."
+          );
         }
       } else {
         setError("Terjadi kesalahan pada server.");
