@@ -660,7 +660,7 @@ export default function BuatLowongan() {
           ? `${data.gaji_min} - ${data.gaji_max}`
           : "";
 
-      const res = await fetch("http://localhost:5000/lowongan", {
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

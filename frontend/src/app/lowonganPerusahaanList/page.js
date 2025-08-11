@@ -271,7 +271,7 @@ export default function LowonganPerusahaanListPage() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:5000/lowongan/me", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/me", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",

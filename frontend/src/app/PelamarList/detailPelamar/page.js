@@ -57,7 +57,7 @@ function getProfileImageUrl(foto_profil) {
   // Sudah URL absolut
   if (/^https?:\/\//i.test(foto_profil)) return foto_profil;
   // Asumsi path relatif dari backend
-  return `http://localhost:5000/uploads/${foto_profil}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/${foto_profil}`;
 }
 
 // Helper: Ambil inisial dari nama
@@ -113,7 +113,7 @@ export default function DetailPelamarPage({ open = true, onClose, pelamar: pelam
       }
       try {
         const res = await fetch(
-          `http://localhost:5000/perusahaan/pelamar/${pelamarId}`,
+          `ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/pelamar/${pelamarId}`,
           {
             method: "GET",
             headers: {

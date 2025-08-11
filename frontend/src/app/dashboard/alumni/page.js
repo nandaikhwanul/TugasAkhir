@@ -30,9 +30,9 @@ function getLogoUrl(logo_perusahaan) {
   if (!logo_perusahaan) return "";
   if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
   if (logo_perusahaan.startsWith("/uploads/")) {
-    return `http://localhost:5000${logo_perusahaan}`;
+    return `ttps://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
   }
-  return `http://localhost:5000/uploads/perusahaan/${logo_perusahaan}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
 }
 
 // Dummy data for videos and podcasts
@@ -364,7 +364,7 @@ export default function AlumniDashboardPage() {
           setLoadingStat(false);
           return;
         }
-        const res = await fetch("http://localhost:5000/pelamar/statistik/alumni", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar/statistik/alumni", {
           method: "GET",
           headers: {
             Authorization: `Bearer ${token}`,
@@ -403,7 +403,7 @@ export default function AlumniDashboardPage() {
           setLoadingRekom(false);
           return;
         }
-        const res = await fetch("http://localhost:5000/pelamar/rekomendasi-lowongan", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar/rekomendasi-lowongan", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

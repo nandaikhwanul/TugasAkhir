@@ -152,7 +152,7 @@ export default function VerifikasiModal({
     try {
       // Kirim pesan ke semua channel yang dipilih
       for (const channel of selectedChannels) {
-        const res = await fetch("http://localhost:5000/pesan/kirim-ke-alumni", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan/kirim-ke-alumni", {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

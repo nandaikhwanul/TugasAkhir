@@ -80,7 +80,7 @@ export default function NotifikasiPerusahaan() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:5000/perusahaan/notifikasi", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/notifikasi", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -127,7 +127,7 @@ export default function NotifikasiPerusahaan() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/perusahaan/notifikasi", {
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/notifikasi", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -159,7 +159,7 @@ export default function NotifikasiPerusahaan() {
       return;
     }
     try {
-      const res = await fetch("http://localhost:5000/perusahaan/notifikasi", {
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/notifikasi", {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

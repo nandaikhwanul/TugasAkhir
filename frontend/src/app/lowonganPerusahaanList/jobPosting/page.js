@@ -701,7 +701,7 @@ export default function LowonganPerusahaanListPage() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:5000/lowongan/me", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/me", {
           method: "GET",
           headers: {
             "Content-Type": "application/json",
@@ -762,7 +762,7 @@ export default function LowonganPerusahaanListPage() {
       if (typeof body.batas_pelamar === "undefined") {
         delete body.batas_pelamar;
       }
-      const res = await fetch(`http://localhost:5000/lowongan/${editJob._id}`, {
+      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${editJob._id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -801,7 +801,7 @@ export default function LowonganPerusahaanListPage() {
     setDeletingId(job._id);
     const token = getTokenFromCookie();
     try {
-      const res = await fetch(`http://localhost:5000/lowongan/${job._id}`, {
+      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${job._id}`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -830,7 +830,7 @@ export default function LowonganPerusahaanListPage() {
     setStatusChanging(job._id);
     const token = getTokenFromCookie();
     try {
-      const res = await fetch(`http://localhost:5000/lowongan/${job._id}/status`, {
+      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/${job._id}/status`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

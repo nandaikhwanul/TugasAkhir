@@ -58,7 +58,7 @@ export default function LihatPesan() {
       setSelectedPesan({ ...pesan, sudah_dibaca: true });
 
       const res = await fetch(
-        `http://localhost:5000/pesan-bebas/${pesan._id}/dibaca`,
+        `ttps://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/${pesan._id}/dibaca`,
         {
           method: "PATCH",
           headers: {
@@ -106,7 +106,7 @@ export default function LihatPesan() {
                   return;
                 }
                 try {
-                  const res = await fetch(`http://localhost:5000/pesan-bebas/${pesanId}`, {
+                  const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/${pesanId}`, {
                     method: "DELETE",
                     headers: {
                       Authorization: `Bearer ${token}`,
@@ -162,7 +162,7 @@ export default function LihatPesan() {
           setLoading(false);
           return;
         }
-        const res = await fetch("http://localhost:5000/pesan-bebas", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan-bebas", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

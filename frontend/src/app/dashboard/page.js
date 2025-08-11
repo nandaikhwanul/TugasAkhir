@@ -38,7 +38,7 @@ export default function DashboardPage() {
           return;
         }
         // Cek superadmin dulu
-        let res = await fetch("http://localhost:5000/superadmin/me", {
+        let res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/superadmin/me", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -53,7 +53,7 @@ export default function DashboardPage() {
           }
           return;
         }
-        res = await fetch("http://localhost:5000/alumni/me", {
+        res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -68,7 +68,7 @@ export default function DashboardPage() {
           }
           return;
         }
-        res = await fetch("http://localhost:5000/perusahaan/me", {
+        res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -83,7 +83,7 @@ export default function DashboardPage() {
           }
           return;
         }
-        res = await fetch("http://localhost:5000/admin/me", {
+        res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/admin/me", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",

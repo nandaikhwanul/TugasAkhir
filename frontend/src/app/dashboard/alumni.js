@@ -60,7 +60,7 @@ export default function AlumniDashboard() {
 
         // Fetch alumni data
         try {
-          const resAlumni = await axios.get("http://localhost:5000/alumni/me", {
+          const resAlumni = await axios.get("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
             headers: {
               Authorization: `Bearer ${token}`,
               "Content-Type": "application/json",
@@ -131,7 +131,7 @@ export default function AlumniDashboard() {
       // Ambil token dari cookie
       const token = getTokenFromCookie();
       await axios.post(
-        "http://localhost:5000/logout",
+        "ttps://tugasakhir-production-6c6c.up.railway.app/logout",
         {},
         {
           withCredentials: true,

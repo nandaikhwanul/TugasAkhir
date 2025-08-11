@@ -1,17 +1,17 @@
 ### Mendapatkan semua pengalaman milik alumni tertentu (dengan alumniId)
-GET http://localhost:5000/pengalaman/alumni/{{alumniId}}
+GET ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman/alumni/{{alumniId}}
 Authorization: Bearer {{token}}
 
 ### Mendapatkan semua pengalaman milik alumni yang sedang login
-GET http://localhost:5000/pengalaman/me
+GET ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman/me
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ0MjQwMjMsImV4cCI6MTc1NDQyNTgyM30.Ocs8RiRuXhlIVLPoNXbm0dD3v96MVWg3hA2RKkGQi7FwskdlHKAjThNiMDtqnyelu1nUpXZrtPYyzasK6XYNiFZMjyTrlintBVLEiIWJxNiYqmqTu7I4Y6CkJuJXqOmuaOqjkhptuTtHwp_Rzc8n97322Rbvuk_JvOQzqX-WsRRZtZ6DGDZPmbCRNoGfafX8jnutkfNY4KNNvYUvuZUV77fLb02PrC3kWSy2CFL1NcP-zNd7KxxwgKuciZX1kO3BJ048rkopRFdqgWk-9jCH_2_kYVx0P5IJpxg7Pk3Mxvkua4Y5SpQtHF19Zsw76kaIUN8WjNkjPMElV0WSR94rYw
 
 ### Mendapatkan detail satu pengalaman berdasarkan ID
-GET http://localhost:5000/pengalaman/{{pengalamanId}}
+GET ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman/{{pengalamanId}}
 Authorization: Bearer {{token}}
 
 ### Membuat pengalaman baru
-POST http://localhost:5000/pengalaman
+POST ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ0MjQwMjMsImV4cCI6MTc1NDQyNTgyM30.Ocs8RiRuXhlIVLPoNXbm0dD3v96MVWg3hA2RKkGQi7FwskdlHKAjThNiMDtqnyelu1nUpXZrtPYyzasK6XYNiFZMjyTrlintBVLEiIWJxNiYqmqTu7I4Y6CkJuJXqOmuaOqjkhptuTtHwp_Rzc8n97322Rbvuk_JvOQzqX-WsRRZtZ6DGDZPmbCRNoGfafX8jnutkfNY4KNNvYUvuZUV77fLb02PrC3kWSy2CFL1NcP-zNd7KxxwgKuciZX1kO3BJ048rkopRFdqgWk-9jCH_2_kYVx0P5IJpxg7Pk3Mxvkua4Y5SpQtHF19Zsw76kaIUN8WjNkjPMElV0WSR94rYw
 
@@ -27,7 +27,7 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczM
 }
 
 ### Mengupdate pengalaman berdasarkan ID
-PUT http://localhost:5000/pengalaman/{{pengalamanId}}
+PUT ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman/{{pengalamanId}}
 Content-Type: application/json
 Authorization: Bearer {{token}}
 
@@ -38,5 +38,5 @@ Authorization: Bearer {{token}}
 }
 
 ### Menghapus pengalaman berdasarkan ID
-DELETE http://localhost:5000/pengalaman/{{pengalamanId}}
+DELETE ttps://tugasakhir-production-6c6c.up.railway.app/pengalaman/{{pengalamanId}}
 Authorization: Bearer {{token}}

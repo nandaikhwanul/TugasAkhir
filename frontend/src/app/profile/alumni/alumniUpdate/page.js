@@ -16,7 +16,7 @@ export default function ClientProfileForm() {
     const token = getTokenFromCookie();
     if (!token) return; // redirect ke login atau handle error
 
-    fetch("http://localhost:5000/alumni/me", {
+    fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
       headers: { Authorization: `Bearer ${token}` },
     })
       .then(res => res.json())
@@ -28,7 +28,7 @@ export default function ClientProfileForm() {
 
   const handleUpdate = async (data) => {
     const token = getTokenFromCookie();
-    await fetch("http://localhost:5000/alumni/me/profil", {
+    await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",

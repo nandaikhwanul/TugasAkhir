@@ -120,7 +120,7 @@ export default function PersonalInfoCard() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:5000/alumni/me", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -132,7 +132,7 @@ export default function PersonalInfoCard() {
         let mediaSosial = [];
         if (!("media_sosial" in data) || !Array.isArray(data.media_sosial)) {
           try {
-            const resMedsos = await fetch("http://localhost:5000/alumni/me/medsos", {
+            const resMedsos = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/medsos", {
               headers: { Authorization: `Bearer ${token}` },
             });
             if (resMedsos.ok) {
@@ -399,7 +399,7 @@ export default function PersonalInfoCard() {
     };
 
     try {
-      const res = await fetch("http://localhost:5000/alumni/me/profil", {
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

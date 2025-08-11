@@ -37,7 +37,7 @@ export default function BotPesanQRCodePage() {
     setQrImgLoading(true);
     setError("");
     try {
-      const res = await fetch("http://localhost:5000/pesan/whatsapp-qr");
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-qr");
       if (!res.ok) throw new Error("whatsapp bot sudah ready. testing dengan mengirim pesan. jika tidak bisa, maka logout dan generate ulang code qr nya.");
       const data = await res.json();
       if (data && data.qr) {
@@ -75,8 +75,8 @@ export default function BotPesanQRCodePage() {
     setLoading(true);
     setQrImgLoading(true);
     try {
-      // Gunakan endpoint POST http://localhost:5000/pesan/whatsapp-init
-      const res = await fetch("http://localhost:5000/pesan/whatsapp-init", {
+      // Gunakan endpoint POST ttps://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-init
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-init", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),
@@ -92,7 +92,7 @@ export default function BotPesanQRCodePage() {
       const maxPolling = 15; // polling max 15x (sekitar 15 detik)
       while (!success && pollingCount < maxPolling) {
         try {
-          const qrRes = await fetch("http://localhost:5000/pesan/whatsapp-qr");
+          const qrRes = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-qr");
           if (!qrRes.ok) {
             // Jika error, cek apakah errornya "bot sudah ready"
             const errText = await qrRes.text();
@@ -146,7 +146,7 @@ export default function BotPesanQRCodePage() {
     setError("");
     // setLogoutMessage(""); // dihapus
     try {
-      const res = await fetch("http://localhost:5000/pesan/whatsapp-logout", {
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-logout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({}),

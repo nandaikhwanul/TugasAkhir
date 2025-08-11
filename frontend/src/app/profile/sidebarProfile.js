@@ -18,9 +18,9 @@ function getProfileImageUrl(foto_profil) {
   if (!foto_profil) return "";
   if (/^https?:\/\//.test(foto_profil)) return foto_profil;
   if (foto_profil.startsWith("/uploads/")) {
-    return `http://localhost:5000${foto_profil}`;
+    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
   }
-  return `http://localhost:5000/uploads/alumni/${foto_profil}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${foto_profil}`;
 }
 
 // Helper untuk resolve URL logo_perusahaan ke localhost:5000/uploads jika perlu
@@ -28,9 +28,9 @@ function getLogoUrl(logo_perusahaan) {
   if (!logo_perusahaan) return "";
   if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
   if (logo_perusahaan.startsWith("/uploads/")) {
-    return `http://localhost:5000${logo_perusahaan}`;
+    return `ttps://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
   }
-  return `http://localhost:5000/uploads/perusahaan/${logo_perusahaan}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
 }
 
 // Helper untuk menghapus cookie token (mengikuti code referensi)
@@ -83,7 +83,7 @@ export default function SidebarProfile({ onMenuClick, activeMenu }) {
         // Cek perusahaan dulu, jika gagal baru cek alumni
         let res, data;
         try {
-          res = await fetch("http://localhost:5000/perusahaan/me", {
+          res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -102,7 +102,7 @@ export default function SidebarProfile({ onMenuClick, activeMenu }) {
           return;
         }
         try {
-          res = await fetch("http://localhost:5000/alumni/me", {
+          res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -203,7 +203,7 @@ export default function SidebarProfile({ onMenuClick, activeMenu }) {
             if (!token) throw new Error("Token not found");
             const formData = new FormData();
             formData.append("foto_profil", file);
-            const uploadRes = await fetch("http://localhost:5000/alumni/me/foto-profil", {
+            const uploadRes = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/foto-profil", {
               method: "PATCH",
               headers: {
                 Authorization: `Bearer ${token}`,
@@ -252,7 +252,7 @@ export default function SidebarProfile({ onMenuClick, activeMenu }) {
         }
         if (!perusahaanId) throw new Error("ID perusahaan tidak ditemukan di token");
         formData.append("logo_perusahaan", file);
-        const uploadRes = await fetch(`http://localhost:5000/perusahaan/${perusahaanId}`, {
+        const uploadRes = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,

@@ -1,5 +1,5 @@
 ### Register Super Admin
-POST http://localhost:5000/superadmin/register-superadmin
+POST ttps://tugasakhir-production-6c6c.up.railway.app/superadmin/register-superadmin
 Content-Type: application/json
 
 {
@@ -9,7 +9,7 @@ Content-Type: application/json
 }
 
 ### Create Admin (by SuperAdmin)
-POST http://localhost:5000/superadmin/create-admin
+POST ttps://tugasakhir-production-6c6c.up.railway.app/superadmin/create-admin
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTkxNmE2ZTc2ZTI5N2YyYjRjODY3ZCIsInVzZXJuYW1lIjoic3VwZXJhZG1pbjEiLCJlbWFpbCI6InN1cGVyYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTQ4NjM2NTUsImV4cCI6MTc1NDg2NTQ1NX0.xOifqB5zOadzg4LYPi3ZWhXFzfdXw1ok-RvGvxX1a3BczPdv_eexKXpc0EPzqkVFsaIN2WQn0nUbngmMLiiOBvdqmw5Tn8OCKAUKDRvpQtQyN3hWX50T9gzCmm7wEDQV-RIlVpIFS6wnyQEGndSk5Jvq1X60ULgxxbDpIituDY-okEnZz4hpwRUgp8CdsEfB2yLKT8jHkJLvbHinvy4xXtvAnGOvu4moZKAevPeNbSXDJU2GMW5UDtshuZA5WCU0AenYfH4P2YH-2LuV3827noQ8m5qxVQb_mUXHUg3jt46hExtE3AtK2I-1zrz5h9eax94RmJmjx_iZFOCFuOFglg
 
@@ -20,7 +20,7 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTkxNmE2Z
 }
 
 ### Edit Admin (by SuperAdmin)
-PUT http://localhost:5000/superadmin/edit-admin/68991844594db4e21b1f381d
+PUT ttps://tugasakhir-production-6c6c.up.railway.app/superadmin/edit-admin/68991844594db4e21b1f381d
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTkxNmE2ZTc2ZTI5N2YyYjRjODY3ZCIsInVzZXJuYW1lIjoic3VwZXJhZG1pbjEiLCJlbWFpbCI6InN1cGVyYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTQ4NjM2NTUsImV4cCI6MTc1NDg2NTQ1NX0.xOifqB5zOadzg4LYPi3ZWhXFzfdXw1ok-RvGvxX1a3BczPdv_eexKXpc0EPzqkVFsaIN2WQn0nUbngmMLiiOBvdqmw5Tn8OCKAUKDRvpQtQyN3hWX50T9gzCmm7wEDQV-RIlVpIFS6wnyQEGndSk5Jvq1X60ULgxxbDpIituDY-okEnZz4hpwRUgp8CdsEfB2yLKT8jHkJLvbHinvy4xXtvAnGOvu4moZKAevPeNbSXDJU2GMW5UDtshuZA5WCU0AenYfH4P2YH-2LuV3827noQ8m5qxVQb_mUXHUg3jt46hExtE3AtK2I-1zrz5h9eax94RmJmjx_iZFOCFuOFglg
 
@@ -31,11 +31,11 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTkxNmE2Z
 }
 
 ### Delete Admin (by SuperAdmin)
-DELETE http://localhost:5000/superadmin/delete-admin/68991844594db4e21b1f381d
+DELETE ttps://tugasakhir-production-6c6c.up.railway.app/superadmin/delete-admin/68991844594db4e21b1f381d
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTkxNmE2ZTc2ZTI5N2YyYjRjODY3ZCIsInVzZXJuYW1lIjoic3VwZXJhZG1pbjEiLCJlbWFpbCI6InN1cGVyYWRtaW4xQGV4YW1wbGUuY29tIiwicm9sZSI6InN1cGVyYWRtaW4iLCJpYXQiOjE3NTQ4NjM2NTUsImV4cCI6MTc1NDg2NTQ1NX0.xOifqB5zOadzg4LYPi3ZWhXFzfdXw1ok-RvGvxX1a3BczPdv_eexKXpc0EPzqkVFsaIN2WQn0nUbngmMLiiOBvdqmw5Tn8OCKAUKDRvpQtQyN3hWX50T9gzCmm7wEDQV-RIlVpIFS6wnyQEGndSk5Jvq1X60ULgxxbDpIituDY-okEnZz4hpwRUgp8CdsEfB2yLKT8jHkJLvbHinvy4xXtvAnGOvu4moZKAevPeNbSXDJU2GMW5UDtshuZA5WCU0AenYfH4P2YH-2LuV3827noQ8m5qxVQb_mUXHUg3jt46hExtE3AtK2I-1zrz5h9eax94RmJmjx_iZFOCFuOFglg
 
 ### Get SuperAdmin Me
-GET http://localhost:5000/superadmin/me
+GET ttps://tugasakhir-production-6c6c.up.railway.app/superadmin/me
 Authorization: Bearer <your_superadmin_jwt_token_here>
 
 

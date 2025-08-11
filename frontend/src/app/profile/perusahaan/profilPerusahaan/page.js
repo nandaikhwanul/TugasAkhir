@@ -43,9 +43,9 @@ function getLogoUrl(logo_perusahaan) {
   if (!logo_perusahaan) return "";
   if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
   if (logo_perusahaan.startsWith("/uploads/")) {
-    return `http://localhost:5000${logo_perusahaan}`;
+    return `ttps://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
   }
-  return `http://localhost:5000/uploads/perusahaan/${logo_perusahaan}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
 }
 
 // Social options with Ionicons and base URLs
@@ -144,7 +144,7 @@ export default function ProfilPerusahaanPage() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:5000/perusahaan/me", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (res.ok) {
@@ -239,7 +239,7 @@ export default function ProfilPerusahaanPage() {
     // Pisahkan website dari media sosial lain
     const { website, ...mediaSosial } = media;
     try {
-      const res = await fetch(`http://localhost:5000/perusahaan/${perusahaanId}`, {
+      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

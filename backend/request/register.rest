@@ -1,5 +1,5 @@
 ### Register Alumni
-POST http://localhost:5000/alumni
+POST ttps://tugasakhir-production-6c6c.up.railway.app/alumni
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ### Register Perusahaan
-POST http://localhost:5000/perusahaan
+POST ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan
 Content-Type: application/json
 
 {
@@ -22,7 +22,7 @@ Content-Type: application/json
 }
 
 ### Register Admin
-POST http://localhost:5000/admin/register
+POST ttps://tugasakhir-production-6c6c.up.railway.app/admin/register
 Content-Type: application/json
 
 {

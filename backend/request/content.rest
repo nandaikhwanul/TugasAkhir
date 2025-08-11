@@ -1,5 +1,5 @@
 ### Upload Content (Perusahaan upload content)
-POST http://localhost:5000/content
+POST ttps://tugasakhir-production-6c6c.up.railway.app/content
 Content-Type: multipart/form-data
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1Mzk1OTMyNywiZXhwIjoxNzUzOTYxMTI3fQ.WzKgTjG3eCT9pMA1LwjQdogT0209UsBNa8-YY4ASxjALr3V14WcGH4FcjpkE3qLISFUru-cBGMFta_YT-LrGaoWfpyhUrADGJL90mJ_P9fEu30EMjOmlCtoeLO7JQS1oLdv6WWnxh_Hzo9z4uzJtcT5V8I27h1e8ZwCI6J7IMM_TMFEqz_JNNuqcdhJ8dLsSVQn8OSXZ7ypYdmC7QuTdAyFfgvdS-0FPsXOOAxvQIjCkkrDctCwPsP2Wr6W0nj8xGgw2FW49M0RqQWleR4tEoXA_S2RGRZzwqaZsot3gPbhaPX3fsL7YE5iKhsQHFOsT69Dg564RK6MLmr40k3J7ew
 --boundary
@@ -28,7 +28,7 @@ Content-Type: video/mp4
 --boundary--
 
 ### Upload Content (tanpa file, hanya url gambar/video)
-POST http://localhost:5000/content
+POST ttps://tugasakhir-production-6c6c.up.railway.app/content
 Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiIsImVtYWlsIjoiaGFuc0BnbWFpbC5jb20iLCJyb2xlIjoiYWx1bW5pIiwiaWF0IjoxNzU0MTQ5MjcxLCJleHAiOjE3NTQxNTEwNzF9.b-sR0OWS-m_ERzREu0JqbDhug4bjeKD1wThfskYUzqJrVjM8V8OWhw7j4M8znfCvNkL-zFQVqpTItdQMp4Hu9W8jasI_8yhfY8r_fCUr6AY9ZC1HvnXymOzyRdAnZtEzzSvMdtaWY2gKN0h6rds54nnPGttY-1w5Npi3qoqJ2VRjp80qebwybBU8bHJ8YBTtXHv9O0LLOVg1BBJpQXSr021iB-rUUvY0jbgi_VdKIsNAh7PRFFwggouTtCrQWX7-XWqFvloRuON_mD_ZEkDDcruoxblIgTMawOeC3RvGW41GQKjxy2-t9U3fFRkDjdRAlx5uBwmcca-vwE7G-mjeoA
 
@@ -39,4 +39,4 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczM
 }
 
 ### Get All Content (Daftar semua konten beserta foto, video, dan pembuatnya)
-GET http://localhost:5000/content
+GET ttps://tugasakhir-production-6c6c.up.railway.app/content

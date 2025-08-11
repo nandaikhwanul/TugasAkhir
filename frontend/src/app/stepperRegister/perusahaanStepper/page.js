@@ -96,7 +96,7 @@ export default function PerusahaanStepper({ onClose }) {
           setLoadingEmail(false);
           return;
         }
-        const res = await fetch("http://localhost:5000/perusahaan/me", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
@@ -206,7 +206,7 @@ export default function PerusahaanStepper({ onClose }) {
         return;
       }
       // Kirim PATCH ke endpoint
-      const res = await fetch(`http://localhost:5000/perusahaan/${id}`, {
+      const res = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${id}`, {
         method: "PATCH",
         headers: {
           Authorization: `Bearer ${token}`,

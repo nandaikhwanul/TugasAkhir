@@ -113,7 +113,7 @@ export default function RegisterPerusahaan({
     try {
       // Hanya kirim field yang diperlukan
       await axios.post(
-        "http://localhost:5000/perusahaan",
+        "ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan",
         {
           nama_perusahaan: perusahaan.nama_perusahaan,
           email_perusahaan: perusahaan.email_perusahaan,

@@ -23,9 +23,9 @@ function getLogoUrl(logo_perusahaan) {
   if (!logo_perusahaan) return "";
   if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
   if (logo_perusahaan.startsWith("/uploads/")) {
-    return `http://localhost:5000${logo_perusahaan}`;
+    return `ttps://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
   }
-  return `http://localhost:5000/uploads/perusahaan/${logo_perusahaan}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
 }
 
 // Dummy data for videos and podcasts

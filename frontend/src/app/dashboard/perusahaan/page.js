@@ -141,7 +141,7 @@ export default function PerusahaanDashboardPage() {
       try {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("http://localhost:5000/lowongan/pelamar/count", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/pelamar/count", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -180,7 +180,7 @@ export default function PerusahaanDashboardPage() {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
         // Ganti ID lowongan sesuai kebutuhan, di sini hardcode sesuai instruksi
-        const res = await fetch("http://localhost:5000/lowongan/6887ae184587ec05bb5fac4a/traffic", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/6887ae184587ec05bb5fac4a/traffic", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -222,7 +222,7 @@ export default function PerusahaanDashboardPage() {
       try {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("http://localhost:5000/lowongan/me/count/active", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/active", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -260,7 +260,7 @@ export default function PerusahaanDashboardPage() {
       try {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("http://localhost:5000/lowongan/me/count/pending", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/pending", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -346,7 +346,7 @@ export default function PerusahaanDashboardPage() {
       try {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("http://localhost:5000/pelamar/count/diterima-ditolak", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar/count/diterima-ditolak", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -384,7 +384,7 @@ export default function PerusahaanDashboardPage() {
       try {
         const token = getTokenFromCookie();
         if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("http://localhost:5000/pelamar/grafik/per-bulan-tahun", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/pelamar/grafik/per-bulan-tahun", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

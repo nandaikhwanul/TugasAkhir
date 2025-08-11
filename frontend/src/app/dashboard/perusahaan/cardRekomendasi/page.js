@@ -17,10 +17,10 @@ function getFotoProfilUrl(foto_profil) {
     typeof foto_profil === "string" &&
     foto_profil.startsWith("/uploads/")
   ) {
-    return `http://localhost:5000${foto_profil}`;
+    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
   }
   // Asumsi path hanya nama file
-  return `http://localhost:5000/uploads/foto_profil/${foto_profil}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/foto_profil/${foto_profil}`;
 }
 
 // Helper untuk foto sampul
@@ -36,9 +36,9 @@ function getFotoSampulUrl(foto_sampul) {
     typeof foto_sampul === "string" &&
     foto_sampul.startsWith("/uploads/")
   ) {
-    return `http://localhost:5000${foto_sampul}`;
+    return `ttps://tugasakhir-production-6c6c.up.railway.app${foto_sampul}`;
   }
-  return `http://localhost:5000/uploads/foto_sampul/${foto_sampul}`;
+  return `ttps://tugasakhir-production-6c6c.up.railway.app/uploads/foto_sampul/${foto_sampul}`;
 }
 
 // Helper to get token from cookie
@@ -95,7 +95,7 @@ export default function CardRekomendasi() {
           setLoading(false);
           return;
         }
-        const res = await fetch("http://localhost:5000/perusahaan/alumni-pelamar", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni-pelamar", {
           headers: {
             Authorization: `Bearer ${token}`,
           },

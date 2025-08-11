@@ -51,7 +51,7 @@ export default function RegisterAlumni(props) {
     setLoading(true);
     try {
       await axios.post(
-        "http://localhost:5000/alumni",
+        "ttps://tugasakhir-production-6c6c.up.railway.app/alumni",
         {
           ...alumni,
         },

@@ -39,7 +39,7 @@ export default function AboutCard() {
         return;
       }
       try {
-        const res = await fetch("http://localhost:5000/alumni/me", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -106,7 +106,7 @@ export default function AboutCard() {
     }
 
     try {
-      const res = await fetch("http://localhost:5000/alumni/me/profil", {
+      const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

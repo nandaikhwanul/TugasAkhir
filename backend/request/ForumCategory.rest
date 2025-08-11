@@ -1,8 +1,8 @@
 ### Get all forum categories
-GET http://localhost:5000/forum/categories
+GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
 
 ### Create a new forum category
-POST http://localhost:5000/forum/categories
+POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
 Content-Type: application/json
 
 {
@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:5000/forum/categories
+POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
 Content-Type: application/json
 
 {
@@ -20,7 +20,7 @@ Content-Type: application/json
 }
 
 ###
-POST http://localhost:5000/forum/categories
+POST ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories
 Content-Type: application/json
 
 {
@@ -29,13 +29,13 @@ Content-Type: application/json
 }
 
 ### Search forum categories by name
-GET http://localhost:5000/forum/categories/search?name=karir
+GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/search?name=karir
 
 ### Get category by ID
-GET http://localhost:5000/forum/categories/{{categoryId}}
+GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
 
 ### Update category by ID
-PUT http://localhost:5000/forum/categories/{{categoryId}}
+PUT ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
 Content-Type: application/json
 
 {
@@ -44,7 +44,7 @@ Content-Type: application/json
 }
 
 ### Delete category by ID
-DELETE http://localhost:5000/forum/categories/{{categoryId}}
+DELETE ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}
 
 ### Get all posts in a category
-GET http://localhost:5000/forum/categories/{{categoryId}}/posts
+GET ttps://tugasakhir-production-6c6c.up.railway.app/forum/categories/{{categoryId}}/posts

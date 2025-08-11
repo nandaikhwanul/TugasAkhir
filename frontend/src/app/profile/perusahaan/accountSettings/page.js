@@ -167,7 +167,7 @@ export default function PerusahaanAccountSettings() {
           }
           return;
         }
-        const res = await fetch("http://localhost:5000/perusahaan/me", {
+        const res = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -240,7 +240,7 @@ export default function PerusahaanAccountSettings() {
     };
 
     try {
-      const patchRes = await fetch(`http://localhost:5000/perusahaan/${perusahaanId}`, {
+      const patchRes = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -304,7 +304,7 @@ export default function PerusahaanAccountSettings() {
     };
 
     try {
-      const patchRes = await fetch(`http://localhost:5000/perusahaan/${perusahaanId}`, {
+      const patchRes = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
@@ -355,7 +355,7 @@ export default function PerusahaanAccountSettings() {
 
     // 1. Check old password
     try {
-      const checkRes = await fetch("http://localhost:5000/perusahaan/me/checkoldpassword", {
+      const checkRes = await fetch("ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/me/checkoldpassword", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -387,7 +387,7 @@ export default function PerusahaanAccountSettings() {
         password: newPassword,
         confPassword: confirmPassword,
       };
-      const patchRes = await fetch(`http://localhost:5000/perusahaan/${perusahaanId}`, {
+      const patchRes = await fetch(`ttps://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",
