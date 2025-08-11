@@ -12,13 +12,19 @@ import Navbar from "../navbar/page"; // importkan navbar/page
 
 // Helper: Ambil token dari cookie (client-side)
 function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
+  if (typeof document === "undefined") {
+    console.log("[DEBUG] document is undefined (not in browser)");
+    return null;
+  }
   const cookies = document.cookie.split(";").map((c) => c.trim());
   for (const c of cookies) {
     if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
+      const token = decodeURIComponent(c.substring("token=".length));
+      console.log("[DEBUG] Found token in cookie:", token);
+      return token;
     }
   }
+  console.log("[DEBUG] Token not found in cookie. document.cookie:", document.cookie);
   return null;
 }
 
@@ -33,10 +39,15 @@ export default function DashboardPage() {
     async function fetchRole() {
       try {
         const token = getTokenFromCookie();
+        console.log("[DEBUG] Token to be used in fetch:", token);
+
         if (!token) {
+          console.warn("[DEBUG] No token found, redirecting to /login");
+          setLoading(false);
           router.replace("/login");
           return;
         }
+
         // Cek superadmin dulu
         let res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/superadmin/me", {
           headers: {
@@ -45,6 +56,7 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+        console.log("[DEBUG] superadmin/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("superadmin");
@@ -60,6 +72,7 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+        console.log("[DEBUG] alumni/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("alumni");
@@ -75,6 +88,7 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+        console.log("[DEBUG] perusahaan/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("perusahaan");
@@ -90,6 +104,7 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+        console.log("[DEBUG] admin/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("admin");
@@ -98,8 +113,13 @@ export default function DashboardPage() {
           }
           return;
         }
+        // Jika tidak ada role yang cocok, redirect ke login
+        console.warn("[DEBUG] Token is present but no valid role found, redirecting to /login");
+        setLoading(false);
         router.replace("/login");
       } catch (err) {
+        console.log("[DEBUG] Error in fetchRole:", err);
+        setLoading(false);
         router.replace("/login");
       }
     }
