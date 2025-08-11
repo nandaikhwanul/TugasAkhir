@@ -46,7 +46,7 @@ app.use(session({
 // Izinkan CORS untuk mengakses localhost:3000
 app.use(cors({
     credentials: true,
-    origin: ['tugasakhir-production-0986.up.railway.app']
+    origin: ['https://tugasakhir-production-0986.up.railway.app']
 }));
 
 app.use(express.json());
