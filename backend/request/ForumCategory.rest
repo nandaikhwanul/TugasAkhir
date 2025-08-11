@@ -1,0 +1,50 @@
+### Get all forum categories
+GET http://localhost:5000/forum/categories
+
+### Create a new forum category
+POST http://localhost:5000/forum/categories
+Content-Type: application/json
+
+{
+  "name": "Polling",
+  "description": "Diskusi seputar karir dan pengembangan diri"
+}
+
+###
+POST http://localhost:5000/forum/categories
+Content-Type: application/json
+
+{
+  "name": "Lowongan",
+  "description": "Informasi dan diskusi tentang lowongan pekerjaan"
+}
+
+###
+POST http://localhost:5000/forum/categories
+Content-Type: application/json
+
+{
+  "name": "Polling",
+  "description": "Kategori untuk polling dan survei komunitas"
+}
+
+### Search forum categories by name
+GET http://localhost:5000/forum/categories/search?name=karir
+
+### Get category by ID
+GET http://localhost:5000/forum/categories/{{categoryId}}
+
+### Update category by ID
+PUT http://localhost:5000/forum/categories/{{categoryId}}
+Content-Type: application/json
+
+{
+  "name": "Karir & Pengembangan",
+  "description": "Update deskripsi kategori karir"
+}
+
+### Delete category by ID
+DELETE http://localhost:5000/forum/categories/{{categoryId}}
+
+### Get all posts in a category
+GET http://localhost:5000/forum/categories/{{categoryId}}/posts

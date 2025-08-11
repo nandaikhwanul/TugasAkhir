@@ -1,0 +1,66 @@
+### Create a new forum comment
+POST http://localhost:5000/forum/comments
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ3NTA3NTMsImV4cCI6MTc1NDc1MjU1M30.M3tX72IFoWrh7KGCHv_312jJJZg3v6AKJyepFPML2sB5d-Y4o-GnsFub5B_7uhM27I2a7j6tR5Tru7YPoQyqUxaF4m_CBs8LDqgZBSD7Sl311Ow-r5zJ8QPTUJjqIOuW9xZIqVErs5OFLCF9JWE4wKitiKiKWRD4EKmIUdaugkiNe4gNx6UjGQVZ03_4rFNksBGRzCZPRXfC7L4C2pc1CHGVgV1abiNdiFJiVcF94vL7JkZ6DQWy8ReybG0LsqgeQLp6nEVDwwIAnt7kvCYxoSG4g-qOO-mOe-vt4FewqDVTnU7n7QRgjcC9zYoT7GfRqpdiTTQuq4lOPcIlYjyDiw
+
+{
+  "postId": "68974a10f20510c8ed107a7c",
+  "content": "This is a new comment."
+}
+
+### Get comments by post
+GET http://localhost:5000/forum/comments/post/68974a10f20510c8ed107a7c
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NDc4NDI1MiwiZXhwIjoxNzU0Nzg2MDUyfQ.MrC3p5xAN63j6VUAa76n9NM1gtGH_63Rpm98tNTQ3iWmpxoI0Tg033m1im7VWSvEauGyfoFTMkh8pOxdsZLjLKPY3XD5SoUgYvaU1GkjBVhMSA2UFB_y2UfcWVbmGxCld9SzG0GENsC0iVtec3pY3N0VUTeKd11QjaKS7BGZEkKbM2SvFELjZLcYxlV5tymsHiDdgeTsQJJ1ap4_hsSX2jsyfjsVXb-JzZdvwn5LEW7yTjJbc2Z5Ag70xVvnhoKnaaHk0gSNNlNf2RpngliaQrL03ueWnbRcru2hIb-sy3NHhjjLKwqQIccBJspLxeZwKnvm0NCbvxV8lDX3E0Jtuw
+
+### Get comments by author
+GET http://localhost:5000/forum/comments/post/author/AUTHOR_ID_HERE
+
+### Get recent comments
+GET http://localhost:5000/forum/comments/post/recent
+
+### Get popular comments
+GET http://localhost:5000/forum/comments/post/popular
+
+### Search comments
+GET http://localhost:5000/forum/comments/post/search?q=search_term
+
+### Get comment by ID
+GET http://localhost:5000/forum/comments/post/COMMENT_ID_HERE
+
+### Update a comment
+PUT http://localhost:5000/forum/comments/post/COMMENT_ID_HERE
+Content-Type: application/json
+
+{
+  "content": "Updated comment content."
+}
+
+### Delete a comment
+DELETE http://localhost:5000/forum/comments/post/COMMENT_ID_HERE
+
+### Like a comment
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/like
+
+### Unlike a comment
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/unlike
+
+### Get replies by comment
+GET http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/replies
+
+### Pin a comment
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/pin
+
+### Unpin a comment
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/unpin
+
+### Highlight a comment
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/highlight
+
+### Unhighlight a comment
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/unhighlight
+
+### Increment like count
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/increment-like
+
+### Decrement like count
+POST http://localhost:5000/forum/comments/post/COMMENT_ID_HERE/decrement-like

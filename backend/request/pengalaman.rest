@@ -1,0 +1,42 @@
+### Mendapatkan semua pengalaman milik alumni tertentu (dengan alumniId)
+GET http://localhost:5000/pengalaman/alumni/{{alumniId}}
+Authorization: Bearer {{token}}
+
+### Mendapatkan semua pengalaman milik alumni yang sedang login
+GET http://localhost:5000/pengalaman/me
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ0MjQwMjMsImV4cCI6MTc1NDQyNTgyM30.Ocs8RiRuXhlIVLPoNXbm0dD3v96MVWg3hA2RKkGQi7FwskdlHKAjThNiMDtqnyelu1nUpXZrtPYyzasK6XYNiFZMjyTrlintBVLEiIWJxNiYqmqTu7I4Y6CkJuJXqOmuaOqjkhptuTtHwp_Rzc8n97322Rbvuk_JvOQzqX-WsRRZtZ6DGDZPmbCRNoGfafX8jnutkfNY4KNNvYUvuZUV77fLb02PrC3kWSy2CFL1NcP-zNd7KxxwgKuciZX1kO3BJ048rkopRFdqgWk-9jCH_2_kYVx0P5IJpxg7Pk3Mxvkua4Y5SpQtHF19Zsw76kaIUN8WjNkjPMElV0WSR94rYw
+
+### Mendapatkan detail satu pengalaman berdasarkan ID
+GET http://localhost:5000/pengalaman/{{pengalamanId}}
+Authorization: Bearer {{token}}
+
+### Membuat pengalaman baru
+POST http://localhost:5000/pengalaman
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ0MjQwMjMsImV4cCI6MTc1NDQyNTgyM30.Ocs8RiRuXhlIVLPoNXbm0dD3v96MVWg3hA2RKkGQi7FwskdlHKAjThNiMDtqnyelu1nUpXZrtPYyzasK6XYNiFZMjyTrlintBVLEiIWJxNiYqmqTu7I4Y6CkJuJXqOmuaOqjkhptuTtHwp_Rzc8n97322Rbvuk_JvOQzqX-WsRRZtZ6DGDZPmbCRNoGfafX8jnutkfNY4KNNvYUvuZUV77fLb02PrC3kWSy2CFL1NcP-zNd7KxxwgKuciZX1kO3BJ048rkopRFdqgWk-9jCH_2_kYVx0P5IJpxg7Pk3Mxvkua4Y5SpQtHF19Zsw76kaIUN8WjNkjPMElV0WSR94rYw
+
+{
+  "jenis": "kerja",
+  "nama": "PT Maju Mundur",
+  "posisi": "Software Engineer",
+  "lokasi": "Jakarta",
+  "deskripsi": "Mengembangkan aplikasi web",
+  "tanggal_mulai": "2022-01-01",
+  "tanggal_selesai": "2023-01-01",
+  "masih_berjalan": false
+}
+
+### Mengupdate pengalaman berdasarkan ID
+PUT http://localhost:5000/pengalaman/{{pengalamanId}}
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "nama": "PT Maju Mundur Sejahtera",
+  "posisi": "Senior Software Engineer",
+  "masih_berjalan": true
+}
+
+### Menghapus pengalaman berdasarkan ID
+DELETE http://localhost:5000/pengalaman/{{pengalamanId}}
+Authorization: Bearer {{token}}

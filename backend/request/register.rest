@@ -1,0 +1,33 @@
+### Register Alumni
+POST http://localhost:5000/alumni
+Content-Type: application/json
+
+{
+    "name": "Siti Aminah",
+    "email": "siti.aminah@example.com",
+    "nim": "98765432100",
+    "password": "abcdef",
+    "confPassword": "abcdef"
+}
+
+### Register Perusahaan
+POST http://localhost:5000/perusahaan
+Content-Type: application/json
+
+{
+    "nama_perusahaan": "PT Sukses Selalu",
+    "email_perusahaan": "info@suksesselalu.com",
+    "password": "abcdef",
+    "confPassword": "abcdef"
+}
+
+### Register Admin
+POST http://localhost:5000/admin/register
+Content-Type: application/json
+
+{
+    "username": "admin2",
+    "email": "admin1@example.com",
+    "password": "123456",
+    "confPassword": "123456"
+}

@@ -1,0 +1,41 @@
+### Melihat detail pelamar tertentu (khusus perusahaan pemilik lowongan)
+GET http://localhost:5000/perusahaan/pelamar/6884cab0ee61574d57c275dc
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODNhYTc1Y2NkOWVkMmJmZGYxNDBiNiIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1MzUzNjY0NiwiZXhwIjoxNzUzNTM4NDQ2fQ.qRq-0cJMHtJwXlq3t97DQS5KPUBWjnxQMaU_rU3Tonz30DRjsFJbVsL4KVVRAyHvXCZ9e3le_IQnqVwG5LCFF0XQQnhXKvNm9LNnjdR3OlKpuKl6b4bbvp4VOnUPtG7mA68zVgqgXp01bJ0TNUltRXE_i6fAbc5VnQUUqPCQ1cm1XHwSHuRO5rMc1m8z_3tFazYZFtvGChnrQOBJvu8MsK8Q2GOV-T2dR3krCaBX-v6KiV2CVzdTKCz2lHhd7RgdHsw-z3hUC-NKqGEGITlUjRf2J6WLn1BQ3XS5BGWNt0SL5y4tF_h4mKZkjck1f4dpAXUqExxYM_DC_t-bjEw3MQ
+
+### Upload foto perusahaan (array)
+POST http://localhost:5000/foto-perusahaan/upload
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1MzYzODIyMCwiZXhwIjoxNzUzNjQwMDIwfQ.1bQm5lgPDETH0nFyMdqWty2Gvdq093xaBPbOL19naPHDu9UXg00AftcZgNhdEmpo-xSqZ8Xbp9EXesn483KPeIzmvjJMmMaq1olwwUOe3vvqk5suBCXm0h4__buWZ8bCdq9cCDFjoVZGXjxTBe_0V-rl0Tlwp0F5gcSOE9ZyyH2CA3V3P02eHx9kbxUQDwYeFD1p-Np81ThH8-j_a8BGYFSf2b-E5ylC0mIB2BvAC9ZtmJcjL0uvlaweqDITvWJ1ORm9MFkwmVRrrWG5KlH5-awpa4F6vHuUXWLXsEaYxA86wlycgjsHfNRDomVAOlJX89EzoLkwgrz8jnGGjbt8Cg
+
+# PENTING:
+# - Jangan tulis header Content-Type atau boundary secara manual!
+# - Biarkan REST Client/Postman/Insomnia yang mengatur Content-Type dan boundary.
+# - Untuk REST Client VSCode, gunakan sintaks: foto=@./path/to/file.jpg (bisa lebih dari satu baris).
+# - Untuk Postman, gunakan tab "form-data", field "foto" (type: File) bisa lebih dari satu.
+
+# Jika sudah login sebagai perusahaan, field "perusahaan" boleh dikosongkan.
+# Jika ingin upload atas nama perusahaan lain (admin), isi field "perusahaan" dengan ID perusahaan.
+
+# Contoh upload 2 file (ganti path sesuai file lokal Anda):
+
+perusahaan=68856ad3c6243a8bae5d33fd
+foto=@./path/to/file1.jpg
+foto=@./path/to/file2.png
+
+# Catatan:
+# - Hapus baris "perusahaan=..." jika upload sebagai perusahaan sendiri.
+# - Untuk Postman, gunakan tab "form-data" dan tambahkan field "foto" (type: File) beberapa kali.
+# - Jangan tulis boundary atau Content-Type secara manual, biarkan aplikasi client yang mengatur.
+
+### Melihat semua foto perusahaan berdasarkan ID perusahaan (khusus perusahaan/admin)
+GET http://localhost:5000/foto-perusahaan/perusahaan/68856ad3c6243a8bae5d33fd
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1MzY0NDA1OSwiZXhwIjoxNzUzNjQ1ODU5fQ.J0RpSox8iHcKuZ82kj2kQJ_vv_3ug2WVNhOBWqfO7cn-r-uL99opz9kFleo2RglCdV5g-pjnSqG_F77szo9T6iIKMISgFNReOavWDE2XeRz38QMq-WpdK_Ple0dGZpMBo1LYMXaOJZz_MUYLYGgocFw7ANYj0uIsLqfJVYgW6AjK6twTPKlz9YGBusL-2mWst2cEZ4vrqaASNlevWiSMd9PO9HCjnhsIR5we1WBtnPq0XGSQxg8Vj8Fa-hIA8sEbDiOw29rWtHJTEnXs9tSOUlUQIhqyAe3WRpcYVcPpykCpiVm-rDsQT7vGOKsRdJx9VUcJV4vxSM3aPqNaLW_kZQ
+
+### Menghapus foto perusahaan tertentu (by path, kirim di body)
+DELETE http://localhost:5000/foto-perusahaan/delete
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1MzY0Njc1OCwiZXhwIjoxNzUzNjQ4NTU4fQ.lhhSFA8XESutqKE_tMCtFwFlvGx8ICgToc543smvGmT83mlIpTnQBq0HMzNiqmllgU6Ovifwd8Wy5vZxePZghX74MdlkuwpLcyfD0Jj68KvKy-pSx4QCSKdhX1qFo11cfjV-5NSQsV20m8mI57L428rVaHnJbAmMISRJEgpHfg_XYOObKclEbIF9kkaAdQxv3HVoFgiHDGRlXDJZ_46nYmXbz1BxTrz_DfcUGV97zxV6M1sfpDXl1W0LurHSd44vCNTDLNFLUvD38OtFbcZF9LMjDIaxzZ2NYqgsw1-vmti8JFAj0MJKH2wVmzczaQ33n__3rAvLbObxwxWp55wQLw
+Content-Type: application/json
+
+{
+  "fotoPath": "uploads/foto_perusahaan/foto-1753646637702-531518091.jpg"
+}
+

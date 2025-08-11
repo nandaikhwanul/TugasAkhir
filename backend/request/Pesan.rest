@@ -1,0 +1,78 @@
+### Kirim Notifikasi Hasil Lamaran (Diterima/Ditolak) ke Alumni Pelamar
+POST http://localhost:5000/pesan/notifikasi-hasil-lamaran
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NjkzZDAxOGE1NGNiMmUzYzFkYThjZiIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1MTczMzI4MywiZXhwIjoxNzUxNzM1MDgzfQ.d0XjTVlwOfbpjx5sik65iTcFt2PistSx5JdfqqG6KMGYThZgpQHmwtc5nTwDnzSDxLY8DOhB7_ro81tiYtG4J6JCyVggmLcD1vdjy7WhVD8kS-NFNoaU6oDRDHHRVSxEBS4pCoSZN9E3epj9d5bGbuho0SVe2__HTAbs8MIfXrbTxsA2z2iNJ_mkbeV0lVnqJWKvfR7udFVLs6vW_V4rkM-CtCo5rvEMQniYT-KjVtN2jdOWaxFNkPI1E78PBpqBTRCiCytNYzmsAcMIQa9TJmW3hIZgOIWZs-mz-b7lccCpChbfU2rIJJ9epsOcbPB9rQR4jvKt-0UuGhz5jdDfxw
+
+{
+  "pelamarId": "686955f3195608a73657827f",
+  "lowonganId": "686955aa195608a736578224",
+  "status": "diterima",
+  "pesan": "Selamat, Anda diterima di perusahaan kami!",
+  "channel": "web"
+}
+
+###
+
+### Kirim Pesan Custom ke Alumni
+POST http://localhost:5000/pesan/kirim-ke-alumni
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4NjkzZDAxOGE1NGNiMmUzYzFkYThjZiIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1MzM1NzI4NiwiZXhwIjoxNzUzMzU5MDg2fQ.bE91frTqbvIaizbza3AP5iFL0xkHVXM_nVQqlxasKm1Ex8w5-zKyCRhl7fxOPx74KxtBqGItPjGr1MwUwGSiPZtz8T5I391-BcWe8k9rFfPPqca9-rc9YTFF0kdGMgD0mpIK2KpkF_FoNS04px5syC-ynaQtpMfCwwqjxV2zPhXpcP7kwsHWi4YrNucg_Rqve9ZmKS3NpvycOPHwhFW-jBUPo1Xin5y6toubMkmh5y47H-ZQ6LrHcrvr25iKbc2Q41udwpb5Z0jAp0-4VEIGJhdxtXBlJxo77DssUrlz7OQl3B0vNAzaXRHfFEiID12rzo8Z0SxTy-tr84R-1GKZYg
+
+{
+  "alumniId": "68812ec1de5d013b84caaf9c",
+  "pesan": "Halo, kami ingin mengundang Anda untuk interview.",
+  "channel": "web" 
+}
+
+### Lihat Daftar Pesan untuk Alumni (hanya alumni yang bersangkutan yang bisa melihat)
+GET http://localhost:5000/pesan/alumni/me
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODEyZWMxZGU1ZDAxM2I4NGNhYWY5YyIsIm5hbWUiOiJOYW5kYSBJa2h3YW51bCIsImVtYWlsIjoiaGFuczIxQGdtYWlsLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTM3ODMzMTMsImV4cCI6MTc1Mzc4NTExM30.FZDpt2GQbWB4Vt_CfEtkxXnEHFzS1uxx2c3Zrx8nM_EDZqtz4U3gJDOxDOfVkltwHgYfvh0uWDuF5HZuUZR91HZw_ihAy5u5O3JhOGpHc-pf9UL2sI-5BWve9CZCTeNVRAMH5zzGWdyxho0p-IjiQVieBVIX9w14uEriWK8BLR3hjBFXQZLhcxmJT5BHv-J5xALgt57gPfBaw3SGMfYmk2C7yuGdDoU-jf_qbwwjD_XLyajao49-m5a2O_kIawygiEz4SRb_A9tUJg-eMOnhuq2TYVIZngP-tCgwecKWIYxibvN3nl-yCGi4zQYc9ojzfIfOht0nU1FStx-ROxJQGg
+
+### Kirim Pesan ke Alumni via Email
+POST http://localhost:5000/pesan/kirim-ke-alumni
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NDA1MTEzNiwiZXhwIjoxNzU0MDUyOTM2fQ.qNll8VetEVmPZzIuPivGGdNJk0Ll53HeZBw6-70OM1Xmm3a2NzbGBXRSEP1NNXF1mqvc00wrs_44k2t4_bAVLj7hCNzG1hkidUu5wIwSiOAFo8eEFqEpVe3MZ0PMrNGDpo8ugURuNK4VFU3Cq0UxKMyXmXzROUuZ4nwBAsU4IPAwPu64IevL2_V-Kzg4KvyGLIVRxdzFuThexrXFM92VzdRjwWGDXywBQ-IT-FG2jD2Ct1b-PLoBUcFv_DhTeH3cbgbv4OHPy2ibnYfsobiWE9IjPRzPxxKWKFteCg9ZcsiBFJYfskujLYFM03vYnczdqR580N9Aj2ZANyp99ngJSg
+
+{
+  "alumniId": "6888e77332f6ee6a2e307d05",
+  "pesan": "Halo, ini pesan yang dikirim melalui email",
+  "channel": "whatsapp"
+}
+
+### Hitung Jumlah Pesan Belum Dibaca (Unread) untuk User Login (Alumni/Perusahaan)
+GET http://localhost:5000/pesan/unread-count
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODEyZWMxZGU1ZDAxM2I4NGNhYWY5YyIsIm5hbWUiOiJOYW5kYSBJa2h3YW51bCIsImVtYWlsIjoiaGFuczIxQGdtYWlsLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTMzNTY0NDMsImV4cCI6MTc1MzM1ODI0M30.zmZTpFjsYEtzxdg6SKsvqMXCsp9nJqGMEB29EOV1deP6qYF0hfOOOOWhDzZ3W2UnWiX8Bk3WqM4b2dgUViuFCMoD9VN9GPB6BYZpQW-cEFzZMQ4qINnbbiqSQAyBs2g1fHHRK3ZvbJ72yt7sACTT5Z2t91uHWNNYkn3sTD4oxPf5mObBXM3lAejuUJfVhIqYm9tXpfEFac2RnApLcH5QMyIjGVnkxZxyXTRNuDFk_saNvri1bp4WR43DY2REj3EkPd64pq5mg8lpph5Rx7iGB4JwWSFx2yE6-tsk5dNLLZJuCk3JMNOsRqxBByo0cV2HMrCy1x-G1kQPK9BzY0YWRg
+
+### Update status sudah_dibaca pada pesan tertentu (hanya penerima yang bisa)
+PATCH http://localhost:5000/pesan/6881f17bcf639592f646c712/sudah-dibaca
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODEyZWMxZGU1ZDAxM2I4NGNhYWY5YyIsIm5hbWUiOiJOYW5kYSBJa2h3YW51bCIsImVtYWlsIjoiaGFuczIxQGdtYWlsLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTMzNTY0NDMsImV4cCI6MTc1MzM1ODI0M30.zmZTpFjsYEtzxdg6SKsvqMXCsp9nJqGMEB29EOV1deP6qYF0hfOOOOWhDzZ3W2UnWiX8Bk3WqM4b2dgUViuFCMoD9VN9GPB6BYZpQW-cEFzZMQ4qINnbbiqSQAyBs2g1fHHRK3ZvbJ72yt7sACTT5Z2t91uHWNNYkn3sTD4oxPf5mObBXM3lAejuUJfVhIqYm9tXpfEFac2RnApLcH5QMyIjGVnkxZxyXTRNuDFk_saNvri1bp4WR43DY2REj3EkPd64pq5mg8lpph5Rx7iGB4JwWSFx2yE6-tsk5dNLLZJuCk3JMNOsRqxBByo0cV2HMrCy1x-G1kQPK9BzY0YWRg
+
+{
+  "sudah_dibaca": true
+}
+
+### Logout WhatsApp Bot
+POST http://localhost:5000/pesan/whatsapp-logout
+Content-Type: application/json
+
+{}
+
+### Mendapatkan QR code WhatsApp Web (untuk login bot WA)
+GET http://localhost:5000/pesan/whatsapp-qr
+
+### Inisialisasi WhatsApp Client dan Trigger QR Code
+POST http://localhost:5000/pesan/whatsapp-init
+Content-Type: application/json
+
+{}
+
+### Cek Status WhatsApp Client (Ready atau Tidak)
+GET http://localhost:5000/pesan/whatsapp-status
+
+
+
+
+
+
+

@@ -1,0 +1,51 @@
+### Login Alumni
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "email": "alumni.updated@example.com",
+    "password": "123456"
+}
+
+### Login Perusahaan
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "email": "hrd@majujayaupdate.com",
+    "password": "123456"
+}
+
+### Login Admin
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "email": "admin1@example.com",
+    "password": "123456"
+}
+
+### Login SuperAdmin
+POST http://localhost:5000/login
+Content-Type: application/json
+
+{
+    "email": "superadmin1@example.com",
+    "password": "supersecurepassword456"
+}
+
+
+### Get Alumni 
+GET http://localhost:5000/alumni/me
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ0MTU1MzksImV4cCI6MTc1NDQxNzMzOX0.mZP-Jx0CUG9UH0nBE4hgqIwNS_uYE69twqP98GiXeMqpcER6Ibm2DXQ3JO347S3FcF45-RK7sCWYc0STT1wm-19gdaWMP5UvV7vRmQnK-lcvepVYFN4AoAed1Mdggk3y2noowwW756Rek2Nm4a7bdtc2FQeDMYJCVU7KneBhXsLCbziMc__z5VaUKrt2sFHzkuVqXM6Hckk6nNZ7j9OaUf12AeUBa1ynwMITS2FVQ553zeNpUhzQQhSBwKP4wJ_BQXIQ1PlmDlUd1dBvRuLl2FzRalXdLg602xh6RTtYopL3niKd9uVI9aRRnG48SZQNYdD8YN7FrYA2T56cVa_3wA
+
+
+### Get Perusahaan
+GET http://localhost:5000/perusahaan/me
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODU2YWQzYzYyNDNhOGJhZTVkMzNmZCIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YXVwZGF0ZS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1Mzk3NzIwMCwiZXhwIjoxNzUzOTc5MDAwfQ.g0zWfWVxzm7aXAPtraoQkNYLoG-yv2E5Gse-lghh9OAovAVO03luF8ZIowJWEkO4WvHXcHMdPI7QB-7NFu7kC-wvQSfNP5GtCxJuinrxGqndad-qBF5Ht9ITJWVbgITcVJDZ60sEBJMIQ4cgRwpR6u86Q35s5esVD474636eaJrTANGDbGeTYS0aD_5kb1ZXHgFQJP6TWgR8n44KpUFFe_B7wXHB9AvIc7X8aeqZEz6jhN1NOnT2XpFtcltdMQusXysd13mAc1ROr1m6VHIE6H6OybZNQEp-gKTLE4jvNOehZvFxxRRzZ4cDzAn9WB1MpE6eV8HbZ4saNkV6YiRbtg
+
+### Get Admin
+GET http://localhost:5000/admin/me
+Authorization: Bearer <your_admin_jwt_token_here>
+
+
