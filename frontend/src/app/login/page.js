@@ -3,6 +3,18 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
+// Ambil token dari cookie (client-side)
+function getTokenFromCookie() {
+  if (typeof document === "undefined") return null;
+  const cookies = document.cookie.split(";").map((c) => c.trim());
+  for (const c of cookies) {
+    if (c.startsWith("token=")) {
+      return decodeURIComponent(c.substring("token=".length));
+    }
+  }
+  return null;
+}
+
 // Simpan info login ke localStorage
 function saveLoginInfo(email, password) {
   try {
@@ -35,8 +47,9 @@ export default function LoginPage() {
   // error: { email: string, password: string, general: string }
   const [error, setError] = useState({ email: "", password: "", general: "" });
   const [loading, setLoading] = useState(false);
-  const [checkingSession, setCheckingSession] = useState(true);
+  const [checkingToken, setCheckingToken] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
+  const [debug, setDebug] = useState(null);
   const router = useRouter();
 
   // Prefill email/password jika ada di localStorage
@@ -49,33 +62,28 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Cek status login ke backend sebelum render login
+  // Cek token di cookie sebelum render login
   useEffect(() => {
-    let cancelled = false;
-    async function checkSession() {
-      try {
-        // Ganti endpoint sesuai backend Anda, misal /me atau /profile
-        await axios.get(
-          "https://tugasakhir-production-6c6c.up.railway.app/me",
-          {
-            withCredentials: true,
-            headers: { "Content-Type": "application/json" },
-          }
-        );
-        if (!cancelled) {
-          router.replace("/dashboard");
-          return;
-        }
-      } catch (err) {
-        // Belum login, lanjutkan render login
-      }
-      if (!cancelled) setCheckingSession(false);
+    const token = getTokenFromCookie();
+    if (token) {
+      router.replace("/dashboard");
+      // Jangan render login page sama sekali, biar langsung redirect
+      return;
     }
-    checkSession();
-    return () => {
-      cancelled = true;
-    };
+    setCheckingToken(false);
   }, [router]);
+
+  // Debug helper: cek cookie token di browser
+  useEffect(() => {
+    if (typeof document !== "undefined") {
+      // Cek cookie token di browser
+      const cookies = document.cookie;
+      setDebug((prev) => ({
+        ...prev,
+        browserCookies: cookies,
+      }));
+    }
+  }, [loading, checkingToken]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -109,7 +117,14 @@ export default function LoginPage() {
         password,
       };
 
-      await axios.post(
+      // Debug: log sebelum request
+      setDebug((prev) => ({
+        ...prev,
+        beforeLoginCookies: typeof document !== "undefined" ? document.cookie : "",
+      }));
+
+      // Kirim request login
+      const response = await axios.post(
         "https://tugasakhir-production-6c6c.up.railway.app/login",
         payload,
         {
@@ -117,6 +132,14 @@ export default function LoginPage() {
           headers: { "Content-Type": "application/json" },
         }
       );
+
+      // Debug: cek response header Set-Cookie
+      setDebug((prev) => ({
+        ...prev,
+        loginResponseHeaders: response.headers,
+        afterLoginCookies: typeof document !== "undefined" ? document.cookie : "",
+      }));
+
       // Setelah login, token akan terset di cookie oleh backend (karena withCredentials)
       if (rememberMe) {
         saveLoginInfo(email, password);
@@ -144,6 +167,12 @@ export default function LoginPage() {
         } else {
           newError.general = msg;
         }
+        // Debug: log response headers jika error
+        setDebug((prev) => ({
+          ...prev,
+          loginErrorResponseHeaders: err.response.headers,
+          afterLoginCookies: typeof document !== "undefined" ? document.cookie : "",
+        }));
       } else {
         newError.general = "Terjadi kesalahan pada server. Silakan coba lagi.";
       }
@@ -153,11 +182,39 @@ export default function LoginPage() {
     }
   };
 
+  // Debug: cek apakah cookie token dikirim di request selanjutnya
+  const handleCheckTokenRequest = async () => {
+    setDebug((prev) => ({
+      ...prev,
+      checkTokenLoading: true,
+      checkTokenResult: null,
+      checkTokenError: null,
+    }));
+    try {
+      const res = await axios.get("http://localhost:5000/protected", {
+        withCredentials: true,
+      });
+      setDebug((prev) => ({
+        ...prev,
+        checkTokenResult: res.data,
+        checkTokenHeaders: res.headers,
+        checkTokenLoading: false,
+      }));
+    } catch (err) {
+      setDebug((prev) => ({
+        ...prev,
+        checkTokenError: err?.response?.data || err.message,
+        checkTokenHeaders: err?.response?.headers,
+        checkTokenLoading: false,
+      }));
+    }
+  };
+
   const handleGoToRegister = () => {
     router.push("/register");
   };
 
-  if (checkingSession) {
+  if (checkingToken) {
     // Bisa ganti dengan spinner atau null, biar ga render login page dulu
     return null;
   }
@@ -265,6 +322,73 @@ export default function LoginPage() {
               </button>
             </div>
           </form>
+
+          {/* Debug section */}
+          <div className="mt-8 p-4 bg-gray-100 rounded text-xs text-gray-700">
+            <div className="mb-2 font-semibold">Debug Cookie & Token</div>
+            <div>
+              <b>document.cookie:</b>{" "}
+              <span style={{ wordBreak: "break-all" }}>
+                {debug?.browserCookies || "(no cookies)"}
+              </span>
+            </div>
+            <div>
+              <b>Set-Cookie dari response login:</b>
+              <pre className="whitespace-pre-wrap break-all">
+                {debug?.loginResponseHeaders?.["set-cookie"]
+                  ? JSON.stringify(debug.loginResponseHeaders["set-cookie"], null, 2)
+                  : "(tidak ada / tidak bisa diakses dari JS)"}
+              </pre>
+            </div>
+            <div>
+              <b>Header response login (all):</b>
+              <pre className="whitespace-pre-wrap break-all">
+                {debug?.loginResponseHeaders
+                  ? JSON.stringify(debug.loginResponseHeaders, null, 2)
+                  : "(belum login / error)"}
+              </pre>
+            </div>
+            <div>
+              <b>Cookies setelah login:</b>{" "}
+              <span style={{ wordBreak: "break-all" }}>
+                {debug?.afterLoginCookies || "(no cookies)"}
+              </span>
+            </div>
+            <div className="mt-2">
+              <button
+                type="button"
+                className="px-2 py-1 bg-blue-200 rounded hover:bg-blue-300"
+                onClick={handleCheckTokenRequest}
+                disabled={debug?.checkTokenLoading}
+              >
+                Cek apakah cookie token dikirim ke backend (GET /protected)
+              </button>
+            </div>
+            {debug?.checkTokenResult && (
+              <div>
+                <b>Response /protected:</b>
+                <pre className="whitespace-pre-wrap break-all">
+                  {JSON.stringify(debug.checkTokenResult, null, 2)}
+                </pre>
+                <b>Header response /protected:</b>
+                <pre className="whitespace-pre-wrap break-all">
+                  {JSON.stringify(debug.checkTokenHeaders, null, 2)}
+                </pre>
+              </div>
+            )}
+            {debug?.checkTokenError && (
+              <div>
+                <b>Error /protected:</b>
+                <pre className="whitespace-pre-wrap break-all">
+                  {JSON.stringify(debug.checkTokenError, null, 2)}
+                </pre>
+                <b>Header response /protected:</b>
+                <pre className="whitespace-pre-wrap break-all">
+                  {JSON.stringify(debug.checkTokenHeaders, null, 2)}
+                </pre>
+              </div>
+            )}
+          </div>
         </div>
 
         <div className="w-1/2 flex items-center justify-center">
