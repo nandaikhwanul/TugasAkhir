@@ -3,18 +3,6 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-// Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
-
 // Simpan info login ke localStorage
 function saveLoginInfo(email, password) {
   try {
@@ -47,7 +35,7 @@ export default function LoginPage() {
   // error: { email: string, password: string, general: string }
   const [error, setError] = useState({ email: "", password: "", general: "" });
   const [loading, setLoading] = useState(false);
-  const [checkingToken, setCheckingToken] = useState(true);
+  const [checkingSession, setCheckingSession] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
@@ -61,32 +49,29 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Cek token di cookie lalu validasi ke backend sebelum render login
+  // Cek status login ke backend sebelum render login
   useEffect(() => {
     let cancelled = false;
-    async function checkTokenAndValidate() {
-      const token = getTokenFromCookie();
-      if (token) {
-        try {
-          // Ganti endpoint sesuai backend Anda, misal /me atau /profile
-          await axios.get(
-            "https://tugasakhir-production-6c6c.up.railway.app/me",
-            {
-              withCredentials: true,
-              headers: { "Content-Type": "application/json" },
-            }
-          );
-          if (!cancelled) {
-            router.replace("/dashboard");
-            return;
+    async function checkSession() {
+      try {
+        // Ganti endpoint sesuai backend Anda, misal /me atau /profile
+        await axios.get(
+          "https://tugasakhir-production-6c6c.up.railway.app/me",
+          {
+            withCredentials: true,
+            headers: { "Content-Type": "application/json" },
           }
-        } catch (err) {
-          // Token tidak valid, lanjutkan render login
+        );
+        if (!cancelled) {
+          router.replace("/dashboard");
+          return;
         }
+      } catch (err) {
+        // Belum login, lanjutkan render login
       }
-      if (!cancelled) setCheckingToken(false);
+      if (!cancelled) setCheckingSession(false);
     }
-    checkTokenAndValidate();
+    checkSession();
     return () => {
       cancelled = true;
     };
@@ -172,7 +157,7 @@ export default function LoginPage() {
     router.push("/register");
   };
 
-  if (checkingToken) {
+  if (checkingSession) {
     // Bisa ganti dengan spinner atau null, biar ga render login page dulu
     return null;
   }
