@@ -81,6 +81,9 @@ export const login = async (req, res) => {
             // Set token di cookie
             setTokenCookie(res, token);
 
+            // Set token di header
+            res.setHeader("Authorization", `Bearer ${token}`);
+
             responseData = {
                 msg: "Login berhasil sebagai alumni",
                 id: user._id,
@@ -89,7 +92,8 @@ export const login = async (req, res) => {
                     name: user.name,
                     email: user.email,
                     role: "alumni"
-                }
+                },
+                token: token // Kirim token di JSON response
             };
             return res.status(200).json(responseData);
         }
@@ -119,6 +123,9 @@ export const login = async (req, res) => {
             // Set token di cookie
             setTokenCookie(res, token);
 
+            // Set token di header
+            res.setHeader("Authorization", `Bearer ${token}`);
+
             responseData = {
                 msg: "Login berhasil sebagai perusahaan",
                 id: user._id,
@@ -127,7 +134,8 @@ export const login = async (req, res) => {
                     nama_perusahaan: user.nama_perusahaan,
                     email_perusahaan: user.email_perusahaan,
                     role: "perusahaan"
-                }
+                },
+                token: token // Kirim token di JSON response
             };
             return res.status(200).json(responseData);
         }
@@ -159,6 +167,9 @@ export const login = async (req, res) => {
             // Set token di cookie
             setTokenCookie(res, token);
 
+            // Set token di header
+            res.setHeader("Authorization", `Bearer ${token}`);
+
             responseData = {
                 msg: "Login berhasil sebagai admin",
                 id: user._id,
@@ -167,7 +178,8 @@ export const login = async (req, res) => {
                     username: user.username,
                     email: user.email,
                     role: "admin"
-                }
+                },
+                token: token // Kirim token di JSON response
             };
             return res.status(200).json(responseData);
         }
@@ -199,6 +211,9 @@ export const login = async (req, res) => {
             // Set token di cookie
             setTokenCookie(res, token);
 
+            // Set token di header
+            res.setHeader("Authorization", `Bearer ${token}`);
+
             responseData = {
                 msg: "Login berhasil sebagai superadmin",
                 id: user._id,
@@ -207,7 +222,8 @@ export const login = async (req, res) => {
                     username: user.username,
                     email: user.email,
                     role: "superadmin"
-                }
+                },
+                token: token // Kirim token di JSON response
             };
             return res.status(200).json(responseData);
         }

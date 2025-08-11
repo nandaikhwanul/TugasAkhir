@@ -4,11 +4,11 @@ import { useRouter } from "next/navigation";
 import AlumniDashboard from "./alumni";
 import PerusahaanDashboard from "./perusahaan";
 import AdminDashboard from "./admin";
-import SuperAdminDashboard from "./superAdmin"; // import superadmin dashboard
+import SuperAdminDashboard from "./superAdmin";
 import Loader from "../loading/loadingDesign";
 
-import AdminNavbar from "../navbar/adminNavbar/page"; // importkan admin navbar
-import Navbar from "../navbar/page"; // importkan navbar/page
+import AdminNavbar from "../navbar/adminNavbar/page";
+import Navbar from "../navbar/page";
 
 // Helper: Ambil token dari cookie (client-side)
 function getTokenFromCookie() {
@@ -28,9 +28,25 @@ function getTokenFromCookie() {
   return null;
 }
 
+// Helper: Ambil token dari header Set-Cookie (jika ada)
+function getTokenFromSetCookieHeader(setCookieHeader) {
+  if (!setCookieHeader) return null;
+  // setCookieHeader bisa string atau array
+  const cookiesArr = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+  for (const cookieStr of cookiesArr) {
+    // cari token=...;
+    const match = cookieStr.match(/token=([^;]+)/);
+    if (match) {
+      return decodeURIComponent(match[1]);
+    }
+  }
+  return null;
+}
+
 export default function DashboardPage() {
   const [role, setRole] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [headerToken, setHeaderToken] = useState(null); // token dari header setelah login
   const router = useRouter();
   const roleFetched = useRef(false);
 
@@ -38,8 +54,22 @@ export default function DashboardPage() {
     let didCancel = false;
     async function fetchRole() {
       try {
-        const token = getTokenFromCookie();
-        console.log("[DEBUG] Token to be used in fetch:", token);
+        // Ambil token dari cookie
+        let token = getTokenFromCookie();
+        console.log("[DEBUG] Token to be used in fetch:", document.cookie);
+        // Jika tidak ada token di cookie, coba ambil dari response header (misal setelah login)
+        if (!token && typeof window !== "undefined") {
+          // Coba ambil dari sessionStorage/localStorage jika pernah disimpan
+          const tokenFromHeader = window.sessionStorage?.getItem("tokenFromHeader") || window.localStorage?.getItem("tokenFromHeader");
+          if (tokenFromHeader) {
+            token = tokenFromHeader;
+            setHeaderToken(tokenFromHeader);
+            console.log("[DEBUG] Using token from header/sessionStorage/localStorage:", tokenFromHeader);
+          }
+        }
+
+        // Jika masih tidak ada token, coba fetch ke /login/last-token (opsional, jika backend support)
+        // (skip, karena instruksi hanya ambil dari header setelah login)
 
         if (!token) {
           console.warn("[DEBUG] No token found, redirecting to /login");
@@ -56,12 +86,30 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+
+        // Cek jika response header mengandung Set-Cookie: token=...
+        const setCookieHeader = res.headers.get("set-cookie");
+        if (setCookieHeader) {
+          const tokenFromHeader = getTokenFromSetCookieHeader(setCookieHeader);
+          if (tokenFromHeader) {
+            setHeaderToken(tokenFromHeader);
+            // Simpan ke sessionStorage/localStorage agar bisa diakses di client
+            if (typeof window !== "undefined") {
+              try {
+                window.sessionStorage.setItem("tokenFromHeader", tokenFromHeader);
+                window.localStorage.setItem("tokenFromHeader", tokenFromHeader);
+              } catch (e) {}
+            }
+            token = tokenFromHeader;
+          }
+        }
+
         console.log("[DEBUG] superadmin/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("superadmin");
             roleFetched.current = true;
-            setLoading(false); // langsung matikan loading
+            setLoading(false);
           }
           return;
         }
@@ -72,12 +120,27 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+        // Cek Set-Cookie di response alumni
+        const setCookieHeaderAlumni = res.headers.get("set-cookie");
+        if (setCookieHeaderAlumni) {
+          const tokenFromHeader = getTokenFromSetCookieHeader(setCookieHeaderAlumni);
+          if (tokenFromHeader) {
+            setHeaderToken(tokenFromHeader);
+            if (typeof window !== "undefined") {
+              try {
+                window.sessionStorage.setItem("tokenFromHeader", tokenFromHeader);
+                window.localStorage.setItem("tokenFromHeader", tokenFromHeader);
+              } catch (e) {}
+            }
+            token = tokenFromHeader;
+          }
+        }
         console.log("[DEBUG] alumni/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("alumni");
             roleFetched.current = true;
-            setLoading(false); // langsung matikan loading
+            setLoading(false);
           }
           return;
         }
@@ -88,12 +151,27 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+        // Cek Set-Cookie di response perusahaan
+        const setCookieHeaderPerusahaan = res.headers.get("set-cookie");
+        if (setCookieHeaderPerusahaan) {
+          const tokenFromHeader = getTokenFromSetCookieHeader(setCookieHeaderPerusahaan);
+          if (tokenFromHeader) {
+            setHeaderToken(tokenFromHeader);
+            if (typeof window !== "undefined") {
+              try {
+                window.sessionStorage.setItem("tokenFromHeader", tokenFromHeader);
+                window.localStorage.setItem("tokenFromHeader", tokenFromHeader);
+              } catch (e) {}
+            }
+            token = tokenFromHeader;
+          }
+        }
         console.log("[DEBUG] perusahaan/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("perusahaan");
             roleFetched.current = true;
-            setLoading(false); // langsung matikan loading
+            setLoading(false);
           }
           return;
         }
@@ -104,12 +182,27 @@ export default function DashboardPage() {
           },
           credentials: "include",
         });
+        // Cek Set-Cookie di response admin
+        const setCookieHeaderAdmin = res.headers.get("set-cookie");
+        if (setCookieHeaderAdmin) {
+          const tokenFromHeader = getTokenFromSetCookieHeader(setCookieHeaderAdmin);
+          if (tokenFromHeader) {
+            setHeaderToken(tokenFromHeader);
+            if (typeof window !== "undefined") {
+              try {
+                window.sessionStorage.setItem("tokenFromHeader", tokenFromHeader);
+                window.localStorage.setItem("tokenFromHeader", tokenFromHeader);
+              } catch (e) {}
+            }
+            token = tokenFromHeader;
+          }
+        }
         console.log("[DEBUG] admin/me status:", res.status);
         if (res.ok) {
           if (!didCancel) {
             setRole("admin");
             roleFetched.current = true;
-            setLoading(false); // langsung matikan loading
+            setLoading(false);
           }
           return;
         }
@@ -129,15 +222,12 @@ export default function DashboardPage() {
     };
   }, [router]);
 
-  // Handler untuk Loader selesai (2 detik)
-  // (Tidak dipakai lagi, loading dimatikan langsung setelah role didapat)
   const handleLoaderFinish = () => {
     if (role || roleFetched.current) {
       setLoading(false);
     }
   };
 
-  // Loader as modal: overlay, blur, semi-transparent, dashboard tetap kelihatan di belakang
   return (
     <div className="relative">
       {/* Navbar always rendered */}
@@ -181,7 +271,6 @@ export default function DashboardPage() {
             minWidth: "100vw",
           }}
         >
-          {/* Loader tetap dipanggil, tapi onFinish tidak wajib untuk matikan loading */}
           <Loader onFinish={handleLoaderFinish} />
         </div>
       )}

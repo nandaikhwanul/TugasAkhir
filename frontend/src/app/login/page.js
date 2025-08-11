@@ -15,6 +15,21 @@ function getTokenFromCookie() {
   return null;
 }
 
+// Ambil token dari header Set-Cookie (jika ada)
+function getTokenFromSetCookieHeader(setCookieHeader) {
+  if (!setCookieHeader) return null;
+  // setCookieHeader bisa string atau array
+  const cookiesArr = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
+  for (const cookieStr of cookiesArr) {
+    // cari token=...;
+    const match = cookieStr.match(/token=([^;]+)/);
+    if (match) {
+      return decodeURIComponent(match[1]);
+    }
+  }
+  return null;
+}
+
 // Simpan info login ke localStorage
 function saveLoginInfo(email, password) {
   try {
@@ -50,6 +65,8 @@ export default function LoginPage() {
   const [checkingToken, setCheckingToken] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
   const [debug, setDebug] = useState(null);
+  const [headerToken, setHeaderToken] = useState(null); // token dari header
+  const [allCookies, setAllCookies] = useState(null); // semua cookie dari header
   const router = useRouter();
 
   // Prefill email/password jika ada di localStorage
@@ -133,11 +150,27 @@ export default function LoginPage() {
         }
       );
 
+      // Ambil semua Set-Cookie dari header
+      const setCookieHeader = response.headers?.["set-cookie"];
+      setAllCookies(setCookieHeader);
+
+      // Ambil token dari header Set-Cookie jika ada
+      const tokenFromHeader = getTokenFromSetCookieHeader(setCookieHeader);
+      if (tokenFromHeader) {
+        setHeaderToken(tokenFromHeader);
+        // Optionally, simpan ke localStorage/sessionStorage jika ingin akses di client
+        // localStorage.setItem("tokenFromHeader", tokenFromHeader);
+      } else {
+        setHeaderToken(null);
+      }
+
       // Debug: cek response header Set-Cookie
       setDebug((prev) => ({
         ...prev,
         loginResponseHeaders: response.headers,
         afterLoginCookies: typeof document !== "undefined" ? document.cookie : "",
+        tokenFromHeader: tokenFromHeader || null,
+        allSetCookie: setCookieHeader || null,
       }));
 
       // Setelah login, token akan terset di cookie oleh backend (karena withCredentials)
@@ -326,7 +359,25 @@ export default function LoginPage() {
                 {debug?.afterLoginCookies || "(no cookies)"}
               </span>
             </div>
+            <div>
+              <b>Token dari header Set-Cookie:</b>{" "}
+              <span style={{ wordBreak: "break-all" }}>
+                {debug?.tokenFromHeader || headerToken || "(tidak ada di header)"}
+              </span>
+            </div>
+            <div>
+              <b>Semua Set-Cookie dari header:</b>
+              <pre className="whitespace-pre-wrap break-all">
+                {allCookies
+                  ? JSON.stringify(allCookies, null, 2)
+                  : "(tidak ada Set-Cookie di header)"}
+              </pre>
+            </div>
             {/* Bagian debug cek token dihapus */}
+          </div>
+          <div className="mt-4 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
+            <b>Catatan:</b> Jika token yang muncul hanya <code>__next_hmr_refresh_hash__</code> atau bukan <code>token=...</code>, berarti backend tidak mengirimkan cookie <code>token</code> di header <code>Set-Cookie</code> pada response login.<br />
+            Silakan cek backend Anda agar mengirimkan cookie <code>token</code> pada login.
           </div>
         </div>
 
