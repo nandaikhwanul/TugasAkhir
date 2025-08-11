@@ -5,7 +5,7 @@ Content-Type: application/json
 {
     "name": "Siti Aminah",
     "email": "siti.aminah@example.com",
-    "nim": "98765432100",
+    "nim": "3202216125",
     "password": "abcdef",
     "confPassword": "abcdef"
 }
