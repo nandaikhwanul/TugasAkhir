@@ -191,7 +191,7 @@ export default function LoginPage() {
       checkTokenError: null,
     }));
     try {
-      const res = await axios.get("http://localhost:5000/protected", {
+      const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/protected", {
         withCredentials: true,
       });
       setDebug((prev) => ({
