@@ -11,22 +11,22 @@ import { validationResult, check } from "express-validator";
 // Load private key untuk signing JWT (RS256)
 let PRIVATE_KEY;
 try {
-    // Pastikan path sesuai dengan lokasi file private.key Anda
     PRIVATE_KEY = fs.readFileSync(path.resolve("private.key"), "utf8");
 } catch (err) {
     console.error("Gagal membaca private.key:", err.message);
     PRIVATE_KEY = null;
 }
 
-// Helper untuk set cookie JWT yang kompatibel dengan frontend Next.js (deploy/production)
+// Helper untuk set cookie JWT (hanya lewat Set-Cookie, tidak perlu set header Authorization)
 function setTokenCookie(res, token) {
+    // 30 menit
+    const maxAge = 30 * 60 * 1000;
     res.cookie("token", token, {
-        httpOnly: false, // harus false agar bisa diakses client-side (Next.js sessionStorage/cookie)
+        httpOnly: false, // agar bisa diakses client-side jika perlu
         secure: false, // true di production (https)
-        sameSite: "none", // agar bisa cross-site (misal frontend dan backend beda domain)
-        maxAge: 30 * 60 * 1000, // 30 menit
-        path: "/", // pastikan cookie tersedia di seluruh path
-        // domain: ".yourdomain.com" // opsional, set jika frontend/backend beda subdomain
+        sameSite: "none",
+        maxAge: maxAge,
+        path: "/"
     });
 }
 
@@ -41,7 +41,6 @@ export const loginValidation = [
 
 // Login hanya menggunakan email (untuk Alumni, Perusahaan, Admin, dan SuperAdmin)
 export const login = async (req, res) => {
-    // Validasi input menggunakan express-validator
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
         const errorObj = errors.array().reduce((acc, curr) => {
@@ -59,16 +58,14 @@ export const login = async (req, res) => {
 
     try {
         let user = null;
-        let role = "";
         let responseData = {};
 
-        // Coba login sebagai Alumni (email field: email)
+        // Coba login sebagai Alumni
         user = await Alumni.findOne({ email: email });
         if (user) {
             const match = await argon2.verify(user.password, password);
             if (!match) return res.status(400).json({ msg: "Password salah" });
 
-            role = "alumni";
             const token = jwt.sign(
                 {
                     id: user._id,
@@ -80,15 +77,10 @@ export const login = async (req, res) => {
                 { expiresIn: "30m", algorithm: "RS256" }
             );
 
-            // Simpan token ke database
             user.token = token;
             await user.save();
 
-            // Set token di cookie
             setTokenCookie(res, token);
-
-            // Set token di header
-            res.setHeader("Authorization", `Bearer ${token}`);
 
             responseData = {
                 msg: "Login berhasil sebagai alumni",
@@ -99,18 +91,17 @@ export const login = async (req, res) => {
                     email: user.email,
                     role: "alumni"
                 },
-                token: token // Kirim token di JSON response
+                token: token
             };
             return res.status(200).json(responseData);
         }
 
-        // Coba login sebagai Perusahaan (email field: email_perusahaan)
+        // Coba login sebagai Perusahaan
         user = await Perusahaan.findOne({ email_perusahaan: email });
         if (user) {
             const match = await argon2.verify(user.password, password);
             if (!match) return res.status(400).json({ msg: "Password salah" });
 
-            role = "perusahaan";
             const token = jwt.sign(
                 {
                     id: user._id,
@@ -122,15 +113,10 @@ export const login = async (req, res) => {
                 { expiresIn: "30m", algorithm: "RS256" }
             );
 
-            // Simpan token ke database
             user.token = token;
             await user.save();
 
-            // Set token di cookie
             setTokenCookie(res, token);
-
-            // Set token di header
-            res.setHeader("Authorization", `Bearer ${token}`);
 
             responseData = {
                 msg: "Login berhasil sebagai perusahaan",
@@ -141,18 +127,17 @@ export const login = async (req, res) => {
                     email_perusahaan: user.email_perusahaan,
                     role: "perusahaan"
                 },
-                token: token // Kirim token di JSON response
+                token: token
             };
             return res.status(200).json(responseData);
         }
 
-        // Coba login sebagai Admin (email field: email)
+        // Coba login sebagai Admin
         user = await Admin.findOne({ email: email });
         if (user) {
             const match = await argon2.verify(user.password, password);
             if (!match) return res.status(400).json({ msg: "Password salah" });
 
-            role = "admin";
             const token = jwt.sign(
                 {
                     id: user._id,
@@ -164,17 +149,12 @@ export const login = async (req, res) => {
                 { expiresIn: "30m", algorithm: "RS256" }
             );
 
-            // Simpan token ke database jika field token ada di model Admin
             if ('token' in user) {
                 user.token = token;
                 await user.save();
             }
 
-            // Set token di cookie
             setTokenCookie(res, token);
-
-            // Set token di header
-            res.setHeader("Authorization", `Bearer ${token}`);
 
             responseData = {
                 msg: "Login berhasil sebagai admin",
@@ -185,18 +165,17 @@ export const login = async (req, res) => {
                     email: user.email,
                     role: "admin"
                 },
-                token: token // Kirim token di JSON response
+                token: token
             };
             return res.status(200).json(responseData);
         }
 
-        // Coba login sebagai SuperAdmin (email field: email)
+        // Coba login sebagai SuperAdmin
         user = await SuperAdmin.findOne({ email: email });
         if (user) {
             const match = await argon2.verify(user.password, password);
             if (!match) return res.status(400).json({ msg: "Password salah" });
 
-            role = "superadmin";
             const token = jwt.sign(
                 {
                     id: user._id,
@@ -208,17 +187,12 @@ export const login = async (req, res) => {
                 { expiresIn: "30m", algorithm: "RS256" }
             );
 
-            // Simpan token ke database jika field token ada di model SuperAdmin
             if ('token' in user) {
                 user.token = token;
                 await user.save();
             }
 
-            // Set token di cookie
             setTokenCookie(res, token);
-
-            // Set token di header
-            res.setHeader("Authorization", `Bearer ${token}`);
 
             responseData = {
                 msg: "Login berhasil sebagai superadmin",
@@ -229,29 +203,23 @@ export const login = async (req, res) => {
                     email: user.email,
                     role: "superadmin"
                 },
-                token: token // Kirim token di JSON response
+                token: token
             };
             return res.status(200).json(responseData);
         }
 
-        // Jika tidak ditemukan user
         return res.status(404).json({ msg: "User tidak ditemukan" });
     } catch (error) {
         return res.status(500).json({ msg: error.message });
     }
 };
 
-
-// Generalized logout controller for all user types (alumni, perusahaan, admin, superadmin)
 export const logoutUser = async (req, res) => {
     try {
-        // Determine user type and model
         let userId = null;
         let userType = null;
         let UserModel = null;
 
-        // You may set user type in req.role or req.userType from your auth middleware
-        // Here, we try to infer from req.role or req.userType, fallback to session or body
         if (req.role) {
             userType = req.role;
         } else if (req.userType) {
@@ -262,7 +230,6 @@ export const logoutUser = async (req, res) => {
             userType = req.body.role;
         }
 
-        // Get userId
         if (req.userId) {
             userId = req.userId;
         } else if (req.session && req.session.userId) {
@@ -273,7 +240,6 @@ export const logoutUser = async (req, res) => {
             userId = req.params.id;
         }
 
-        // Set UserModel based on userType
         if (userType === "alumni") {
             UserModel = (await import("../models/Alumni.js")).default;
         } else if (userType === "perusahaan") {
@@ -284,12 +250,18 @@ export const logoutUser = async (req, res) => {
             UserModel = (await import("../models/SuperAdmin.js")).default;
         }
 
-        // Remove token from user document if possible
         if (UserModel && userId) {
             await UserModel.updateOne({ _id: userId }, { $set: { token: null } });
         }
 
-        // Destroy session
+        // Hapus cookie token
+        res.clearCookie("token", {
+            httpOnly: false,
+            secure: false,
+            sameSite: "none",
+            path: "/"
+        });
+
         req.session.destroy((err) => {
             if (err) return res.status(400).json({ msg: "Tidak dapat logout" });
             res.status(200).json({ msg: "Anda telah logout" });
