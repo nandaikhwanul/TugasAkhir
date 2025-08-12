@@ -1,17 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { IoMailOutline } from "react-icons/io5"; // Ionicons mail-outline
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 export default function PesanAlumniModal({ open, onClose }) {
   const [pesanList, setPesanList] = useState([]);
@@ -36,7 +25,7 @@ export default function PesanAlumniModal({ open, onClose }) {
       setLoading(true);
       setError("");
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setError("Token tidak ditemukan. Silakan login ulang.");
           setLoading(false);

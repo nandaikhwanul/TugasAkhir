@@ -6,6 +6,7 @@ import axios from "axios";
 import Link from "next/link";
 import PesanPerusahaanModal from "../../pesan/page";
 import { useRouter } from "next/navigation";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper untuk resolve URL foto_profil alumni ke localhost:5000/uploads/alumni jika perlu
 function getProfileImageUrl(foto_profil) {
@@ -41,28 +42,17 @@ export default function AlumniNavbar() {
 
   const router = useRouter();
 
-  // Ambil token dari cookie (client-side)
-  function getTokenFromCookie() {
-    if (typeof document === "undefined") return null;
-    const cookies = document.cookie.split(";").map((c) => c.trim());
-    for (const c of cookies) {
-      if (c.startsWith("token=")) {
-        return decodeURIComponent(c.substring("token=".length));
-      }
-    }
-    return null;
-  }
-
-  // Fungsi untuk menghapus cookie token
-  function removeTokenCookie() {
-    if (typeof document === "undefined") return;
-    document.cookie =
-      "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
+  // Fungsi untuk menghapus token dari sessionStorage
+  function removeTokenSession() {
+    if (typeof window === "undefined") return;
+    try {
+      window.sessionStorage.removeItem("token");
+    } catch (e) {}
   }
 
   // Ambil data alumni (foto profil & nama)
   useEffect(() => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setProfileImage("");
       setProfileName("");
@@ -130,7 +120,7 @@ export default function AlumniNavbar() {
   }, []);
 
   const handleLogout = () => {
-    removeTokenCookie();
+    removeTokenSession();
     window.location.reload();
   };
 

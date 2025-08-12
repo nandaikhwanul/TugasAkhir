@@ -2,13 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import LihatPesan from "./lihatPesan/page";
 import KirimPesan from "./kirimPesan/page";
-
-// Helper: ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 export default function SidebarPesan() {
   const [activeSidebar, setActiveSidebar] = useState("inbox");
@@ -19,7 +13,7 @@ export default function SidebarPesan() {
   useEffect(() => {
     let stopped = false;
     async function fetchUnreadCount() {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setUnreadCount(null);
         return;

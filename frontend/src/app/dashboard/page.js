@@ -10,21 +10,32 @@ import Loader from "../loading/loadingDesign";
 import AdminNavbar from "../navbar/adminNavbar/page";
 import Navbar from "../navbar/page";
 
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") {
-    console.log("[DEBUG] document is undefined (not in browser)");
+// Helper: Ambil token dari sessionStorage/localStorage (seperti di login)
+function getTokenFromStorage() {
+  if (typeof window === "undefined") {
+    console.log("[DEBUG] window is undefined (not in browser)");
     return null;
   }
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      const token = decodeURIComponent(c.substring("token=".length));
-      console.log("[DEBUG] Found token in cookie:", token);
-      return token;
-    }
+  // Cek sessionStorage dulu, lalu localStorage
+  const token =
+    window.sessionStorage.getItem("token") ||
+    window.localStorage.getItem("tokenFromHeader");
+  if (token) {
+    console.log("[DEBUG] Found token in sessionStorage/localStorage:", token);
+    return token;
   }
-  console.log("[DEBUG] Token not found in cookie. document.cookie:", document.cookie);
+  // Fallback: cek cookie (untuk backward compatibility)
+  if (typeof document !== "undefined") {
+    const cookies = document.cookie.split(";").map((c) => c.trim());
+    for (const c of cookies) {
+      if (c.startsWith("token=")) {
+        const tokenFromCookie = decodeURIComponent(c.substring("token=".length));
+        console.log("[DEBUG] Found token in cookie:", tokenFromCookie);
+        return tokenFromCookie;
+      }
+    }
+    console.log("[DEBUG] Token not found in cookie. document.cookie:", document.cookie);
+  }
   return null;
 }
 
@@ -54,22 +65,9 @@ export default function DashboardPage() {
     let didCancel = false;
     async function fetchRole() {
       try {
-        // Ambil token dari cookie
-        let token = getTokenFromCookie();
-        console.log("[DEBUG] Token to be used in fetch:", document.cookie);
-        // Jika tidak ada token di cookie, coba ambil dari response header (misal setelah login)
-        if (!token && typeof window !== "undefined") {
-          // Coba ambil dari sessionStorage/localStorage jika pernah disimpan
-          const tokenFromHeader = window.sessionStorage?.getItem("tokenFromHeader") || window.localStorage?.getItem("tokenFromHeader");
-          if (tokenFromHeader) {
-            token = tokenFromHeader;
-            setHeaderToken(tokenFromHeader);
-            console.log("[DEBUG] Using token from header/sessionStorage/localStorage:", tokenFromHeader);
-          }
-        }
-
-        // Jika masih tidak ada token, coba fetch ke /login/last-token (opsional, jika backend support)
-        // (skip, karena instruksi hanya ambil dari header setelah login)
+        // Ambil token dari sessionStorage/localStorage (seperti login)
+        let token = getTokenFromStorage();
+        console.log("[DEBUG] Token to be used in fetch:", token);
 
         if (!token) {
           console.warn("[DEBUG] No token found, redirecting to /login");

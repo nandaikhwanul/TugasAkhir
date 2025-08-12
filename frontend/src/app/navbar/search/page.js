@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import axios from "axios";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 export default function SearchAlumniPage() {
   const [query, setQuery] = useState("");
@@ -8,31 +9,19 @@ export default function SearchAlumniPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  // Ambil token dari cookie (client-side)
-  function getTokenFromCookie() {
-    if (typeof document === "undefined") return null;
-    const cookies = document.cookie.split(";").map((c) => c.trim());
-    for (const c of cookies) {
-      if (c.startsWith("token=")) {
-        return decodeURIComponent(c.substring("token=".length));
-      }
-    }
-    return null;
-  }
-
   const handleSearch = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError("");
     setResults([]);
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Token tidak ditemukan. Silakan login ulang.");
       setLoading(false);
       return;
     }
     try {
-      // Gunakan endpoint yang diberikan dan token dari cookie
+      // Gunakan endpoint yang diberikan dan token dari session storage
       const res = await axios.get(
         `https://tugasakhir-production-6c6c.up.railway.app/perusahaan/alumni?q=${encodeURIComponent(query)}`,
         {

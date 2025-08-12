@@ -1,8 +1,7 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-
-// Sidebar khusus untuk role admin, check role dari cookie
+import { getTokenFromSessionStorage } from "../../sessiontoken"; // pakai sessiontoken.js
 
 const adminSidebarItems = [
   { name: "Dashboard", link: "/dashboard", icon: "🏠" },
@@ -19,23 +18,10 @@ const adminSidebarItems = [
 const ADMIN_PROFILE_PHOTO =
   "https://ui-avatars.com/api/?name=Admin&background=0D8ABC&color=fff&size=128";
 
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
-
-// Fungsi untuk menghapus cookie token (logout)
-function removeTokenCookie() {
-  if (typeof document !== "undefined") {
-    document.cookie =
-      "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax;";
+// Fungsi untuk menghapus token dari sessionStorage (logout)
+function removeTokenSession() {
+  if (typeof window !== "undefined") {
+    window.sessionStorage.removeItem("token");
   }
 }
 
@@ -46,9 +32,9 @@ export default function AdminSidebar() {
   const [adminUsername, setAdminUsername] = useState(""); // username admin
 
   useEffect(() => {
-    // Cek role admin dari cookie dan endpoint, ambil username admin
+    // Cek role admin dari token sessionStorage dan endpoint, ambil username admin
     async function checkAdminRole() {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setIsAdmin(false);
         router.replace("/login");
@@ -94,7 +80,7 @@ export default function AdminSidebar() {
   const handleLogout = async () => {
     // Jika ada endpoint logout di backend, bisa dipanggil di sini
     // await fetch("https://tugasakhir-production-6c6c.up.railway.app/logout", { method: "POST", credentials: "include" });
-    removeTokenCookie();
+    removeTokenSession();
     setIsAdmin(false);
     setAdminUsername("");
     router.replace("/login");

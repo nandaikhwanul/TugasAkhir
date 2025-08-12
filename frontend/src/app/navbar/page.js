@@ -4,17 +4,10 @@ import AlumniNavbar from "./alumniNavbar/page";
 import PerusahaanNavbar from "./perusahaanNavbar/page";
 import AdminNavbar from "./adminNavbar/page";
 import SuperAdminSidebar from "./superAdminSidebar.js/page";
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 function getRoleFromToken() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  let token = null;
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      token = decodeURIComponent(c.substring("token=".length));
-      break;
-    }
-  }
+  const token = getTokenFromSessionStorage();
   if (!token) return null;
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));

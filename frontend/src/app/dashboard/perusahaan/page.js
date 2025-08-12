@@ -14,6 +14,7 @@ import {
   Title,
   Filler,
 } from "chart.js";
+import { getTokenFromSessionStorage } from "../../sessiontoken"; // pakai sessiontoken.js, bukan tokenkadaluarsa
 
 ChartJS.register(
   ArcElement,
@@ -51,13 +52,6 @@ function FadeIn({ children, duration = 900, delay = 0, className = "" }) {
       {children}
     </div>
   );
-}
-
-// Helper untuk ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
 }
 
 // Komponen Dashboard Perusahaan
@@ -139,7 +133,7 @@ export default function PerusahaanDashboardPage() {
     async function fetchJumlahPelamar() {
       setJumlahPelamar((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/pelamar/count", {
           headers: {
@@ -177,7 +171,7 @@ export default function PerusahaanDashboardPage() {
     async function fetchTrafficLowongan() {
       setTrafficLowongan((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         // Ganti ID lowongan sesuai kebutuhan, di sini hardcode sesuai instruksi
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/6887ae184587ec05bb5fac4a/traffic", {
@@ -220,7 +214,7 @@ export default function PerusahaanDashboardPage() {
     async function fetchLowonganAktif() {
       setLowonganAktif((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/active", {
           headers: {
@@ -258,7 +252,7 @@ export default function PerusahaanDashboardPage() {
     async function fetchLowonganPending() {
       setLowonganPending((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/pending", {
           headers: {
@@ -344,7 +338,7 @@ export default function PerusahaanDashboardPage() {
     async function fetchApplicantRatio() {
       setApplicantRatio((prev) => ({ ...prev, loading: true, error: null }));
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar/count/diterima-ditolak", {
           headers: {
@@ -382,7 +376,7 @@ export default function PerusahaanDashboardPage() {
     async function fetchGrafikPelamar() {
       setGrafikPelamar({ data: [], loading: true, error: null });
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar/grafik/per-bulan-tahun", {
           headers: {

@@ -5,6 +5,7 @@ import { IoMailOutline, IoSearchOutline } from "react-icons/io5";
 import axios from "axios";
 import Link from "next/link";
 import PesanPerusahaanModal from "../../pesan/page";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper untuk resolve URL foto_profil perusahaan ke localhost:5000/uploads jika perlu
 function getProfileImageUrl(logo_perusahaan) {
@@ -59,18 +60,6 @@ export default function PerusahaanNavbar() {
   // State untuk modal pesan perusahaan
   const [showPesanModal, setShowPesanModal] = useState(false);
 
-  // Ambil token dari cookie (client-side)
-  function getTokenFromCookie() {
-    if (typeof document === "undefined") return null;
-    const cookies = document.cookie.split(";").map((c) => c.trim());
-    for (const c of cookies) {
-      if (c.startsWith("token=")) {
-        return decodeURIComponent(c.substring("token=".length));
-      }
-    }
-    return null;
-  }
-
   // Fungsi untuk menghapus cookie token
   function removeTokenCookie() {
     if (typeof document === "undefined") return;
@@ -80,7 +69,7 @@ export default function PerusahaanNavbar() {
 
   // Ambil data perusahaan (foto profil & nama)
   useEffect(() => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setProfileImage("");
       setProfileName("");
@@ -216,7 +205,7 @@ export default function PerusahaanNavbar() {
       setSearchLoading(true);
       setSearchError("");
       setShowSearchDropdown(true);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setSearchError("Token tidak ditemukan. Silakan login ulang.");
         setSearchLoading(false);

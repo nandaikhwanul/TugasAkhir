@@ -2,13 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Helper: ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Format waktu relatif sederhana
 function timeAgo(dateString) {
@@ -43,7 +37,7 @@ export default function LihatPesan() {
       setSelectedPesan(pesan);
       return;
     }
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setFetchError("Token tidak ditemukan. Silakan login ulang.");
       return;
@@ -98,7 +92,7 @@ export default function LihatPesan() {
                 toast.dismiss();
                 setDeleting(true);
                 setFetchError(null);
-                const token = getTokenFromCookie();
+                const token = getTokenFromSessionStorage();
                 if (!token) {
                   setFetchError("Token tidak ditemukan. Silakan login ulang.");
                   setDeleting(false);
@@ -156,7 +150,7 @@ export default function LihatPesan() {
       setLoading(true);
       setFetchError(null);
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setFetchError("Token tidak ditemukan. Silakan login ulang.");
           setLoading(false);

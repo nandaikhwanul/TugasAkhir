@@ -3,31 +3,24 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
 
-// Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
+// Ambil token dari sessionStorage (client-side)
+function getTokenFromSessionStorage() {
+  if (typeof window === "undefined") return null;
+  return sessionStorage.getItem("token") || null;
 }
 
-// Ambil token dari header Set-Cookie (jika ada)
-function getTokenFromSetCookieHeader(setCookieHeader) {
-  if (!setCookieHeader) return null;
-  // setCookieHeader bisa string atau array
-  const cookiesArr = Array.isArray(setCookieHeader) ? setCookieHeader : [setCookieHeader];
-  for (const cookieStr of cookiesArr) {
-    // cari token=...;
-    const match = cookieStr.match(/token=([^;]+)/);
-    if (match) {
-      return decodeURIComponent(match[1]);
-    }
-  }
-  return null;
+// Simpan token ke sessionStorage
+function saveTokenToSessionStorage(token) {
+  try {
+    sessionStorage.setItem("token", token);
+  } catch (e) {}
+}
+
+// Hapus token dari sessionStorage
+function clearTokenFromSessionStorage() {
+  try {
+    sessionStorage.removeItem("token");
+  } catch (e) {}
 }
 
 // Simpan info login ke localStorage
@@ -67,6 +60,7 @@ export default function LoginPage() {
   const [debug, setDebug] = useState(null);
   const [headerToken, setHeaderToken] = useState(null); // token dari header
   const [allCookies, setAllCookies] = useState(null); // semua cookie dari header
+  const [token, setToken] = useState(null); // token yang akan dipakai di fetch berikutnya
   const router = useRouter();
 
   // Prefill email/password jika ada di localStorage
@@ -79,9 +73,9 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Cek token di cookie sebelum render login
+  // Cek token di sessionStorage sebelum render login
   useEffect(() => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (token) {
       router.replace("/dashboard");
       // Jangan render login page sama sekali, biar langsung redirect
@@ -101,6 +95,12 @@ export default function LoginPage() {
       }));
     }
   }, [loading, checkingToken]);
+
+  // Debug: log token yang akan dipakai di fetch berikutnya
+  useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("[DEBUG] Token to be used in fetch:", token);
+  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -150,30 +150,31 @@ export default function LoginPage() {
         }
       );
 
-      // Ambil semua Set-Cookie dari header
-      const setCookieHeader = response.headers?.["set-cookie"];
-      setAllCookies(setCookieHeader);
-
-      // Ambil token dari header Set-Cookie jika ada
-      const tokenFromHeader = getTokenFromSetCookieHeader(setCookieHeader);
-      if (tokenFromHeader) {
-        setHeaderToken(tokenFromHeader);
-        // Optionally, simpan ke localStorage/sessionStorage jika ingin akses di client
-        // localStorage.setItem("tokenFromHeader", tokenFromHeader);
+      // --- Ambil token dari response.data.token dan simpan ke state & sessionStorage ---
+      const tokenFromJson = response.data?.token;
+      if (tokenFromJson) {
+        setHeaderToken(tokenFromJson);
+        setToken(tokenFromJson); // simpan token ke state untuk fetch berikutnya
+        // Set token ke default header axios untuk request selanjutnya
+        axios.defaults.headers.common["Authorization"] = `Bearer ${tokenFromJson}`;
+        // Simpan ke sessionStorage
+        saveTokenToSessionStorage(tokenFromJson);
       } else {
         setHeaderToken(null);
+        setToken(null);
+        clearTokenFromSessionStorage();
       }
 
-      // Debug: cek response header Set-Cookie
+      // Debug: cek response header Set-Cookie dan token dari JSON
       setDebug((prev) => ({
         ...prev,
         loginResponseHeaders: response.headers,
         afterLoginCookies: typeof document !== "undefined" ? document.cookie : "",
-        tokenFromHeader: tokenFromHeader || null,
-        allSetCookie: setCookieHeader || null,
+        tokenFromHeader: tokenFromJson || null,
+        allSetCookie: response.headers?.["set-cookie"] || null,
       }));
 
-      // Setelah login, token akan terset di cookie oleh backend (karena withCredentials)
+      // Setelah login, token akan terset di header axios (bukan cookie)
       if (rememberMe) {
         saveLoginInfo(email, password);
       } else {
@@ -360,9 +361,15 @@ export default function LoginPage() {
               </span>
             </div>
             <div>
-              <b>Token dari header Set-Cookie:</b>{" "}
+              <b>Token dari header Set-Cookie/JSON:</b>{" "}
               <span style={{ wordBreak: "break-all" }}>
-                {debug?.tokenFromHeader || headerToken || "(tidak ada di header)"}
+                {debug?.tokenFromHeader || headerToken || "(tidak ada di header/json)"}
+              </span>
+            </div>
+            <div>
+              <b>Token to be used in fetch:</b>{" "}
+              <span style={{ wordBreak: "break-all" }}>
+                {token || "(null)"}
               </span>
             </div>
             <div>
