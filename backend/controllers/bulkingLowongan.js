@@ -12,9 +12,9 @@ export const bulkInsertLowongan = async (req, res) => {
       return res.status(400).json({ message: 'Data lowongan harus berupa array dan tidak boleh kosong.' });
     }
 
-    // Validasi sederhana: pastikan setiap item punya field wajib (misal: nama, deskripsi, dll)
+    // Validasi sederhana: pastikan setiap item punya field wajib (judul_pekerjaan, deskripsi, dll)
     for (let [i, item] of data.entries()) {
-      if (!item.nama || !item.deskripsi) {
+      if (!item.judul_pekerjaan || !item.deskripsi) {
         return res.status(400).json({ message: `Data lowongan ke-${i + 1} tidak lengkap.` });
       }
     }
