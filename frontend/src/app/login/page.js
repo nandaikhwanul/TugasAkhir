@@ -4,82 +4,47 @@ import { useRouter } from "next/navigation";
 import axios from "axios";
 import { motion } from "framer-motion";
 
-// Ambil token dari sessionStorage (client-side)
-function getTokenFromSessionStorage() {
-  if (typeof window === "undefined") return null;
-  return sessionStorage.getItem("token") || null;
-}
-
-// Simpan token ke sessionStorage
-function saveTokenToSessionStorage(token) {
-  try {
-    sessionStorage.setItem("token", token);
-  } catch (e) {}
-}
-
-// Hapus token dari sessionStorage
-function clearTokenFromSessionStorage() {
-  try {
-    sessionStorage.removeItem("token");
-  } catch (e) {}
-}
-
-// Simpan info login ke localStorage
-function saveLoginInfo(email, password) {
-  try {
-    localStorage.setItem("savedLoginEmail", email);
-    localStorage.setItem("savedLoginPassword", password);
-  } catch (e) {}
-}
-
-// Hapus info login dari localStorage
-function clearLoginInfo() {
-  try {
-    localStorage.removeItem("savedLoginEmail");
-    localStorage.removeItem("savedLoginPassword");
-  } catch (e) {}
-}
-
-// Ambil info login dari localStorage
-function getSavedLoginInfo() {
-  if (typeof window === "undefined") return { email: "", password: "" };
-  return {
-    email: localStorage.getItem("savedLoginEmail") || "",
-    password: localStorage.getItem("savedLoginPassword") || "",
-  };
-}
-
 export default function LoginPage() {
-  // Login hanya pakai email
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // error: { email: string, password: string, general: string }
   const [error, setError] = useState({ email: "", password: "", general: "" });
   const [loading, setLoading] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
-  const [token, setToken] = useState(null); // token yang akan dipakai di fetch berikutnya
   const router = useRouter();
 
   // Prefill email/password jika ada di localStorage
   useEffect(() => {
-    const saved = getSavedLoginInfo();
-    if (saved.email || saved.password) {
-      setEmail(saved.email);
-      setPassword(saved.password);
-      setRememberMe(true);
+    try {
+      const savedEmail = localStorage.getItem("savedLoginEmail") || "";
+      const savedPassword = localStorage.getItem("savedLoginPassword") || "";
+      if (savedEmail || savedPassword) {
+        setEmail(savedEmail);
+        setPassword(savedPassword);
+        setRememberMe(true);
+      }
+    } catch {
+      // ignore error
     }
   }, []);
 
-  // Cek token di sessionStorage sebelum render login
+  // Cek apakah user sudah login dengan coba akses endpoint protected backend
+  // Asumsikan backend akan tolak jika cookie token tidak valid
   useEffect(() => {
-    const token = getTokenFromSessionStorage();
-    if (token) {
-      router.replace("/dashboard");
-      // Jangan render login page sama sekali, biar langsung redirect
-      return;
+    async function checkAuth() {
+      try {
+        await axios.get(
+          "https://tugasakhir-production-6c6c.up.railway.app/protected",
+          { withCredentials: true }
+        );
+        // Kalau berhasil, berarti user sudah login, redirect ke dashboard
+        router.replace("/dashboard");
+      } catch {
+        // Kalau gagal, berarti belum login
+        setCheckingToken(false);
+      }
     }
-    setCheckingToken(false);
+    checkAuth();
   }, [router]);
 
   const handleSubmit = async (e) => {
@@ -87,7 +52,6 @@ export default function LoginPage() {
     setError({ email: "", password: "", general: "" });
     setLoading(true);
 
-    // Simple client-side validation
     let hasError = false;
     let newError = { email: "", password: "", general: "" };
     if (!email) {
@@ -108,52 +72,39 @@ export default function LoginPage() {
     }
 
     try {
-      // Kirim email dan password
-      const payload = {
-        email,
-        password,
-      };
-
-      // Kirim request login
-      const response = await axios.post(
+      // Kirim email dan password ke backend
+      await axios.post(
         "https://tugasakhir-production-6c6c.up.railway.app/login",
-        payload,
+        { email, password },
         {
-          withCredentials: true,
+          withCredentials: true, // penting supaya cookie disimpan browser
           headers: { "Content-Type": "application/json" },
         }
       );
 
-      // --- Ambil token dari response.data.token dan simpan ke state & sessionStorage ---
-      const tokenFromJson = response.data?.token;
-      if (tokenFromJson) {
-        setToken(tokenFromJson); // simpan token ke state untuk fetch berikutnya
-        // Set token ke default header axios untuk request selanjutnya
-        axios.defaults.headers.common["Authorization"] = `Bearer ${tokenFromJson}`;
-        // Simpan ke sessionStorage
-        saveTokenToSessionStorage(tokenFromJson);
+      // Jika berhasil, backend sudah set cookie token,
+      // frontend tidak perlu simpan token manual
+
+      if (rememberMe) {
+        localStorage.setItem("savedLoginEmail", email);
+        localStorage.setItem("savedLoginPassword", password);
       } else {
-        setToken(null);
-        clearTokenFromSessionStorage();
+        localStorage.removeItem("savedLoginEmail");
+        localStorage.removeItem("savedLoginPassword");
       }
 
-      // Setelah login, token akan terset di header axios (bukan cookie)
-      if (rememberMe) {
-        saveLoginInfo(email, password);
-      } else {
-        clearLoginInfo();
-      }
       router.push("/dashboard");
     } catch (err) {
-      // Default error state
       let newError = { email: "", password: "", general: "" };
       if (err.response) {
-        // Cek error spesifik dari backend
-        let msg = err.response.data?.message || err.response.data?.msg || "Terjadi kesalahan pada server.";
-        // Deteksi error email/password dari pesan
+        let msg =
+          err.response.data?.message ||
+          err.response.data?.msg ||
+          "Terjadi kesalahan pada server.";
         if (
           /email/i.test(msg) &&
-          (/tidak ditemukan|not found|invalid|salah|required|wajib/i.test(msg) || /email/i.test(msg))
+          (/tidak ditemukan|not found|invalid|salah|required|wajib/i.test(msg) ||
+            /email/i.test(msg))
         ) {
           newError.email = msg;
         } else if (
@@ -178,33 +129,27 @@ export default function LoginPage() {
   };
 
   if (checkingToken) {
-    // Bisa ganti dengan spinner atau null, biar ga render login page dulu
-    return null;
-  }
-
-  // Helper: apakah error.email adalah "user tidak ditemukan"?
-  function isUserNotFound(msg) {
-    if (!msg) return false;
-    // Cek kata kunci "tidak ditemukan" atau "not found"
-    return /tidak ditemukan|not found/i.test(msg);
+    return null; // atau spinner loading
   }
 
   return (
-    <motion.div 
+    <motion.div
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeInOut" }}
       className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8"
     >
       <div className="max-w-4xl w-full flex flex-col md:flex-row">
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: -50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
           className="w-full md:w-1/2 md:pr-8 mb-8 md:mb-0"
         >
           <div>
-            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">Login</h2>
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">
+              Login
+            </h2>
             <p className="text-gray-600 mb-6 sm:mb-8">
               Selamat datang di platform pencarian kerja
             </p>
@@ -217,11 +162,14 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.1, ease: "easeIn" }}
               >
-                <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-1">
+                <label
+                  htmlFor="email"
+                  className="block text-sm font-medium text-gray-900 mb-1"
+                >
                   Email
                 </label>
                 {error.email && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-2 text-sm text-red-600"
@@ -234,7 +182,7 @@ export default function LoginPage() {
                   name="email"
                   type="email"
                   value={email}
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={(e) => setEmail(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900"
                   placeholder="Masukkan Email"
                   autoComplete="username"
@@ -247,11 +195,14 @@ export default function LoginPage() {
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.4, delay: 0.2, ease: "easeIn" }}
               >
-                <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-1">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-gray-900 mb-1"
+                >
                   Password
                 </label>
                 {error.password && (
-                  <motion.div 
+                  <motion.div
                     initial={{ opacity: 0, y: -10 }}
                     animate={{ opacity: 1, y: 0 }}
                     className="mb-2 text-sm text-red-600"
@@ -264,7 +215,7 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   value={password}
-                  onChange={e => setPassword(e.target.value)}
+                  onChange={(e) => setPassword(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 text-gray-900"
                   placeholder="••••••••"
                   autoComplete="current-password"
@@ -284,16 +235,19 @@ export default function LoginPage() {
                   type="checkbox"
                   className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
                   checked={rememberMe}
-                  onChange={e => setRememberMe(e.target.checked)}
+                  onChange={(e) => setRememberMe(e.target.checked)}
                 />
-                <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
+                <label
+                  htmlFor="remember-me"
+                  className="ml-2 block text-sm text-gray-900"
+                >
                   Save my info
                 </label>
               </motion.div>
             </div>
 
             {error.general && (
-              <motion.div 
+              <motion.div
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 className="mt-4 text-center text-sm text-red-600"
@@ -307,7 +261,9 @@ export default function LoginPage() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.4, delay: 0.4, ease: "easeIn" }}
               type="submit"
-              className={`mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
+              className={`mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
+                loading ? "opacity-60 cursor-not-allowed" : ""
+              }`}
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login"}
@@ -331,7 +287,7 @@ export default function LoginPage() {
           </form>
         </motion.div>
 
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0, x: 50 }}
           animate={{ opacity: 1, x: 0 }}
           transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}

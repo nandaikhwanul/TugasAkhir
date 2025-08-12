@@ -284,6 +284,10 @@ export default function AlumniProfileForm() {
           ...prev,
           skill: selectedSkills,
         }));
+        // REFRESH PAGE setelah skill berhasil disimpan
+        if (typeof window !== "undefined") {
+          window.location.reload();
+        }
       }
     } catch (err) {
       setSkillError("Terjadi kesalahan pada server.");

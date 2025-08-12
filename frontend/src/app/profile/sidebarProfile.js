@@ -1,474 +1,120 @@
-"use client";
-import { useEffect, useState, useRef } from "react";
-import { FiEdit2, FiLogOut } from "react-icons/fi";
-import { toast, ToastContainer } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import { getTokenFromSessionStorage } from "../sessiontoken";
+import React, { useState } from "react";
 
-// Helper untuk resolve URL foto_profil alumni ke localhost:5000/uploads jika perlu
-function getProfileImageUrl(foto_profil) {
-  if (!foto_profil) return "";
-  if (/^https?:\/\//.test(foto_profil)) return foto_profil;
-  if (foto_profil.startsWith("/uploads/")) {
-    return `https://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
-  }
-  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${foto_profil}`;
-}
+export default function SidebarProfile() {
+  const [open, setOpen] = useState(false);
 
-// Helper untuk resolve URL logo_perusahaan ke localhost:5000/uploads jika perlu
-function getLogoUrl(logo_perusahaan) {
-  if (!logo_perusahaan) return "";
-  if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
-  if (logo_perusahaan.startsWith("/uploads/")) {
-    return `https://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
-  }
-  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
-}
-
-// Helper untuk menghapus cookie token (mengikuti code referensi)
-function removeTokenCookie() {
-  if (typeof document === "undefined") return;
-  document.cookie =
-    "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
-}
-
-// Menu links untuk alumni
-const alumniMenuLinks = [
-  { href: "/profile", label: "Profile", key: "profile" },
-  // { href: "/profile/alumni/jobActivity", label: "Job activity", key: "jobActivity" }, // dihapus
-  { href: "/profile/alumni/accountSettings", label: "Account settings", key: "accountSettings" },
-];
-
-// Menu links untuk perusahaan (sesuai gambar)
-const perusahaanMenuLinks = [
-  { href: "/profile/perusahaanPreview", label: "INFORMASI UTAMA", key: "perusahaanPreview" },
-  { href: "/profile/perusahaan/accountSettings", label: "KEAMANAN AKUN", key: "accountSettings" },
-  { href: "/profile/perusahaan/notifikasi", label: "NOTIFIKASI", key: "notifikasi" },
-  { href: "/profile/perusahaan/profilPerusahaan", label: "PROFIL PERUSAHAAN", key: "profilPerusahaan" },
-];
-
-export default function SidebarProfile({ onMenuClick, activeMenu }) {
-  const [profile, setProfile] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [uploading, setUploading] = useState(false);
-  const [role, setRole] = useState(null);
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-  const fileInputRef = useRef(null);
-
-  // Fetch profile (alumni or perusahaan) on mount
-  useEffect(() => {
-    let isMounted = true;
-    async function fetchProfile() {
-      setLoading(true);
-      try {
-        const token = getTokenFromSessionStorage();
-        if (!token) {
-          if (isMounted) {
-            setProfile(null);
-            setRole(null);
-            setLoading(false);
-          }
-          return;
-        }
-
-        // Cek role dari endpoint alumni/me dan perusahaan/me
-        // Cek perusahaan dulu, jika gagal baru cek alumni
-        let res, data;
-        try {
-          res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-        } catch (err) {
-          res = { ok: false, status: 0 };
-        }
-
-        if (res.ok) {
-          data = await res.json();
-          if (isMounted) {
-            setProfile(data);
-            setRole("perusahaan");
-            setLoading(false);
-          }
-          return;
-        }
-        try {
-          res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
-          });
-        } catch (err) {
-          res = { ok: false, status: 0 };
-        }
-        if (res.ok) {
-          data = await res.json();
-          if (isMounted) {
-            setProfile(data);
-            setRole("alumni");
-            setLoading(false);
-          }
-          return;
-        }
-        if (isMounted) {
-          setProfile(null);
-          setRole(null);
-        }
-      } catch (err) {
-        if (isMounted) {
-          setProfile(null);
-          setRole(null);
-        }
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-    fetchProfile();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
-
-  // Determine avatar URL (if available)
-  let avatarUrl = "";
-  if (role === "perusahaan" && profile && profile.logo_perusahaan) {
-    avatarUrl = getLogoUrl(profile.logo_perusahaan);
-  } else if (role === "alumni" && profile && profile.foto_profil) {
-    avatarUrl = getProfileImageUrl(profile.foto_profil);
-  }
-
-  // Determine display name and info
-  let displayName = loading ? "Loading..." : "Unknown User";
-  let displayInfo = "";
-  if (role === "perusahaan") {
-    displayName =
-      profile && profile.nama_perusahaan
-        ? profile.nama_perusahaan
-        : loading
-        ? "Loading..."
-        : "Unknown Company";
-    displayInfo =
-      profile && profile.email_perusahaan
-        ? profile.email_perusahaan
-        : "Perusahaan";
-  } else if (role === "alumni") {
-    displayName =
-      profile && (profile.name || profile.nama)
-        ? profile.name || profile.nama
-        : loading
-        ? "Loading..."
-        : "Unknown User";
-    displayInfo =
-      profile && profile.program_studi && profile.tahun_lulus
-        ? `${profile.program_studi} • ${profile.tahun_lulus}`
-        : "Student at Politeknik negeri pontianak";
-  }
-
-  // Handle edit icon click
-  const handleEditPhotoClick = () => {
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-      fileInputRef.current.click();
-    }
-  };
-
-  // Handle file input change and upload
-  const handleFileChange = async (e) => {
-    const file = e.target.files && e.target.files[0];
-    if (!file) return;
-
-    if (role === "alumni" || role === "perusahaan") {
-      if (role === "alumni") {
-        const img = new window.Image();
-        const objectUrl = URL.createObjectURL(file);
-        img.onload = async function () {
-          if (img.width !== img.height) {
-            toast.error("Gambar harus berbentuk kotak (rasio 1:1)");
-            URL.revokeObjectURL(objectUrl);
-            return;
-          }
-          URL.revokeObjectURL(objectUrl);
-          setUploading(true);
-          try {
-            const token = getTokenFromSessionStorage();
-            if (!token) throw new Error("Token not found");
-            const formData = new FormData();
-            formData.append("foto_profil", file);
-            const uploadRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/foto-profil", {
-              method: "PATCH",
-              headers: {
-                Authorization: `Bearer ${token}`,
-              },
-              body: formData,
-            });
-            if (!uploadRes.ok) {
-              const err = await uploadRes.json().catch(() => ({}));
-              throw new Error(err.message || "Gagal upload foto profil");
-            }
-            toast.success("Foto profil berhasil diupdate!", {
-              onClose: () => {
-                if (typeof window !== "undefined") {
-                  window.location.reload();
-                }
-              },
-              autoClose: 1500,
-            });
-          } catch (err) {
-            toast.error(err.message || "Gagal upload foto");
-          } finally {
-            setUploading(false);
-          }
-        };
-        img.onerror = function () {
-          toast.error("File gambar tidak valid");
-          URL.revokeObjectURL(objectUrl);
-        };
-        img.src = objectUrl;
-        return;
-      }
-    }
-
-    setUploading(true);
-    try {
-      const token = getTokenFromSessionStorage();
-      if (!token) throw new Error("Token not found");
-      const formData = new FormData();
-      if (role === "perusahaan") {
-        let perusahaanId = null;
-        try {
-          const payload = JSON.parse(atob(token.split(".")[1]));
-          perusahaanId = payload && (payload.perusahaanId || payload.id || payload._id);
-        } catch (e) {
-          throw new Error("Gagal membaca ID perusahaan dari token");
-        }
-        if (!perusahaanId) throw new Error("ID perusahaan tidak ditemukan di token");
-        formData.append("logo_perusahaan", file);
-        const uploadRes = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
-          method: "PATCH",
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData,
-        });
-        if (!uploadRes.ok) {
-          const err = await uploadRes.json().catch(() => ({}));
-          throw new Error(err.message || "Gagal upload logo perusahaan");
-        }
-        toast.success("Logo perusahaan berhasil diupdate!", {
-          onClose: () => {
-            if (typeof window !== "undefined") {
-              window.location.reload();
-            }
-          },
-          autoClose: 1500,
-        });
-        return;
-      }
-    } catch (err) {
-      toast.error(err.message || "Gagal upload foto");
-    } finally {
-      setUploading(false);
-    }
-  };
-
-  const handleMenuClick = (key) => (e) => {
-    e.preventDefault();
-    if (onMenuClick) {
-      onMenuClick(key);
-    }
-    // Tutup sidebar jika di mobile/desktop
-    setSidebarOpen(false);
-  };
-
-  const handleLogout = (e) => {
-    e.preventDefault();
-    removeTokenCookie();
-    window.location.href = "/login";
-  };
-
-  let menuLinks = [];
-  if (role === "perusahaan") {
-    menuLinks = perusahaanMenuLinks;
-  } else if (role === "alumni") {
-    menuLinks = alumniMenuLinks;
-  }
-
-  // Hamburger button handler
-  const handleHamburgerClick = () => {
-    setSidebarOpen((prev) => !prev);
-  };
-
-  // Close sidebar when clicking overlay (mobile/desktop)
-  const handleOverlayClick = () => {
-    setSidebarOpen(false);
-  };
-
-  // --- FIXED SIDEBAR ---
-  // Gunakan fixed dan top-0 left-0 h-screen agar sidebar selalu menempel di kiri dan tidak ikut scroll konten
-  // Tambahkan z-40 agar di atas konten lain jika perlu
-  // Hilangkan mt-16 agar tidak ada margin atas
-  // Tambahkan overflow-y-auto agar jika konten sidebar panjang bisa discroll sendiri
-  // Tampilkan hamburger di desktop juga
-  // Kebawahkan agar tidak ketutup navbar (top-14, asumsikan navbar tinggi 56px)
+  // List menu icon SVGs and optional label for future extensibility
+  const menuItems = [
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M6 13.5V3.75m0 9.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 3.75V16.5m12-3V3.75m0 9.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 3.75V16.5m-6-9V3.75m0 3.75a1.5 1.5 0 010 3m0-3a1.5 1.5 0 000 3m0 9.75V10.5" />
+        </svg>
+      ),
+    },
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18.75a60.07 60.07 0 0115.797 2.101c.727.198 1.453-.342 1.453-1.096V18.75M3.75 4.5v.75A.75.75 0 013 6h-.75m0 0v-.375c0-.621.504-1.125 1.125-1.125H20.25M2.25 6v9m18-10.5v.75c0 .414.336.75.75.75h.75m-1.5-1.5h.375c.621 0 1.125.504 1.125 1.125v9.75c0 .621-.504 1.125-1.125 1.125h-.375m1.5-1.5H21a.75.75 0 00-.75.75v.75m0 0H3.75m0 0h-.375a1.125 1.125 0 01-1.125-1.125V15m1.5 1.5v-.75A.75.75 0 003 15h-.75M15 10.5a3 3 0 11-6 0 3 3 0 016 0zm3 0h.008v.008H18V10.5zm-12 0h.008v.008H6V10.5z" />
+        </svg>
+      ),
+    },
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h3.75M9 15h3.75M9 18h3.75m3 .75H18a2.25 2.25 0 002.25-2.25V6.108c0-1.135-.845-2.098-1.976-2.192a48.424 48.424 0 00-1.123-.08m-5.801 0c-.065.21-.1.433-.1.664 0 .414.336.75.75.75h4.5a.75.75 0 00.75-.75 2.25 2.25 0 00-.1-.664m-5.8 0A2.251 2.251 0 0113.5 2.25H15c1.012 0 1.867.668 2.15 1.586m-5.8 0c-.376.023-.75.05-1.124.08C9.095 4.01 8.25 4.973 8.25 6.108V8.25m0 0H4.875c-.621 0-1.125.504-1.125 1.125v11.25c0 .621.504 1.125 1.125 1.125h9.75c.621 0 1.125-.504 1.125-1.125V9.375c0-.621-.504-1.125-1.125-1.125H8.25zM6.75 12h.008v.008H6.75V12zm0 3h.008v.008H6.75V15zm0 3h.008v.008H6.75V18z" />
+        </svg>
+      ),
+    },
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+        </svg>
+      ),
+    },
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5m.75-9l3-3 2.148 2.148A12.061 12.061 0 0116.5 7.605" />
+        </svg>
+      ),
+    },
+    {
+      icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-6 w-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M17.982 18.725A7.488 7.488 0 0012 15.75a7.488 7.488 0 00-5.982 2.975m11.963 0a9 9 0 10-11.963 0m11.963 0A8.966 8.966 0 0112 21a8.966 8.966 0 01-5.982-2.275M15 9.75a3 3 0 11-6 0 3 3 0 016 0z" />
+        </svg>
+      ),
+    },
+  ];
 
   return (
-    <div>
-      <ToastContainer position="top-center" />
-      {/* Hamburger button */}
-      {!sidebarOpen && (
-        <button
-          className="fixed top-[70px] left-0 z-50 bg-white border border-gray-300 rounded p-2 shadow hover:bg-gray-100 transition"
-          type="button"
-          aria-label="Buka sidebar"
-          onClick={handleHamburgerClick}
-          style={{}}
-        >
-          {/* Hamburger icon */}
-          <span className="block w-6 h-6 relative">
-            <span
-              className={`absolute left-0 top-1 w-6 h-0.5 bg-gray-700 rounded transition-transform duration-200`}
-            />
-            <span
-              className={`absolute left-0 top-3 w-6 h-0.5 bg-gray-700 rounded transition-opacity duration-200`}
-            />
-            <span
-              className={`absolute left-0 top-5 w-6 h-0.5 bg-gray-700 rounded transition-transform duration-200`}
-            />
-          </span>
-        </button>
-      )}
-      {/* Overlay for mobile/desktop when sidebar open */}
-      {sidebarOpen && (
-        <div
-          className="fixed inset-0 z-40"
-          onClick={handleOverlayClick}
-          aria-label="Tutup sidebar"
-        />
-      )}
-      <aside
-        className={`
-          fixed top-14 left-0 z-50 w-4/5 max-w-xs md:w-72 h-[calc(100vh-56px)] bg-white border-r border-gray-200 flex flex-col items-center py-8 px-4 overflow-y-auto
-          transition-transform duration-200
-          ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-          md:${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-        `}
-        style={{
-          boxShadow: sidebarOpen ? "0 2px 16px rgba(0,0,0,0.08)" : undefined,
-          overflowX: "hidden", // Prevent horizontal scroll
-        }}
-        aria-label="Sidebar"
+    <div className="fixed top-0 left-0 h-screen z-40 flex">
+      {/* Hamburger Button */}
+      <button
+        className={`m-4 p-2 rounded-md bg-white shadow-md border border-gray-200 flex items-center justify-center transition-all duration-200 focus:outline-none ${
+          open ? "text-blue-600" : "text-gray-600"
+        }`}
+        onClick={() => setOpen((prev) => !prev)}
+        aria-label={open ? "Tutup menu" : "Buka menu"}
       >
-        {/* Hamburger button di kanan atas sidebar saat sidebar open */}
-        {sidebarOpen && (
-          <button
-            className="absolute top-4 right-4 z-50 bg-white border border-gray-300 rounded p-2 shadow hover:bg-gray-100 transition"
-            type="button"
-            aria-label="Tutup sidebar"
-            onClick={handleHamburgerClick}
-            style={{}}
-          >
-            {/* Hamburger icon (X style) */}
-            <span className="block w-6 h-6 relative">
-              <span
-                className={`absolute left-0 top-3 w-6 h-0.5 bg-gray-700 rounded transition-transform duration-200 rotate-45`}
-              />
-              <span
-                className={`absolute left-0 top-3 w-6 h-0.5 bg-gray-700 rounded transition-transform duration-200 -rotate-45`}
-              />
-            </span>
-          </button>
+        {open ? (
+          // Close (X) icon
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        ) : (
+          // Hamburger icon
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.2} d="M4 8h16M4 16h16" />
+          </svg>
         )}
-        {/* Profile Picture and Edit Icon */}
-        <div className="relative flex flex-col items-center mb-2">
-          <div className="w-20 h-20 rounded-full bg-gray-200 flex items-center justify-center text-gray-400 text-5xl mb-2 overflow-hidden">
-            {avatarUrl ? (
-              <img
-                src={avatarUrl}
-                alt="Profile"
-                className="w-full h-full object-cover rounded-full"
-              />
-            ) : (
-              <svg width="56" height="56" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <circle cx="12" cy="8" r="4" strokeWidth="1.5" />
-                <path strokeWidth="1.5" d="M4 20c0-3.314 3.134-6 7-6s7 2.686 7 6" />
-              </svg>
-            )}
-          </div>
-          <button
-            className="absolute bottom-2 right-2 bg-white rounded-full border border-gray-300 p-1 hover:bg-gray-100"
-            title={uploading ? "Uploading..." : role === "perusahaan" ? "Edit logo" : "Edit photo"}
-            tabIndex={0}
-            type="button"
-            onClick={handleEditPhotoClick}
-            disabled={uploading || !role}
-          >
-            <FiEdit2 className={`w-4 h-4 text-gray-500 ${uploading ? "animate-spin" : ""}`} />
-          </button>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept="image/*"
-            className="hidden"
-            onChange={handleFileChange}
-            disabled={uploading || !role}
-          />
+      </button>
+
+      {/* Sidebar */}
+      <div
+        className={`transition-all duration-300 ease-in-out bg-white shadow-xl h-full flex flex-col items-center py-8 px-3 rounded-r-2xl border-r border-gray-200
+        ${open ? "w-20 opacity-100" : "w-0 opacity-0 pointer-events-none"}
+        `}
+        style={{ minWidth: open ? "80px" : "0px" }}
+      >
+        {/* Logo/Profile at top */}
+        <div
+          className={`flex items-center justify-center rounded-lg bg-blue-50 mb-8 transition-all duration-300 ${
+            open ? "opacity-100 scale-100" : "opacity-0 scale-90"
+          }`}
+          style={{ height: open ? 56 : 0, width: open ? 56 : 0, minHeight: 0, minWidth: 0 }}
+        >
+          {open && (
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-10 w-10 text-blue-600">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+            </svg>
+          )}
         </div>
-        <div className="text-center mb-6">
-          <div className="text-base text-gray-900 font-semibold">
-            {displayName}
-          </div>
-          <div className="text-sm text-gray-700 font-normal">
-            {displayInfo}
-          </div>
-        </div>
-        <hr className="w-full border-gray-200 mb-2" />
-        <nav className="w-full">
-          <ul className="flex flex-col gap-1">
-            {menuLinks.map((link) => (
-              <li key={link.key} className="relative">
-                {activeMenu === link.key && (
-                  <span
-                    className="pointer-events-none absolute left-0 top-0 h-full w-1 bg-blue-600 rounded-r z-10"
-                    aria-hidden="true"
-                  />
-                )}
-                <a
-                  href={link.href}
-                  className={`block px-2 py-2 rounded-l border-l-4 transition-colors text-sm focus:outline-none ${
-                    activeMenu === link.key
-                      ? "font-semibold text-black border-blue-500 bg-gray-50"
-                      : "text-gray-700 border-transparent hover:bg-gray-100"
-                  }`}
-                  onClick={handleMenuClick(link.key)}
-                  tabIndex={0}
-                  role="button"
-                  aria-current={activeMenu === link.key ? "page" : undefined}
-                >
-                  {link.label}
-                </a>
-              </li>
-            ))}
-          </ul>
-        </nav>
-        <div className="w-full flex flex-col mt-8 gap-2">
-          <hr className="w-full border-gray-200 mb-2" />
-          <button
-            onClick={handleLogout}
-            className="flex items-center text-sm text-gray-700 hover:text-black px-2 py-2 rounded transition-colors cursor-pointer"
-            type="button"
-          >
-            <span className="mr-2">Sign out</span>
-            <FiLogOut className="w-5 h-5" />
-          </button>
-          <button
-            className="mt-4 border border-gray-400 rounded w-full py-2 text-sm text-gray-700 hover:bg-gray-50 transition"
-            type="button"
-          >
-            Help Center
+
+        {/* Menu Items */}
+        <ul className={`flex flex-col gap-5 mb-auto transition-all duration-300 ${open ? "opacity-100" : "opacity-0"}`}>
+          {menuItems.map((item, idx) => (
+            <li
+              key={idx}
+              className="group flex items-center justify-center p-3 rounded-lg hover:bg-blue-50 transition-all cursor-pointer"
+              style={{ marginLeft: open ? 0 : "-16px" }}
+            >
+              <span className="text-gray-500 group-hover:text-blue-600 transition-all">{item.icon}</span>
+            </li>
+          ))}
+        </ul>
+
+        {/* Logout at bottom */}
+        <div className={`flex items-center justify-center mb-2 transition-all duration-300 ${open ? "opacity-100" : "opacity-0"}`}>
+          <button className="p-3 rounded-lg hover:bg-red-50 transition-all">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="h-7 w-7 text-gray-500 hover:text-red-600 transition-all">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+            </svg>
           </button>
         </div>
-      </aside>
+      </div>
     </div>
   );
 }

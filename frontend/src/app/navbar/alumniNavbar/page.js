@@ -6,7 +6,7 @@ import axios from "axios";
 import Link from "next/link";
 import PesanPerusahaanModal from "../../pesan/page";
 import { useRouter } from "next/navigation";
-import { getTokenFromSessionStorage } from "../../sessiontoken";
+import { getTokenFromSessionStorage } from "../../sessiontoken"; // pakeini buat dapat token
 
 // Helper untuk resolve URL foto_profil alumni ke localhost:5000/uploads/alumni jika perlu
 function getProfileImageUrl(foto_profil) {
@@ -52,6 +52,7 @@ export default function AlumniNavbar() {
 
   // Ambil data alumni (foto profil & nama)
   useEffect(() => {
+    // pakeini buat dapat token
     const token = getTokenFromSessionStorage();
     if (!token) {
       setProfileImage("");
