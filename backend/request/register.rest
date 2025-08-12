@@ -1,5 +1,5 @@
 ### Register Alumni
-POST https://tugasakhir-production-6c6c.up.railway.app/alumni
+POST http://localhost:5000/alumni
 Content-Type: application/json
 
 {
@@ -15,9 +15,9 @@ POST http://localhost:5000/perusahaan
 Content-Type: application/json
 
 {
-    "nama_perusahaan": "P",
-    "email_perusahaan": "info22@suksesselalu.com",
-    "password": "abcdef",
+    "nama_perusahaan": "Ptk",
+    "email_perusahaan": "hrd222@majujaya.com",
+    "password": "abcdefg",
     "confPassword": "abcdef"
 }
 

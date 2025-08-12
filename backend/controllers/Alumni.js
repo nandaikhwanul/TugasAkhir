@@ -4,30 +4,29 @@ import { validationResult, body } from "express-validator";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import sharp from "sharp"; // Tambahkan sharp untuk resize foto_sampul
-// Controller untuk mengambil semua lowongan yang disimpan (saved) oleh alumni
+import sharp from "sharp";
 import Lowongan from "../models/Lowongan.js";
-import Nim from "../models/nim.js"; // Import model Nim
+import Nim from "../models/nim.js";
 
 // Fungsi untuk mengecek password lama alumni
 export const checkOldPassword = async (req, res) => {
     const { oldPassword } = req.body;
     if (!oldPassword) {
-        return res.status(400).json({ msg: "Password lama wajib diisi" });
+        return res.status(400).json({ errors: { oldPassword: "Password lama wajib diisi" } });
     }
 
     let alumni;
     try {
         alumni = await Alumni.findById(req.userId);
     } catch (error) {
-        return res.status(400).json({ msg: error.message });
+        return res.status(500).json({ msg: error.message });
     }
     if (!alumni) return res.status(404).json({ msg: "Alumni tidak ditemukan" });
 
     try {
         const valid = await argon2.verify(alumni.password, oldPassword);
         if (!valid) {
-            return res.status(400).json({ msg: "Password lama salah" });
+            return res.status(400).json({ errors: { oldPassword: "Password lama salah" } });
         }
         const alumniWithNumber = {
             nomor: 1,
@@ -35,53 +34,32 @@ export const checkOldPassword = async (req, res) => {
         };
         return res.status(200).json({ msg: "Password lama benar", alumni: alumniWithNumber });
     } catch (error) {
-        return res.status(400).json({ msg: error.message });
+        return res.status(500).json({ msg: error.message });
     }
 };
 
-// Endpoint untuk perusahaan melihat detail alumni (termasuk foto_profil)
+// Endpoint untuk perusahaan melihat detail alumni
 export const getAlumniDetailForPerusahaan = async (req, res) => {
     try {
-        // id alumni diambil dari parameter url
         const alumni = await Alumni.findById(req.params.id, [
-            'name',
-            'nim',
-            'nohp',
-            'alamat',
-            'email',
-            'role',
-            'foto_profil',
-            'foto_sampul',
-            'deskripsi',
-            'program_studi',
-            'tahun_lulus',
-            'tanggal_lahir'
+            'name', 'nim', 'nohp', 'alamat', 'email', 'role', 
+            'foto_profil', 'foto_sampul', 'deskripsi', 
+            'program_studi', 'tahun_lulus', 'tanggal_lahir'
         ]);
         if (!alumni) return res.status(404).json({ msg: "Alumni tidak ditemukan" });
-        // Hanya data yang aman yang dikembalikan
         res.status(200).json(alumni);
     } catch (error) {
         res.status(500).json({ msg: error.message });
     }
 };
 
-// Get alumni data from token (authenticated user)
+// Get alumni data from token
 export const getAlumniById = async (req, res) => {
     try {
         const alumni = await Alumni.findById(req.userId, [
-            'name',
-            'nim',
-            'nohp',
-            'alamat',
-            'email',
-            'role',
-            'foto_profil',
-            'foto_sampul',
-            'deskripsi',
-            'program_studi',
-            'tahun_lulus',
-            'tanggal_lahir',
-            'skill'
+            'name', 'nim', 'nohp', 'alamat', 'email', 'role',
+            'foto_profil', 'foto_sampul', 'deskripsi',
+            'program_studi', 'tahun_lulus', 'tanggal_lahir', 'skill'
         ]);
         if (!alumni) return res.status(404).json({ msg: "Alumni tidak ditemukan" });
         res.status(200).json(alumni);
@@ -92,10 +70,8 @@ export const getAlumniById = async (req, res) => {
 
 // Express-validator rules for registerAlumni
 export const registerAlumniValidation = [
-    body('name')
-        .notEmpty().withMessage('Nama wajib diisi'),
-    body('nim')
-        .notEmpty().withMessage('NIM wajib diisi'),
+    body('name').notEmpty().withMessage('Nama wajib diisi'),
+    body('nim').notEmpty().withMessage('NIM wajib diisi'),
     body('email').isEmail().withMessage('Email tidak valid'),
     body('password').isLength({ min: 6 }).withMessage('Password minimal 6 karakter'),
     body('confPassword').custom((value, { req }) => {
@@ -110,54 +86,45 @@ export const registerAlumniValidation = [
 export const registerAlumni = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        const msg = errors.array().map(e => e.msg).join(', ');
-        return res.status(400).json({ msg });
+        const errorObj = errors.array().reduce((acc, curr) => {
+            acc[curr.param] = curr.msg;
+            return acc;
+        }, {});
+        return res.status(400).json({ errors: errorObj });
     }
 
     const { name, nim, email, password, confPassword } = req.body;
-    let duplicateMsg = [];
+    let duplicateErrors = {};
     try {
-        // Cek apakah NIM ada di koleksi Nim
         const nimExist = await Nim.findOne({ nim });
         if (!nimExist) {
-            return res.status(400).json({ msg: "NIM tidak terdaftar" });
+            return res.status(400).json({ errors: { nim: "NIM tidak terdaftar" } });
         }
 
         const existingName = await Alumni.findOne({ name });
         if (existingName) {
-            duplicateMsg.push("Nama sudah terdaftar");
+            duplicateErrors.name = "Nama sudah terdaftar";
         }
         const existingNim = await Alumni.findOne({ nim });
         if (existingNim) {
-            duplicateMsg.push("NIM sudah terdaftar");
+            duplicateErrors.nim = "Account dengan NIM tersebut sudah ada";
         }
-        if (duplicateMsg.length > 0) {
-            return res.status(400).json({ msg: duplicateMsg.join(', ') });
+        if (Object.keys(duplicateErrors).length > 0) {
+            return res.status(400).json({ errors: duplicateErrors });
         }
 
         const hashPassword = await argon2.hash(password);
         const createdAlumni = await Alumni.create({
-            name,
-            nim,
-            email,
-            password: hashPassword,
-            confPassword: confPassword,
-            role: "alumni"
+            name, nim, email, password: hashPassword,
+            confPassword, role: "alumni"
         });
-        const { _id, name: resName, nim: resNim, email: resEmail, role: resRole, confPassword: resConfPassword } = createdAlumni;
+        const { _id, name: resName, nim: resNim, email: resEmail, role: resRole } = createdAlumni;
         res.status(201).json({
             msg: "Register Alumni Berhasil",
-            alumni: {
-                _id,
-                name: resName,
-                nim: resNim,
-                email: resEmail,
-                confPassword: resConfPassword,
-                role: resRole
-            }
+            alumni: { _id, name: resName, nim: resNim, email: resEmail, role: resRole }
         });
     } catch (error) {
-        res.status(400).json({ msg: error.message });
+        res.status(500).json({ msg: error.message });
     }
 };
 
@@ -181,7 +148,6 @@ export const validateUpdateAlumni = [
     body("foto_sampul").optional().isString().withMessage("Foto sampul harus berupa string"),
     body("deskripsi").optional().isString().withMessage("Deskripsi harus berupa string"),
     body("skill").optional().isArray().withMessage("Skill harus berupa array string"),
-    // Tambahan validasi untuk media_sosial dan portofolio
     body("media_sosial").optional().isArray().withMessage("Media sosial harus berupa array"),
     body("portofolio").optional().isArray().withMessage("Portofolio harus berupa array"),
 ];
@@ -189,49 +155,39 @@ export const validateUpdateAlumni = [
 export const updateAlumni = async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ msg: errors.array().map(e => e.msg).join(", ") });
+        const errorObj = errors.array().reduce((acc, curr) => {
+            acc[curr.param] = curr.msg;
+            return acc;
+        }, {});
+        return res.status(400).json({ errors: errorObj });
     }
 
     let alumni;
     try {
-        if (req.role === "admin") {
-            const alumniId = req.body.id || req.query.id || req.userId;
-            alumni = await Alumni.findById(alumniId);
-        } else {
-            alumni = await Alumni.findById(req.userId);
-        }
+        alumni = req.role === "admin" 
+            ? await Alumni.findById(req.body.id || req.query.id || req.userId)
+            : await Alumni.findById(req.userId);
     } catch (error) {
-        return res.status(400).json({ msg: error.message });
+        return res.status(500).json({ msg: error.message });
     }
     if (!alumni) return res.status(404).json({ msg: "Alumni tidak ditemukan" });
 
-    // Tambahkan media_sosial dan portofolio ke destructuring
-    const { 
-        name, nim, nohp, alamat, program_studi, tahun_lulus, tanggal_lahir, email, password, confPassword, 
-        foto_profil, foto_sampul, deskripsi, skill, media_sosial, portofolio 
-    } = req.body;
-    let hashPassword = alumni.password;
-
-    if (password && password !== "") {
-        hashPassword = await argon2.hash(password);
-    }
-
+    const { name, nim, nohp, alamat, program_studi, tahun_lulus, tanggal_lahir, 
+        email, password, confPassword, foto_profil, foto_sampul, deskripsi, 
+        skill, media_sosial, portofolio } = req.body;
+    
     try {
-        let duplicateMsg = [];
+        let duplicateErrors = {};
         if (name && name !== alumni.name) {
             const existingName = await Alumni.findOne({ name, _id: { $ne: alumni._id } });
-            if (existingName) {
-                duplicateMsg.push("Nama sudah terdaftar");
-            }
+            if (existingName) duplicateErrors.name = "Nama sudah terdaftar";
         }
         if (nim && nim !== alumni.nim) {
             const existingNim = await Alumni.findOne({ nim, _id: { $ne: alumni._id } });
-            if (existingNim) {
-                duplicateMsg.push("NIM sudah terdaftar");
-            }
+            if (existingNim) duplicateErrors.nim = "NIM sudah terdaftar";
         }
-        if (duplicateMsg.length > 0) {
-            return res.status(400).json({ msg: duplicateMsg.join(', ') });
+        if (Object.keys(duplicateErrors).length > 0) {
+            return res.status(400).json({ errors: duplicateErrors });
         }
 
         alumni.name = name ?? alumni.name;

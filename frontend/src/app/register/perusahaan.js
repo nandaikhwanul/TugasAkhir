@@ -11,11 +11,8 @@ export default function RegisterPerusahaan({
   setError: setParentError,
   success: parentSuccess,
   setSuccess: setParentSuccess,
-  // agree: parentAgree,
-  // setAgree: setParentAgree,
   router: parentRouter,
 }) {
-  // Hanya field yang diperlukan untuk register: nama_perusahaan, email_perusahaan, password, confPassword
   const [perusahaan, setPerusahaan] = useState({
     nama_perusahaan: "",
     email_perusahaan: "",
@@ -25,16 +22,13 @@ export default function RegisterPerusahaan({
   const [showPassword, setShowPassword] = useState(false);
   const [showConfPassword, setShowConfPassword] = useState(false);
 
-  // State untuk error per field
   const [fieldErrors, setFieldErrors] = useState({
     nama_perusahaan: "",
     email_perusahaan: "",
     password: "",
     confPassword: "",
-    // terms: "",
   });
 
-  // Gunakan parent state jika diberikan, jika tidak pakai local
   const [loading, setLoading] = setParentLoading
     ? [parentLoading, setParentLoading]
     : useState(false);
@@ -44,9 +38,6 @@ export default function RegisterPerusahaan({
   const [success, setSuccess] = setParentSuccess
     ? [parentSuccess, setParentSuccess]
     : useState("");
-  // const [agree, setAgree] = setParentAgree
-  //   ? [parentAgree, setParentAgree]
-  //   : useState(false);
   const router = parentRouter || useRouter();
 
   const handlePerusahaanChange = (e) => {
@@ -61,32 +52,6 @@ export default function RegisterPerusahaan({
     }));
   };
 
-  const validateFields = () => {
-    const errors = {};
-    if (!perusahaan.nama_perusahaan.trim()) {
-      errors.nama_perusahaan = "Nama perusahaan wajib diisi.";
-    }
-    if (!perusahaan.email_perusahaan.trim()) {
-      errors.email_perusahaan = "Email perusahaan wajib diisi.";
-    } else if (
-      !/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i.test(perusahaan.email_perusahaan)
-    ) {
-      errors.email_perusahaan = "Format email tidak valid.";
-    }
-    if (!perusahaan.password) {
-      errors.password = "Password wajib diisi.";
-    } else if (perusahaan.password.length < 6) {
-      errors.password = "Password minimal 6 karakter.";
-    }
-    if (!perusahaan.confPassword) {
-      errors.confPassword = "Konfirmasi password wajib diisi.";
-    } else if (perusahaan.confPassword !== perusahaan.password) {
-      errors.confPassword = "Konfirmasi password tidak sama.";
-    }
-    // Hapus validasi terms
-    return errors;
-  };
-
   const handlePerusahaanSubmit = async (e) => {
     e.preventDefault();
     setError("");
@@ -96,20 +61,10 @@ export default function RegisterPerusahaan({
       email_perusahaan: "",
       password: "",
       confPassword: "",
-      // terms: "",
     });
-
-    const errors = validateFields();
-    if (Object.keys(errors).length > 0) {
-      setFieldErrors(errors);
-      // Hapus error terms global
-      // if (errors.terms) setError(errors.terms);
-      return;
-    }
 
     setLoading(true);
     try {
-      // Hanya kirim field yang diperlukan
       await axios.post(
         "https://tugasakhir-production-6c6c.up.railway.app/perusahaan",
         {
@@ -120,28 +75,34 @@ export default function RegisterPerusahaan({
         },
         {
           headers: { "Content-Type": "application/json" },
-          withCredentials: true, // <--- tambahkan ini agar credentials (cookie) dikirim
+          withCredentials: true,
         }
       );
       setSuccess("Registrasi perusahaan berhasil! Silakan login.");
       setTimeout(() => router.push("/login"), 1500);
     } catch (err) {
-      // Cek jika error dari backend per field
-      if (err.response && err.response.data && typeof err.response.data === "object") {
-        // Jika backend mengirim error per field
+      if (err.response?.data) {
+        // Handle field errors from backend
         if (err.response.data.errors) {
-          setFieldErrors((prev) => ({
-            ...prev,
-            ...err.response.data.errors,
-          }));
+          const errors = err.response.data.errors;
+          const newFieldErrors = {};
+          
+          // Handle nested error object format
+          if (typeof errors === 'object' && !Array.isArray(errors)) {
+            Object.entries(errors).forEach(([field, errorObj]) => {
+              if (errorObj?.msg) {
+                newFieldErrors[field] = errorObj.msg;
+              }
+            });
+          }
+          
+          setFieldErrors(newFieldErrors);
         }
-        // Jika ada pesan error global dari backend
-        if (err.response.data.message || err.response.data.msg) {
-          setError(
-            err.response.data.message ||
-            err.response.data.msg ||
-            "Registrasi perusahaan gagal."
-          );
+
+        // Handle global error message
+        const errorMessage = err.response.data.message || err.response.data.msg;
+        if (typeof errorMessage === 'string') {
+          setError(errorMessage);
         }
       } else {
         setError("Terjadi kesalahan pada server.");
@@ -162,7 +123,6 @@ export default function RegisterPerusahaan({
           {error || success}
         </div>
       )}
-
       {/* Input Nama Perusahaan */}
       <div>
         <label className="block text-xs font-semibold text-gray-700 mb-1">
@@ -215,7 +175,6 @@ export default function RegisterPerusahaan({
             name="password"
             value={perusahaan.password}
             onChange={handlePerusahaanChange}
-            minLength={6}
             required
             autoComplete="new-password"
           />
@@ -246,7 +205,6 @@ export default function RegisterPerusahaan({
             name="confPassword"
             value={perusahaan.confPassword}
             onChange={handlePerusahaanChange}
-            minLength={6}
             required
             autoComplete="new-password"
           />

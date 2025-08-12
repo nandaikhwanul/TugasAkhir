@@ -8,10 +8,45 @@ import RegisterPerusahaan from "../register/perusahaan";
 export default function RegisterPage() {
   const [mode, setMode] = useState("alumni"); // "alumni" or "perusahaan"
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  // Pastikan error dan success hanya string
+  const [error, setErrorRaw] = useState("");
+  const [success, setSuccessRaw] = useState("");
   const [agree, setAgree] = useState(false);
   const router = useRouter();
+
+  // Setter yang memastikan hanya string yang di-set
+  const setError = (val) => {
+    if (typeof val === "string") {
+      setErrorRaw(val);
+    } else if (val && typeof val === "object") {
+      // Coba ambil pesan error dari msg atau message
+      if (typeof val.msg === "string") {
+        setErrorRaw(val.msg);
+      } else if (typeof val.message === "string") {
+        setErrorRaw(val.message);
+      } else {
+        setErrorRaw("Terjadi kesalahan.");
+      }
+    } else {
+      setErrorRaw("");
+    }
+  };
+
+  const setSuccess = (val) => {
+    if (typeof val === "string") {
+      setSuccessRaw(val);
+    } else if (val && typeof val === "object") {
+      if (typeof val.msg === "string") {
+        setSuccessRaw(val.msg);
+      } else if (typeof val.message === "string") {
+        setSuccessRaw(val.message);
+      } else {
+        setSuccessRaw("Berhasil.");
+      }
+    } else {
+      setSuccessRaw("");
+    }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-[#FAFAFD] p-4">
@@ -71,12 +106,12 @@ export default function RegisterPage() {
           </div>
           {error && (
             <div className="text-red-500 mb-4 text-sm text-center">
-              {error}
+              {typeof error === 'string' ? error : 'Terjadi kesalahan'}
             </div>
           )}
           {success && (
             <div className="text-green-600 mb-4 text-sm text-center">
-              {success}
+              {typeof success === 'string' ? success : 'Berhasil'}
             </div>
           )}
           {mode === "alumni" ? (
