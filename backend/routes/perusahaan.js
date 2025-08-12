@@ -4,40 +4,60 @@ import {
     registerPerusahaan,
     checkOldPassword,
     updatePerusahaan,
-    getAllAlumniForPerusahaan // tambahkan import endpoint baru
+    getAllAlumniForPerusahaan
 } from "../controllers/Perusahaan.js";
 import { verifyUser, perusahaanOnly } from "../middleware/AuthUser.js";
-
-// Tambahan: import controller detailPelamar
 import { detailPelamar } from "../controllers/Pelamar.js";
-
-// Import controller untuk detail alumni (untuk perusahaan melihat detail alumni)
 import { getAlumniDetailForPerusahaan, searchAlumni } from "../controllers/Alumni.js";
 
 const router = express.Router();
 
+// Helper middleware to catch async errors and send proper validation error responses
+function asyncHandler(fn) {
+    return function (req, res, next) {
+        Promise.resolve(fn(req, res, next)).catch((err) => {
+            // If error is a validation error with fields, send 400 with field errors
+            if (err && err.name === "ValidationError" && err.errors) {
+                return res.status(400).json({
+                    message: "Validation failed",
+                    errors: err.errors
+                });
+            }
+            // If error has a status and errors, send accordingly
+            if (err && err.status === 400 && err.errors) {
+                return res.status(400).json({
+                    message: err.message || "Validation failed",
+                    errors: err.errors
+                });
+            }
+            // Fallback: pass to default error handler
+            next(err);
+        });
+    };
+}
+
 // Route untuk mendapatkan perusahaan berdasarkan uuid (hanya admin/perusahaan yang login)
-router.get('/perusahaan/me', verifyUser, getPerusahaanById);
+router.get('/perusahaan/me', verifyUser, asyncHandler(getPerusahaanById));
 
 // Route untuk register perusahaan (umum, tidak perlu login)
-router.post('/perusahaan', registerPerusahaan);
+router.post('/perusahaan', asyncHandler(registerPerusahaan));
 
 // Route untuk update perusahaan (PATCH, dengan upload logo, hanya perusahaan/admin)
-router.patch('/perusahaan/:id', verifyUser, updatePerusahaan);
+router.patch('/perusahaan/:id', verifyUser, asyncHandler(updatePerusahaan));
 
 // Route untuk cek password lama perusahaan (menggunakan /me sesuai best practice)
-router.post('/perusahaan/me/checkoldpassword', verifyUser, perusahaanOnly, checkOldPassword);
+router.post('/perusahaan/me/checkoldpassword', verifyUser, perusahaanOnly, asyncHandler(checkOldPassword));
 
 // Route untuk melihat detail pelamar tertentu (khusus perusahaan pemilik lowongan)
-router.get('/perusahaan/pelamar/:pelamarId', verifyUser, perusahaanOnly, detailPelamar);
+router.get('/perusahaan/pelamar/:pelamarId', verifyUser, perusahaanOnly, asyncHandler(detailPelamar));
 
 // Route untuk perusahaan melihat detail alumni tertentu (termasuk foto_profil)
-router.get('/perusahaan/alumni/:id', verifyUser, perusahaanOnly, getAlumniDetailForPerusahaan);
+router.get('/perusahaan/alumni/:id', verifyUser, perusahaanOnly, asyncHandler(getAlumniDetailForPerusahaan));
 
 // Route untuk perusahaan mencari alumni (akses: perusahaan, admin, alumni)
-router.get('/perusahaan/alumni', verifyUser, searchAlumni);
+router.get('/perusahaan/alumni', verifyUser, asyncHandler(searchAlumni));
 
 // Route baru: Mendapatkan semua alumni yang pernah melamar ke lowongan perusahaan ini (khusus perusahaan)
-router.get('/perusahaan/alumni-pelamar', verifyUser, perusahaanOnly, getAllAlumniForPerusahaan);
+router.get('/perusahaan/alumni-pelamar', verifyUser, perusahaanOnly, asyncHandler(getAllAlumniForPerusahaan));
 
 export default router;

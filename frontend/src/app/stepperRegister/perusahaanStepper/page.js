@@ -55,6 +55,45 @@ function getPerusahaanIdFromCookie() {
   return null;
 }
 
+// Validasi untuk setiap field
+function validateField(name, value) {
+  switch (name) {
+    case "nama_brand":
+      if (!value || value.trim().length < 2) return "Nama brand minimal 2 karakter";
+      return "";
+    case "jumlah_karyawan":
+      if (!value || isNaN(value)) return "Jumlah karyawan harus berupa angka";
+      if (parseInt(value) < 1) return "Jumlah karyawan minimal 1";
+      return "";
+    case "email_perusahaan":
+      if (!value) return "Email perusahaan wajib diisi";
+      // Simple email regex
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) return "Format email tidak valid";
+      return "";
+    case "alamat":
+      if (!value || value.trim().length < 5) return "Alamat minimal 5 karakter";
+      return "";
+    case "bidang_perusahaan":
+      if (!value || value.trim().length < 2) return "Bidang perusahaan minimal 2 karakter";
+      return "";
+    case "nomor_telp":
+      if (!value) return "Nomor telepon wajib diisi";
+      // Nomor harus hanya angka, minimal 8 digit setelah +62
+      if (!/^\d{8,15}$/.test(value)) return "Nomor telepon harus 8-15 digit angka (tanpa 0 di depan)";
+      return "";
+    case "deskripsi_perusahaan":
+      if (!value || value.trim().length < 10) return "Deskripsi minimal 10 karakter";
+      return "";
+    case "website":
+      if (!value) return "Website wajib diisi";
+      // Simple URL validation
+      if (!/^https?:\/\/[^\s]+$/.test(value)) return "Format website tidak valid (harus diawali http:// atau https://)";
+      return "";
+    default:
+      return "";
+  }
+}
+
 export default function PerusahaanStepper({ onClose }) {
   const [step, setStep] = useState(0);
   const [form, setForm] = useState({
@@ -67,6 +106,7 @@ export default function PerusahaanStepper({ onClose }) {
     deskripsi_perusahaan: "",
     website: "",
   });
+  const [errors, setErrors] = useState({});
   const [submitted, setSubmitted] = useState(false);
   const [loadingEmail, setLoadingEmail] = useState(true);
   const [emailError, setEmailError] = useState("");
@@ -106,7 +146,9 @@ export default function PerusahaanStepper({ onClose }) {
           jumlah_karyawan: data.jumlah_karyawan || "",
           alamat: data.alamat || "",
           bidang_perusahaan: data.bidang_perusahaan || "",
-          nomor_telp: data.nomor_telp || "",
+          nomor_telp: data.nomor_telp
+            ? (data.nomor_telp.startsWith("+62") ? data.nomor_telp.slice(3) : data.nomor_telp)
+            : "",
           deskripsi_perusahaan: data.deskripsi_perusahaan || "",
           website: data.website || "",
         }));
@@ -128,7 +170,7 @@ export default function PerusahaanStepper({ onClose }) {
   const allFieldNames = FIELD_DEFS.map((f) => f.name);
   const totalFields = allFieldNames.length;
   const filledFields = allFieldNames.filter(
-    (name) => form[name] && form[name].toString().trim() !== ""
+    (name) => form[name] && form[name].toString().trim() !== "" && !validateField(name, form[name])
   ).length;
   const progressPercent = Math.round((filledFields / totalFields) * 100);
 
@@ -137,7 +179,7 @@ export default function PerusahaanStepper({ onClose }) {
     for (let i = 0; i < STEPS.length - 1; i++) {
       const stepFields = STEPS[i].fields;
       for (let field of stepFields) {
-        if (!form[field] || form[field].toString().trim() === "") {
+        if (!form[field] || form[field].toString().trim() === "" || validateField(field, form[field])) {
           return i;
         }
       }
@@ -147,6 +189,16 @@ export default function PerusahaanStepper({ onClose }) {
 
   // On next, jump to first incomplete step if any, else next step
   const handleNext = () => {
+    // Validasi semua field di step ini
+    const stepFields = STEPS[step].fields;
+    let newErrors = {};
+    stepFields.forEach((field) => {
+      const err = validateField(field, form[field]);
+      if (err) newErrors[field] = err;
+    });
+    setErrors((prev) => ({ ...prev, ...newErrors }));
+    if (Object.keys(newErrors).length > 0) return;
+
     const firstIncompleteStep = getFirstIncompleteStep();
     if (firstIncompleteStep !== step) {
       setStep(firstIncompleteStep);
@@ -162,12 +214,24 @@ export default function PerusahaanStepper({ onClose }) {
     }
   };
 
-  // On change, update form state
+  // On change, update form state and validate
   const handleChange = (e) => {
     const { name, value } = e.target;
+    let val = value;
+    // Untuk nomor_telp, hanya angka, tidak boleh ada spasi, tidak boleh 0 di depan
+    if (name === "nomor_telp") {
+      // Hanya angka, hapus karakter non-digit
+      val = val.replace(/\D/g, "");
+      // Hapus 0 di depan
+      if (val.startsWith("0")) val = val.replace(/^0+/, "");
+    }
     setForm((prev) => ({
       ...prev,
-      [name]: value,
+      [name]: val,
+    }));
+    setErrors((prev) => ({
+      ...prev,
+      [name]: validateField(name, val),
     }));
   };
 
@@ -175,9 +239,17 @@ export default function PerusahaanStepper({ onClose }) {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError("");
-    const firstIncompleteStep = getFirstIncompleteStep();
-    if (firstIncompleteStep !== STEPS.length - 1) {
-      setStep(firstIncompleteStep);
+    // Validasi semua field
+    let newErrors = {};
+    allFieldNames.forEach((field) => {
+      const err = validateField(field, form[field]);
+      if (err) newErrors[field] = err;
+    });
+    setErrors(newErrors);
+    if (Object.keys(newErrors).length > 0) {
+      // Pindah ke step pertama yang error
+      const firstStepWithError = getFirstIncompleteStep();
+      setStep(firstStepWithError);
       return;
     }
     setSubmitLoading(true);
@@ -207,17 +279,52 @@ export default function PerusahaanStepper({ onClose }) {
           jumlah_karyawan: form.jumlah_karyawan,
           alamat: form.alamat,
           bidang_perusahaan: form.bidang_perusahaan,
-          nomor_telp: form.nomor_telp,
+          // Kirim nomor_telp dengan +62 di depan
+          nomor_telp: form.nomor_telp ? `+62${form.nomor_telp}` : "",
           deskripsi_perusahaan: form.deskripsi_perusahaan,
           website: form.website,
         }),
       });
+
       if (!res.ok) {
-        const errData = await res.json().catch(() => ({}));
-        setSubmitError(
-          errData?.message ||
-            "Gagal mengupdate data perusahaan. Silakan coba lagi."
-        );
+        // Try to parse backend error (express-validator)
+        let errData = {};
+        try {
+          errData = await res.json();
+        } catch (_) {
+          errData = {};
+        }
+
+        // express-validator: { errors: [ { msg, param, ... } ] }
+        if (errData?.errors && Array.isArray(errData.errors)) {
+          // Map errors to field errors
+          const backendFieldErrors = {};
+          errData.errors.forEach((err) => {
+            if (err.param && err.msg) {
+              backendFieldErrors[err.param] = err.msg;
+            }
+          });
+          setErrors((prev) => ({
+            ...prev,
+            ...backendFieldErrors,
+          }));
+          // Pindah ke step pertama yang error dari backend
+          const firstBackendErrorField = errData.errors[0]?.param;
+          if (firstBackendErrorField) {
+            for (let i = 0; i < STEPS.length - 1; i++) {
+              if (STEPS[i].fields.includes(firstBackendErrorField)) {
+                setStep(i);
+                break;
+              }
+            }
+          }
+          setSubmitError("Terdapat kesalahan pada data yang dikirim.");
+        } else {
+          setSubmitError(
+            errData?.message ||
+              "Gagal mengupdate data perusahaan. Silakan coba lagi."
+          );
+        }
         setSubmitLoading(false);
         return;
       }
@@ -315,17 +422,68 @@ export default function PerusahaanStepper({ onClose }) {
                     {emailError && (
                       <div className="text-xs text-red-500 mt-1">{emailError}</div>
                     )}
+                    {errors[field.name] && (
+                      <div className="text-xs text-red-500 mt-1">{errors[field.name]}</div>
+                    )}
                     {/* Progress bar for each input */}
                     <div className="w-full bg-gray-100 rounded-full h-1 mt-1">
                       <div
                         className={`h-1 rounded-full transition-all duration-300 ${
-                          form[field.name] && form[field.name].toString().trim() !== ""
+                          form[field.name] && form[field.name].toString().trim() !== "" && !errors[field.name]
                             ? "bg-green-500"
                             : "bg-gray-300"
                         }`}
                         style={{
                           width:
-                            form[field.name] && form[field.name].toString().trim() !== ""
+                            form[field.name] && form[field.name].toString().trim() !== "" && !errors[field.name]
+                              ? "100%"
+                              : "0%",
+                        }}
+                      ></div>
+                    </div>
+                  </div>
+                );
+              }
+              // Special handling for nomor_telp: prefix +62
+              if (field.name === "nomor_telp") {
+                return (
+                  <div key={field.name}>
+                    <label className="block text-sm font-medium text-black mb-1">
+                      {field.label}
+                    </label>
+                    <div className="flex">
+                      <span className="inline-flex items-center px-3 rounded-l-lg border border-r-0 border-gray-300 bg-gray-100 text-gray-700 text-sm select-none">
+                        +62
+                      </span>
+                      <input
+                        type="text"
+                        name={field.name}
+                        value={form[field.name]}
+                        onChange={handleChange}
+                        className="w-full border border-gray-300 rounded-r-lg px-3 py-2 focus:outline-blue-400 text-black"
+                        placeholder="8xxxxxxxxxx"
+                        maxLength={15}
+                        minLength={8}
+                        required
+                        inputMode="numeric"
+                        pattern="\d{8,15}"
+                        autoComplete="off"
+                      />
+                    </div>
+                    {errors[field.name] && (
+                      <div className="text-xs text-red-500 mt-1">{errors[field.name]}</div>
+                    )}
+                    {/* Progress bar for each input */}
+                    <div className="w-full bg-gray-100 rounded-full h-1 mt-1">
+                      <div
+                        className={`h-1 rounded-full transition-all duration-300 ${
+                          form[field.name] && form[field.name].toString().trim() !== "" && !errors[field.name]
+                            ? "bg-green-500"
+                            : "bg-gray-300"
+                        }`}
+                        style={{
+                          width:
+                            form[field.name] && form[field.name].toString().trim() !== "" && !errors[field.name]
                               ? "100%"
                               : "0%",
                         }}
@@ -358,17 +516,20 @@ export default function PerusahaanStepper({ onClose }) {
                       required
                     />
                   )}
+                  {errors[field.name] && (
+                    <div className="text-xs text-red-500 mt-1">{errors[field.name]}</div>
+                  )}
                   {/* Progress bar for each input */}
                   <div className="w-full bg-gray-100 rounded-full h-1 mt-1">
                     <div
                       className={`h-1 rounded-full transition-all duration-300 ${
-                        form[field.name] && form[field.name].toString().trim() !== ""
+                        form[field.name] && form[field.name].toString().trim() !== "" && !errors[field.name]
                           ? "bg-green-500"
                           : "bg-gray-300"
                       }`}
                       style={{
                         width:
-                          form[field.name] && form[field.name].toString().trim() !== ""
+                          form[field.name] && form[field.name].toString().trim() !== "" && !errors[field.name]
                             ? "100%"
                             : "0%",
                       }}
@@ -390,7 +551,9 @@ export default function PerusahaanStepper({ onClose }) {
               {FIELD_DEFS.map((field) => (
                 <div key={field.name}>
                   <span className="font-medium">{field.label}:</span>{" "}
-                  {form[field.name]}
+                  {field.name === "nomor_telp"
+                    ? (form[field.name] ? `+62${form[field.name]}` : "")
+                    : form[field.name]}
                 </div>
               ))}
             </div>
@@ -427,9 +590,14 @@ export default function PerusahaanStepper({ onClose }) {
               onClick={handleNext}
               className="px-5 py-2 rounded-lg bg-blue-600 text-white font-semibold text-sm hover:bg-blue-700"
               disabled={
-                STEPS[step].fields.some((f) => !form[f] || form[f].toString().trim() === "")
-                || loadingEmail
-                || submitLoading
+                STEPS[step].fields.some(
+                  (f) =>
+                    !form[f] ||
+                    form[f].toString().trim() === "" ||
+                    !!validateField(f, form[f])
+                ) ||
+                loadingEmail ||
+                submitLoading
               }
             >
               Selanjutnya

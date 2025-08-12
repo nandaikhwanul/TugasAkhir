@@ -83,7 +83,7 @@ export default function DashboardPerusahaan() {
       {/* Modal for PerusahaanStepper */}
       {showModal && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs"
+          className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-xs "
         >
           <div className="relative bg-white rounded-xl shadow-lg max-w-xl w-full mx-4">
             <button
