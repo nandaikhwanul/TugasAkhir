@@ -5,7 +5,7 @@ import { FcGoogle } from "react-icons/fc"; // Import Google icon
 import { IoLogoWhatsapp } from "react-icons/io"; // Import WhatsApp icon
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import { getTokenFromSessionStorage } from "../../sessiontoken";
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Ambil id perusahaan dari token
 function getPerusahaanIdFromToken(token) {

@@ -19,7 +19,7 @@ import "react-toastify/dist/ReactToastify.css";
 import FotoPerusahaanPage from "../foto/page";
 
 // Pakai helper dari sessiontoken
-import { getTokenFromSessionStorage } from "../../sessiontoken";
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Helper: get perusahaan id from token (JWT)
 function getPerusahaanIdFromToken(token) {

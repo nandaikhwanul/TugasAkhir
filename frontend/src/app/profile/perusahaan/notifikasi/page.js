@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { FiMail } from "react-icons/fi";
 import { IoLogoWhatsapp } from "react-icons/io";
-import { getTokenFromSessionStorage } from "../../sessiontoken";
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Custom Switch component
 function Switch({ checked, onChange, color = "blue", label, disabled }) {
