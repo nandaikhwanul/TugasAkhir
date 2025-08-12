@@ -22,9 +22,6 @@ function setTokenCookie(res, token) {
     // 30 menit
     const maxAge = 30 * 60 * 1000;
     res.cookie("token", token, {
-        httpOnly: false, // agar bisa diakses client-side jika perlu
-        secure: false, // true di production (https)
-        sameSite: "none",
         maxAge: maxAge,
         path: "/"
     });
@@ -256,9 +253,6 @@ export const logoutUser = async (req, res) => {
 
         // Hapus cookie token
         res.clearCookie("token", {
-            httpOnly: false,
-            secure: false,
-            sameSite: "none",
             path: "/"
         });
 
