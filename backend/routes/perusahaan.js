@@ -4,7 +4,8 @@ import {
     registerPerusahaan,
     checkOldPassword,
     updatePerusahaan,
-    getAllAlumniForPerusahaan
+    getAllAlumniForPerusahaan,
+    registerPerusahaanValidation
 } from "../controllers/Perusahaan.js";
 import { verifyUser, perusahaanOnly } from "../middleware/AuthUser.js";
 import { detailPelamar } from "../controllers/Pelamar.js";
@@ -40,7 +41,7 @@ function asyncHandler(fn) {
 router.get('/perusahaan/me', verifyUser, asyncHandler(getPerusahaanById));
 
 // Route untuk register perusahaan (umum, tidak perlu login)
-router.post('/perusahaan', asyncHandler(registerPerusahaan));
+router.post('/perusahaan', registerPerusahaanValidation,PerusahaanasyncHandler(registerPerusahaan));
 
 // Route untuk update perusahaan (PATCH, dengan upload logo, hanya perusahaan/admin)
 router.patch('/perusahaan/:id', verifyUser, asyncHandler(updatePerusahaan));
