@@ -24,9 +24,6 @@ export const blacklistToken = (token) => {
 };
 
 // Fungsi destroy token ketika logout (ambil token dari header Authorization)
-// Setelah logout, user dengan token tersebut tidak bisa update (karena token di-blacklist)
-// dan tidak bisa logout lagi (karena token sudah di-blacklist)
-// Sekarang juga menghapus token di database user
 export const destroyToken = async (req, res) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -79,7 +76,6 @@ export const destroyToken = async (req, res) => {
 };
 
 // Middleware untuk verifikasi user login (menggunakan Bearer JWT, RS256)
-// Jika token sudah di-blacklist (misal setelah logout), user tidak bisa update atau akses endpoint lain
 export const verifyUser = (req, res, next) => {
     const authHeader = req.headers['authorization'];
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -98,9 +94,8 @@ export const verifyUser = (req, res, next) => {
 
     try {
         const decoded = jwt.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] });
-        // Pastikan field role dan id ada di payload
-        req.user = decoded; // simpan payload user
-        req.userId = decoded.id || decoded._id; // fallback jika pakai _id
+        req.user = decoded;
+        req.userId = decoded.id || decoded._id;
         req.role = decoded.role;
         next();
     } catch (err) {
@@ -141,3 +136,12 @@ export const perusahaanOnly = (req, res, next) => {
     next();
 };
 
+// Endpoint /protected untuk menguji akses token dari frontend
+// Hanya bisa diakses jika token valid (menggunakan verifyUser)
+export const protectedRoute = (req, res) => {
+    // req.user sudah diisi oleh verifyUser
+    return res.status(200).json({
+        msg: "Akses ke endpoint /protected berhasil. Token valid.",
+        user: req.user
+    });
+};
