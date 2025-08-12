@@ -27,9 +27,7 @@ export default function RegisterAlumni(props) {
   const [success, setSuccess] = props.setSuccess
     ? [props.success, props.setSuccess]
     : useState("");
-  const [agree, setAgree] = props.setAgree
-    ? [props.agree, props.setAgree]
-    : useState(false);
+  // Hapus state agree dan props.setAgree
   const router = props.router || useRouter();
 
   const handleAlumniChange = (e) => {
@@ -44,10 +42,7 @@ export default function RegisterAlumni(props) {
     e.preventDefault();
     setError("");
     setSuccess("");
-    if (!agree) {
-      setError("Anda harus menyetujui Terms dan Privacy Policies.");
-      return;
-    }
+    // Hapus pengecekan agree
     setLoading(true);
     try {
       await axios.post(
@@ -190,21 +185,8 @@ export default function RegisterAlumni(props) {
         </div>
       </div>
 
-      {/* Checkbox Terms */}
-      <div className="flex items-center mt-2">
-        <input
-          type="checkbox"
-          id="terms"
-          className="h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-400"
-          checked={agree}
-          onChange={() => setAgree((v) => !v)}
-        />
-        <label htmlFor="terms" className="ml-2 text-sm text-gray-600 select-none">
-          Saya setuju dengan{" "}
-          <span className="text-blue-600 underline underline-offset-2 cursor-pointer">Terms</span> dan{" "}
-          <span className="text-blue-600 underline underline-offset-2 cursor-pointer">Privacy Policies</span>
-        </label>
-      </div>
+      {/* Checkbox Terms - dihapus */}
+
       <button
         className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-semibold text-base shadow hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-60"
         disabled={loading}

@@ -11,8 +11,8 @@ export default function RegisterPerusahaan({
   setError: setParentError,
   success: parentSuccess,
   setSuccess: setParentSuccess,
-  agree: parentAgree,
-  setAgree: setParentAgree,
+  // agree: parentAgree,
+  // setAgree: setParentAgree,
   router: parentRouter,
 }) {
   // Hanya field yang diperlukan untuk register: nama_perusahaan, email_perusahaan, password, confPassword
@@ -31,7 +31,7 @@ export default function RegisterPerusahaan({
     email_perusahaan: "",
     password: "",
     confPassword: "",
-    terms: "",
+    // terms: "",
   });
 
   // Gunakan parent state jika diberikan, jika tidak pakai local
@@ -44,9 +44,9 @@ export default function RegisterPerusahaan({
   const [success, setSuccess] = setParentSuccess
     ? [parentSuccess, setParentSuccess]
     : useState("");
-  const [agree, setAgree] = setParentAgree
-    ? [parentAgree, setParentAgree]
-    : useState(false);
+  // const [agree, setAgree] = setParentAgree
+  //   ? [parentAgree, setParentAgree]
+  //   : useState(false);
   const router = parentRouter || useRouter();
 
   const handlePerusahaanChange = (e) => {
@@ -83,9 +83,7 @@ export default function RegisterPerusahaan({
     } else if (perusahaan.confPassword !== perusahaan.password) {
       errors.confPassword = "Konfirmasi password tidak sama.";
     }
-    if (!agree) {
-      errors.terms = "Anda harus menyetujui Terms dan Privacy Policies.";
-    }
+    // Hapus validasi terms
     return errors;
   };
 
@@ -98,14 +96,14 @@ export default function RegisterPerusahaan({
       email_perusahaan: "",
       password: "",
       confPassword: "",
-      terms: "",
+      // terms: "",
     });
 
     const errors = validateFields();
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
-      // Jika error terms, tampilkan juga di global error agar tetap muncul di atas form
-      if (errors.terms) setError(errors.terms);
+      // Hapus error terms global
+      // if (errors.terms) setError(errors.terms);
       return;
     }
 
@@ -264,29 +262,10 @@ export default function RegisterPerusahaan({
         </div>
       </div>
       {/* Checkbox Terms */}
-      <div className="flex items-center mt-2">
-        <input
-          type="checkbox"
-          id="terms"
-          className={`h-4 w-4 text-blue-600 border-gray-300 rounded focus:ring-blue-400 ${fieldErrors.terms ? "border-red-400" : ""}`}
-          checked={agree}
-          onChange={() => {
-            setAgree((v) => !v);
-            setFieldErrors((prev) => ({
-              ...prev,
-              terms: "",
-            }));
-          }}
-        />
-        <label htmlFor="terms" className="ml-2 text-sm text-gray-600 select-none">
-          Saya setuju dengan{" "}
-          <span className="text-blue-600 underline underline-offset-2 cursor-pointer">Terms</span> dan{" "}
-          <span className="text-blue-600 underline underline-offset-2 cursor-pointer">Privacy Policies</span>
-        </label>
-      </div>
-      {fieldErrors.terms && (
+      {/* Checkbox terms dihapus */}
+      {/* {fieldErrors.terms && (
         <div className="mb-2 text-xs text-red-600">{fieldErrors.terms}</div>
-      )}
+      )} */}
       <button
         className="w-full py-2.5 px-4 bg-gradient-to-r from-blue-600 to-blue-500 text-white rounded-lg font-semibold text-base shadow hover:from-blue-700 hover:to-blue-600 transition disabled:opacity-60"
         disabled={loading}

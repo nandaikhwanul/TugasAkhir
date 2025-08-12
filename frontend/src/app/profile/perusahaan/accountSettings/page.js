@@ -5,15 +5,7 @@ import { FcGoogle } from "react-icons/fc"; // Import Google icon
 import { IoLogoWhatsapp } from "react-icons/io"; // Import WhatsApp icon
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Helper: get token from cookie
-function getTokenFromCookie(name = "token") {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Ambil id perusahaan dari token
 function getPerusahaanIdFromToken(token) {
@@ -159,7 +151,7 @@ export default function PerusahaanAccountSettings() {
       setLoading(true);
       setFetchError("");
       try {
-        const token = getTokenFromCookie("token");
+        const token = getTokenFromSessionStorage();
         if (!token) {
           if (isMounted) {
             setFetchError("Token tidak ditemukan. Silakan login ulang.");
@@ -222,7 +214,7 @@ export default function PerusahaanAccountSettings() {
       setEmailPerusahaanError("Data profil belum dimuat. Silakan coba lagi.");
       return;
     }
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setEmailPerusahaanError("Token tidak ditemukan. Silakan login ulang.");
       return;
@@ -284,7 +276,7 @@ export default function PerusahaanAccountSettings() {
       setNomorTelpError("Data profil belum dimuat. Silakan coba lagi.");
       return;
     }
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setNomorTelpError("Token tidak ditemukan. Silakan login ulang.");
       return;
@@ -347,7 +339,7 @@ export default function PerusahaanAccountSettings() {
       setPasswordError("Data profil belum dimuat. Silakan coba lagi.");
       return;
     }
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setPasswordError("Token tidak ditemukan. Silakan login ulang.");
       return;

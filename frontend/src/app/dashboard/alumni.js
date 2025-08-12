@@ -5,20 +5,9 @@ import axios from "axios";
 import Navbar from "../navbar/page";
 import AlumniStepper from "../stepperRegister/alumniStepper/page";
 import AlumniDashbord from "./alumni/page";
+import { getTokenFromSessionStorage } from "../sessiontoken"; // gunakan ini untuk dapat tokenya
 
-// Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
-
-// Fungsi untuk menghapus cookie token
+// Fungsi untuk menghapus cookie token (jaga-jaga, walau token sudah di sessionStorage)
 function removeTokenCookie() {
   if (typeof document === "undefined") return;
   document.cookie =
@@ -51,7 +40,7 @@ export default function AlumniDashboard() {
       setLoading(true);
       setError("");
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
 
         if (!token) {
           router.replace("/login");
@@ -128,8 +117,8 @@ export default function AlumniDashboard() {
     setLogoutLoading(true);
     setError("");
     try {
-      // Ambil token dari cookie
-      const token = getTokenFromCookie();
+      // Ambil token dari sessionStorage
+      const token = getTokenFromSessionStorage();
       await axios.post(
         "https://tugasakhir-production-6c6c.up.railway.app/logout",
         {},
@@ -145,6 +134,9 @@ export default function AlumniDashboard() {
       // Abaikan error logout, tetap hapus token
     } finally {
       removeTokenCookie();
+      if (typeof window !== "undefined") {
+        sessionStorage.removeItem("token");
+      }
       setLogoutLoading(false);
       router.replace("/login");
     }

@@ -11,18 +11,7 @@ import {
   IoHelpCircle,
 } from "react-icons/io5";
 import NeuButtonBar from "./bar/page";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Ionicons ICONS
 const SortAZIcon = ({ className = "" }) => (
@@ -264,7 +253,7 @@ export default function LowonganPerusahaanListPage() {
     const fetchLowongan = async () => {
       setLoading(true);
       setError("");
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Token tidak ditemukan. Silakan login ulang.");
         setLoading(false);

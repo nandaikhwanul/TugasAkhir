@@ -1,5 +1,6 @@
 "use client";
 import { useState, useEffect } from "react";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Field list as per instruction
 const FIELD_DEFS = [
@@ -42,18 +43,6 @@ const STEPS = [
 // Helper to get field definition by name
 const getFieldDef = (name) => FIELD_DEFS.find((f) => f.name === name);
 
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
-
 // Helper: Ambil id perusahaan dari cookie (client-side)
 function getPerusahaanIdFromCookie() {
   if (typeof document === "undefined") return null;
@@ -90,7 +79,7 @@ export default function PerusahaanStepper({ onClose }) {
       setLoadingEmail(true);
       setEmailError("");
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setEmailError("Token tidak ditemukan.");
           setLoadingEmail(false);
@@ -182,7 +171,7 @@ export default function PerusahaanStepper({ onClose }) {
     }));
   };
 
-  // On submit, PATCH ke endpoint dengan semua data field, id dan token dari cookie
+  // On submit, PATCH ke endpoint dengan semua data field, id dan token dari sessionStorage
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSubmitError("");
@@ -193,7 +182,7 @@ export default function PerusahaanStepper({ onClose }) {
     }
     setSubmitLoading(true);
     try {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       const id = getPerusahaanIdFromCookie();
       if (!token) {
         setSubmitError("Token tidak ditemukan.");

@@ -67,6 +67,13 @@ export default function PerusahaanNavbar() {
       "token=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; SameSite=Lax";
   }
 
+  // Fungsi untuk menghapus sessionStorage token
+  function removeTokenFromSessionStorage() {
+    if (typeof window !== "undefined" && window.sessionStorage) {
+      window.sessionStorage.removeItem("token");
+    }
+  }
+
   // Ambil data perusahaan (foto profil & nama)
   useEffect(() => {
     const token = getTokenFromSessionStorage();
@@ -148,6 +155,7 @@ export default function PerusahaanNavbar() {
 
   const handleLogout = () => {
     removeTokenCookie();
+    removeTokenFromSessionStorage();
     window.location.reload();
   };
 

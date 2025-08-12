@@ -3,15 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import { FiEdit2, FiLogOut } from "react-icons/fi";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Helper: get token from cookie
-function getTokenFromCookie(name = "token") {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Helper untuk resolve URL foto_profil alumni ke localhost:5000/uploads jika perlu
 function getProfileImageUrl(foto_profil) {
@@ -69,7 +61,7 @@ export default function SidebarProfile({ onMenuClick, activeMenu }) {
     async function fetchProfile() {
       setLoading(true);
       try {
-        const token = getTokenFromCookie("token");
+        const token = getTokenFromSessionStorage();
         if (!token) {
           if (isMounted) {
             setProfile(null);
@@ -199,7 +191,7 @@ export default function SidebarProfile({ onMenuClick, activeMenu }) {
           URL.revokeObjectURL(objectUrl);
           setUploading(true);
           try {
-            const token = getTokenFromCookie("token");
+            const token = getTokenFromSessionStorage();
             if (!token) throw new Error("Token not found");
             const formData = new FormData();
             formData.append("foto_profil", file);
@@ -239,7 +231,7 @@ export default function SidebarProfile({ onMenuClick, activeMenu }) {
 
     setUploading(true);
     try {
-      const token = getTokenFromCookie("token");
+      const token = getTokenFromSessionStorage();
       if (!token) throw new Error("Token not found");
       const formData = new FormData();
       if (role === "perusahaan") {

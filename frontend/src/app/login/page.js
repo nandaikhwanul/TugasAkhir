@@ -57,9 +57,6 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
-  const [debug, setDebug] = useState(null);
-  const [headerToken, setHeaderToken] = useState(null); // token dari header
-  const [allCookies, setAllCookies] = useState(null); // semua cookie dari header
   const [token, setToken] = useState(null); // token yang akan dipakai di fetch berikutnya
   const router = useRouter();
 
@@ -83,24 +80,6 @@ export default function LoginPage() {
     }
     setCheckingToken(false);
   }, [router]);
-
-  // Debug helper: cek cookie token di browser
-  useEffect(() => {
-    if (typeof document !== "undefined") {
-      // Cek cookie token di browser
-      const cookies = document.cookie;
-      setDebug((prev) => ({
-        ...prev,
-        browserCookies: cookies,
-      }));
-    }
-  }, [loading, checkingToken]);
-
-  // Debug: log token yang akan dipakai di fetch berikutnya
-  useEffect(() => {
-    // eslint-disable-next-line no-console
-    console.log("[DEBUG] Token to be used in fetch:", token);
-  }, [token]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -134,12 +113,6 @@ export default function LoginPage() {
         password,
       };
 
-      // Debug: log sebelum request
-      setDebug((prev) => ({
-        ...prev,
-        beforeLoginCookies: typeof document !== "undefined" ? document.cookie : "",
-      }));
-
       // Kirim request login
       const response = await axios.post(
         "https://tugasakhir-production-6c6c.up.railway.app/login",
@@ -153,26 +126,15 @@ export default function LoginPage() {
       // --- Ambil token dari response.data.token dan simpan ke state & sessionStorage ---
       const tokenFromJson = response.data?.token;
       if (tokenFromJson) {
-        setHeaderToken(tokenFromJson);
         setToken(tokenFromJson); // simpan token ke state untuk fetch berikutnya
         // Set token ke default header axios untuk request selanjutnya
         axios.defaults.headers.common["Authorization"] = `Bearer ${tokenFromJson}`;
         // Simpan ke sessionStorage
         saveTokenToSessionStorage(tokenFromJson);
       } else {
-        setHeaderToken(null);
         setToken(null);
         clearTokenFromSessionStorage();
       }
-
-      // Debug: cek response header Set-Cookie dan token dari JSON
-      setDebug((prev) => ({
-        ...prev,
-        loginResponseHeaders: response.headers,
-        afterLoginCookies: typeof document !== "undefined" ? document.cookie : "",
-        tokenFromHeader: tokenFromJson || null,
-        allSetCookie: response.headers?.["set-cookie"] || null,
-      }));
 
       // Setelah login, token akan terset di header axios (bukan cookie)
       if (rememberMe) {
@@ -201,12 +163,6 @@ export default function LoginPage() {
         } else {
           newError.general = msg;
         }
-        // Debug: log response headers jika error
-        setDebug((prev) => ({
-          ...prev,
-          loginErrorResponseHeaders: err.response.headers,
-          afterLoginCookies: typeof document !== "undefined" ? document.cookie : "",
-        }));
       } else {
         newError.general = "Terjadi kesalahan pada server. Silakan coba lagi.";
       }
@@ -328,64 +284,6 @@ export default function LoginPage() {
               </button>
             </div>
           </form>
-
-          {/* Debug section */}
-          <div className="mt-8 p-4 bg-gray-100 rounded text-xs text-gray-700">
-            <div className="mb-2 font-semibold">Debug Cookie & Token</div>
-            <div>
-              <b>document.cookie:</b>{" "}
-              <span style={{ wordBreak: "break-all" }}>
-                {debug?.browserCookies || "(no cookies)"}
-              </span>
-            </div>
-            <div>
-              <b>Set-Cookie dari response login:</b>
-              <pre className="whitespace-pre-wrap break-all">
-                {debug?.loginResponseHeaders?.["set-cookie"]
-                  ? JSON.stringify(debug.loginResponseHeaders["set-cookie"], null, 2)
-                  : "(tidak ada / tidak bisa diakses dari JS)"}
-              </pre>
-            </div>
-            <div>
-              <b>Header response login (all):</b>
-              <pre className="whitespace-pre-wrap break-all">
-                {debug?.loginResponseHeaders
-                  ? JSON.stringify(debug.loginResponseHeaders, null, 2)
-                  : "(belum login / error)"}
-              </pre>
-            </div>
-            <div>
-              <b>Cookies setelah login:</b>{" "}
-              <span style={{ wordBreak: "break-all" }}>
-                {debug?.afterLoginCookies || "(no cookies)"}
-              </span>
-            </div>
-            <div>
-              <b>Token dari header Set-Cookie/JSON:</b>{" "}
-              <span style={{ wordBreak: "break-all" }}>
-                {debug?.tokenFromHeader || headerToken || "(tidak ada di header/json)"}
-              </span>
-            </div>
-            <div>
-              <b>Token to be used in fetch:</b>{" "}
-              <span style={{ wordBreak: "break-all" }}>
-                {token || "(null)"}
-              </span>
-            </div>
-            <div>
-              <b>Semua Set-Cookie dari header:</b>
-              <pre className="whitespace-pre-wrap break-all">
-                {allCookies
-                  ? JSON.stringify(allCookies, null, 2)
-                  : "(tidak ada Set-Cookie di header)"}
-              </pre>
-            </div>
-            {/* Bagian debug cek token dihapus */}
-          </div>
-          <div className="mt-4 p-2 bg-yellow-100 text-yellow-800 text-xs rounded">
-            <b>Catatan:</b> Jika token yang muncul hanya <code>__next_hmr_refresh_hash__</code> atau bukan <code>token=...</code>, berarti backend tidak mengirimkan cookie <code>token</code> di header <code>Set-Cookie</code> pada response login.<br />
-            Silakan cek backend Anda agar mengirimkan cookie <code>token</code> pada login.
-          </div>
         </div>
 
         <div className="w-1/2 flex items-center justify-center">

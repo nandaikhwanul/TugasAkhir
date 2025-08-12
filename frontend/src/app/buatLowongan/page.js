@@ -7,18 +7,7 @@ import Loader from "../loading/loadingDesign";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { FaRegListAlt, FaMapMarkerAlt, FaMoneyBillWave, FaUserTie, FaCheckCircle, FaRegClock, FaUsers } from "react-icons/fa";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Helper: Cek format gaji harus ada titik pemisah ribuan, misal 5.000.000
 function isValidGajiFormat(str) {
@@ -81,7 +70,7 @@ export default function BuatLowongan() {
 
   // Cek token di awal, redirect ke /login jika tidak ada/expired
   useEffect(() => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       router.replace("/login");
     }
@@ -646,7 +635,7 @@ export default function BuatLowongan() {
     setSuccess("");
     setLoading(true);
 
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       router.replace("/login");
       setLoading(false);

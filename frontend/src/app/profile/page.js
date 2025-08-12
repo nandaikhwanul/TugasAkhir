@@ -7,7 +7,8 @@ import AlumniPreview from "./alumniPreview";
 import AccountSettings from "./alumni/accountSettings/page";
 import Applicants from "./perusahaan/applicants/page";
 import Notifikasi from "./perusahaan/notifikasi/page";
-import ProfilPerusahaanPage from "./perusahaan/profilPerusahaan/page";  // <--- import notifikasi
+import ProfilPerusahaanPage from "./perusahaan/profilPerusahaan/page";
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Import perusahaanPreview dan AccountSettings secara dinamis
 import dynamic from "next/dynamic";
@@ -16,18 +17,6 @@ const PerusahaanAccountSettings = dynamic(
   () => import("./perusahaan/accountSettings/page"),
   { ssr: false }
 );
-
-// Fungsi untuk mengambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
 
 // Fungsi untuk cek validitas token (JWT)
 function isTokenValid(token) {
@@ -61,7 +50,7 @@ export default function ProfilePage() {
   const [activeContent, setActiveContent] = useState("profile");
 
   useEffect(() => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!isTokenValid(token)) {
       router.push("/login");
       return;

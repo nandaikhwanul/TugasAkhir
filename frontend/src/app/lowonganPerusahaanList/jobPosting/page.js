@@ -6,6 +6,7 @@ import TokenKadaluarsaRedirect from "../../tokenKadaluarsa";
 import NeuButtonBar from "../../lowonganPerusahaanList/bar/page";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Custom Confirm Dialog using react-toastify
 function useToastConfirm() {
@@ -69,18 +70,6 @@ function useToastConfirm() {
   }, []);
 
   return showConfirm;
-}
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
 }
 
 // Ionicons ICONS
@@ -694,7 +683,7 @@ export default function LowonganPerusahaanListPage() {
     const fetchLowongan = async () => {
       setLoading(true);
       setError("");
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Token tidak ditemukan. Silakan login ulang.");
         setLoading(false);
@@ -738,7 +727,7 @@ export default function LowonganPerusahaanListPage() {
   const handleSaveEdit = async (form) => {
     if (!editJob) return;
     setSavingEdit(true);
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     try {
       // Format batas_lamaran ke ISO string (UTC)
       let batasLamaranISO = form.batas_lamaran;
@@ -799,7 +788,7 @@ export default function LowonganPerusahaanListPage() {
     // Tetap pakai window.confirm untuk hapus, atau bisa diubah ke toastConfirm jika ingin konsisten
     if (!window.confirm("Yakin ingin menghapus lowongan ini?")) return;
     setDeletingId(job._id);
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     try {
       const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/lowongan/${job._id}`, {
         method: "DELETE",
@@ -828,7 +817,7 @@ export default function LowonganPerusahaanListPage() {
   const handleStatusChange = async (job, newStatus) => {
     if (!job || !newStatus || (job.status === newStatus)) return;
     setStatusChanging(job._id);
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     try {
       const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/lowongan/${job._id}/status`, {
         method: "PATCH",

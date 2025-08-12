@@ -16,14 +16,8 @@ import {
 } from "react-icons/fa";
 import { MdWorkOutline, MdOutlineDesignServices } from "react-icons/md";
 import Image from "next/image";
-import { useRouter } from "next/navigation"; // Tambahkan import useRouter
-
-// Helper to get token from cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/(?:^|;\s*)token=([^;]*)/);
-  return match ? decodeURIComponent(match[1]) : null;
-}
+import { useRouter } from "next/navigation";
+import { getTokenFromSessionStorage } from "../../sessiontoken"; // Ganti ke session storage
 
 // Helper untuk resolve URL logo_perusahaan ke localhost:5000/uploads jika perlu
 function getLogoUrl(logo_perusahaan) {
@@ -245,7 +239,7 @@ function MediaHorizontalScroll({ items, isVideo }) {
 
 // Komponen Card Lowongan
 function LowonganCard({ lowongan }) {
-  const router = useRouter(); // Tambahkan useRouter
+  const router = useRouter();
 
   // Format tanggal batas lamaran
   let batasLamaran = "-";
@@ -358,7 +352,7 @@ export default function AlumniDashboardPage() {
       setLoadingStat(true);
       setErrorStat(null);
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setErrorStat("Token tidak ditemukan.");
           setLoadingStat(false);
@@ -397,7 +391,7 @@ export default function AlumniDashboardPage() {
       setLoadingRekom(true);
       setErrorRekom(null);
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setErrorRekom("Token tidak ditemukan.");
           setLoadingRekom(false);

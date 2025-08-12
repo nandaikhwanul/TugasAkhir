@@ -2,18 +2,7 @@
 import { useRef, useEffect, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper: Konversi path Windows ke path URL (replace backslash ke slash)
 function normalizeFotoUrlPath(path) {
@@ -115,7 +104,7 @@ export default function FotoPerusahaanPage() {
     const fetchPerusahaanAndFotos = async () => {
       setLoading(true);
       setError(null);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Token tidak ditemukan. Silakan login ulang.");
         toast.error("Token tidak ditemukan. Silakan login ulang.");
@@ -346,7 +335,7 @@ export default function FotoPerusahaanPage() {
     }
     setUploading(true);
     try {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setUploadError("Token tidak ditemukan. Silakan login ulang.");
         toast.error("Token tidak ditemukan. Silakan login ulang.");
@@ -403,7 +392,7 @@ export default function FotoPerusahaanPage() {
       [foto.url]: { loading: true, error: null },
     }));
     try {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setDeleteStatus((prev) => ({
           ...prev,

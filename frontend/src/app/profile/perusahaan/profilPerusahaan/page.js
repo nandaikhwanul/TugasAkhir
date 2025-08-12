@@ -18,14 +18,8 @@ import "react-toastify/dist/ReactToastify.css";
 // Import komponen/folder Foto
 import FotoPerusahaanPage from "../foto/page";
 
-// Helper: get token from cookie
-function getTokenFromCookie(name = "token") {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
-}
+// Pakai helper dari sessiontoken
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper: get perusahaan id from token (JWT)
 function getPerusahaanIdFromToken(token) {
@@ -137,7 +131,7 @@ export default function ProfilPerusahaanPage() {
   useEffect(() => {
     async function fetchProfile() {
       setLoading(true);
-      const token = getTokenFromCookie("token");
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setProfile(null);
         setLoading(false);
@@ -225,7 +219,7 @@ export default function ProfilPerusahaanPage() {
 
   // Handler simpan perubahan (PATCH ke backend)
   async function handleSave() {
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       toast.error("Token tidak ditemukan. Silakan login ulang.");
       return;

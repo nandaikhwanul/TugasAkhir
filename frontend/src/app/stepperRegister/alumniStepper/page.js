@@ -1,17 +1,6 @@
 "use client";
 import { useState, useEffect, useMemo, useRef } from "react";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Daftar field yang ingin dicek/lengkapi (tanpa skill, skill di step 2)
 const PROFILE_FIELDS = [
@@ -53,7 +42,7 @@ export default function AlumniProfileForm() {
   useEffect(() => {
     const fetchAlumni = async () => {
       setFetching(true);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setFetching(false);
         return;
@@ -217,7 +206,7 @@ export default function AlumniProfileForm() {
     setLoading(true);
     setSuccess("");
     setErrors({});
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setErrors({ global: "Token tidak ditemukan. Silakan login ulang." });
       setLoading(false);
@@ -270,7 +259,7 @@ export default function AlumniProfileForm() {
       return;
     }
     setSkillLoading(true);
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setSkillError("Token tidak ditemukan. Silakan login ulang.");
       setSkillLoading(false);

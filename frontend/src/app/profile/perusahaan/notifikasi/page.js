@@ -2,15 +2,7 @@
 import React, { useState, useEffect } from "react";
 import { FiMail } from "react-icons/fi";
 import { IoLogoWhatsapp } from "react-icons/io";
-
-// Helper: get token from cookie
-function getTokenFromCookie(name = "token") {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Custom Switch component
 function Switch({ checked, onChange, color = "blue", label, disabled }) {
@@ -73,7 +65,7 @@ export default function NotifikasiPerusahaan() {
       setLoading(true);
       setError("");
       setSuccess("");
-      const token = getTokenFromCookie("token");
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Tidak dapat mengambil token autentikasi.");
         setLoading(false);
@@ -120,7 +112,7 @@ export default function NotifikasiPerusahaan() {
     setError("");
     setSuccess("");
     setSavingEmail(true);
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Tidak dapat mengambil token autentikasi.");
       setSavingEmail(false);
@@ -152,7 +144,7 @@ export default function NotifikasiPerusahaan() {
     setError("");
     setSuccess("");
     setSavingWa(true);
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Tidak dapat mengambil token autentikasi.");
       setSavingWa(false);
