@@ -41,7 +41,7 @@ function asyncHandler(fn) {
 router.get('/perusahaan/me', verifyUser, asyncHandler(getPerusahaanById));
 
 // Route untuk register perusahaan (umum, tidak perlu login)
-router.post('/perusahaan', registerPerusahaanValidation,PerusahaanasyncHandler(registerPerusahaan));
+router.post('/perusahaan', registerPerusahaanValidation,asyncHandler(registerPerusahaan));
 
 // Route untuk update perusahaan (PATCH, dengan upload logo, hanya perusahaan/admin)
 router.patch('/perusahaan/:id', verifyUser, asyncHandler(updatePerusahaan));
