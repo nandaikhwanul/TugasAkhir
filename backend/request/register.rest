@@ -11,12 +11,12 @@ Content-Type: application/json
 }
 
 ### Register Perusahaan
-POST https://tugasakhir-production-6c6c.up.railway.app/perusahaan
+POST http://localhost:5000/perusahaan
 Content-Type: application/json
 
 {
-    "nama_perusahaan": "PT Sukses Selalu",
-    "email_perusahaan": "info@suksesselalu.com",
+    "nama_perusahaan": "P",
+    "email_perusahaan": "info22@suksesselalu.com",
     "password": "abcdef",
     "confPassword": "abcdef"
 }

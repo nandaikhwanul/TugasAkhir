@@ -86,26 +86,27 @@ export const registerPerusahaanValidation = [
         .notEmpty().withMessage('Nama perusahaan wajib diisi')
         .isLength({ min: 3, max: 100 }).withMessage('Nama perusahaan minimal 3 dan maksimal 100 karakter')
         .trim()
-        .custom(async (value) => {
+        .custom(async (value, { req }) => {
             const perusahaan = await Perusahaan.findOne({ nama_perusahaan: value });
             if (perusahaan) {
-                throw new Error('Nama perusahaan sudah terdaftar');
+                // Gunakan throw dengan objek agar express-validator mengaitkan error ke field yang benar
+                throw { msg: 'Nama perusahaan sudah terdaftar', param: 'nama_perusahaan' };
             }
             return true;
         }),
     body('email_perusahaan')
         .isEmail().withMessage('Email perusahaan tidak valid')
-        .custom(async (value) => {
+        .custom(async (value, { req }) => {
             const perusahaan = await Perusahaan.findOne({ email_perusahaan: value });
             if (perusahaan) {
-                throw new Error('Email perusahaan sudah terdaftar');
+                throw { msg: 'Email perusahaan sudah terdaftar', param: 'email_perusahaan' };
             }
             return true;
         }),
     body('password').isLength({ min: 6 }).withMessage('Password minimal 6 karakter'),
     body('confPassword').custom((value, { req }) => {
         if (value !== req.body.password) {
-            throw new Error('Password dan Confirm Password tidak cocok');
+            throw { msg: 'Password dan Confirm Password tidak cocok', param: 'confPassword' };
         }
         return true;
     }),
@@ -140,9 +141,9 @@ export const registerPerusahaan = async (req, res) => {
     // Validasi input menggunakan express-validator
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        // Map errors.array() menjadi objek keyed per field
+        // Gunakan .mapped() agar hasil konsisten keyed per field
         const fieldErrors = Object.fromEntries(
-            errors.array().map(e => [e.param, e.msg])
+            Object.entries(errors.mapped()).map(([field, errObj]) => [field, errObj.msg])
         );
         return res.status(400).json({ errors: fieldErrors });
     }
@@ -284,9 +285,11 @@ export const updatePerusahaan = (req, res) => {
 
         // Parse media_sosial if sent as JSON string (from form-data)
         let mediaSosialObj = perusahaan.media_sosial;
+        let mediaSosialShouldUpdate = false;
         if (typeof media_sosial !== "undefined") {
+            mediaSosialShouldUpdate = true;
             if (media_sosial === "" || media_sosial === null) {
-                mediaSosialObj = undefined;
+                mediaSosialObj = null;
             } else {
                 try {
                     if (typeof media_sosial === "string") {
@@ -303,42 +306,54 @@ export const updatePerusahaan = (req, res) => {
             }
         }
 
+        // Build updateFields to avoid sending undefined
+        const updateFields = {
+            nama_perusahaan: typeof nama_perusahaan !== "undefined" ? nama_perusahaan : perusahaan.nama_perusahaan,
+            nama_brand: typeof nama_brand !== "undefined" ? nama_brand : perusahaan.nama_brand,
+            jumlah_karyawan: typeof jumlah_karyawan !== "undefined" ? jumlah_karyawan : perusahaan.jumlah_karyawan,
+            email_perusahaan: typeof email_perusahaan !== "undefined" ? email_perusahaan : perusahaan.email_perusahaan,
+            alamat: typeof alamat !== "undefined" ? alamat : perusahaan.alamat,
+            bidang_perusahaan: typeof bidang_perusahaan !== "undefined" ? bidang_perusahaan : perusahaan.bidang_perusahaan,
+            nomor_telp: typeof nomor_telp !== "undefined" ? nomor_telp : perusahaan.nomor_telp,
+            logo_perusahaan: logo_perusahaan,
+            deskripsi_perusahaan: typeof deskripsi_perusahaan !== "undefined" ? deskripsi_perusahaan : perusahaan.deskripsi_perusahaan,
+            website: typeof website !== "undefined" ? website : perusahaan.website,
+            password: hashPassword,
+            role: perusahaan.role
+        };
+
+        // Only set media_sosial if it should be updated, otherwise keep as is
+        if (mediaSosialShouldUpdate) {
+            updateFields.media_sosial = mediaSosialObj;
+        } else {
+            updateFields.media_sosial = perusahaan.media_sosial;
+        }
+
         try {
-            await Perusahaan.findByIdAndUpdate(perusahaan._id, {
-                nama_perusahaan: nama_perusahaan ?? perusahaan.nama_perusahaan,
-                nama_brand: nama_brand ?? perusahaan.nama_brand,
-                jumlah_karyawan: jumlah_karyawan ?? perusahaan.jumlah_karyawan,
-                email_perusahaan: email_perusahaan ?? perusahaan.email_perusahaan,
-                alamat: alamat ?? perusahaan.alamat,
-                bidang_perusahaan: bidang_perusahaan ?? perusahaan.bidang_perusahaan,
-                nomor_telp: nomor_telp ?? perusahaan.nomor_telp,
-                logo_perusahaan: logo_perusahaan,
-                deskripsi_perusahaan: deskripsi_perusahaan ?? perusahaan.deskripsi_perusahaan,
-                website: typeof website !== "undefined" ? website : perusahaan.website,
-                media_sosial: typeof mediaSosialObj !== "undefined" ? mediaSosialObj : perusahaan.media_sosial,
-                password: hashPassword,
-                role: perusahaan.role
-            }, { new: true });
+            await Perusahaan.findByIdAndUpdate(perusahaan._id, updateFields, { new: true });
 
             const updatedPerusahaan = await Perusahaan.findById(perusahaan._id);
 
+            // Build response object with all fields, never undefined
+            const responsePerusahaan = {
+                _id: updatedPerusahaan._id,
+                nama_perusahaan: updatedPerusahaan.nama_perusahaan ?? "",
+                nama_brand: updatedPerusahaan.nama_brand ?? "",
+                jumlah_karyawan: updatedPerusahaan.jumlah_karyawan ?? "",
+                email_perusahaan: updatedPerusahaan.email_perusahaan ?? "",
+                alamat: updatedPerusahaan.alamat ?? "",
+                bidang_perusahaan: updatedPerusahaan.bidang_perusahaan ?? "",
+                nomor_telp: updatedPerusahaan.nomor_telp ?? "",
+                logo_perusahaan: updatedPerusahaan.logo_perusahaan ?? "",
+                deskripsi_perusahaan: updatedPerusahaan.deskripsi_perusahaan ?? "",
+                website: updatedPerusahaan.website ?? "",
+                media_sosial: typeof updatedPerusahaan.media_sosial !== "undefined" ? updatedPerusahaan.media_sosial : null,
+                role: updatedPerusahaan.role ?? ""
+            };
+
             res.status(200).json({
                 msg: "Perusahaan Updated",
-                perusahaan: {
-                    _id: updatedPerusahaan._id,
-                    nama_perusahaan: updatedPerusahaan.nama_perusahaan,
-                    nama_brand: updatedPerusahaan.nama_brand,
-                    jumlah_karyawan: updatedPerusahaan.jumlah_karyawan,
-                    email_perusahaan: updatedPerusahaan.email_perusahaan,
-                    alamat: updatedPerusahaan.alamat,
-                    bidang_perusahaan: updatedPerusahaan.bidang_perusahaan,
-                    nomor_telp: updatedPerusahaan.nomor_telp,
-                    logo_perusahaan: updatedPerusahaan.logo_perusahaan,
-                    deskripsi_perusahaan: updatedPerusahaan.deskripsi_perusahaan,
-                    website: updatedPerusahaan.website,
-                    media_sosial: updatedPerusahaan.media_sosial,
-                    role: updatedPerusahaan.role
-                }
+                perusahaan: responsePerusahaan
             });
         } catch (error) {
             if (req.file) {
@@ -397,4 +412,3 @@ export const getAllAlumniForPerusahaan = async (req, res) => {
         res.status(500).json({ msg: error.message });
     }
 };
-
