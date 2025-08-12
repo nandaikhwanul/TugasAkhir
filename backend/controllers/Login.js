@@ -22,7 +22,7 @@ try {
 function setTokenCookie(res, token) {
     res.cookie("token", token, {
         httpOnly: false, // harus false agar bisa diakses client-side (Next.js sessionStorage/cookie)
-        secure: true, // true di production (https)
+        secure: false, // true di production (https)
         sameSite: "none", // agar bisa cross-site (misal frontend dan backend beda domain)
         maxAge: 30 * 60 * 1000, // 30 menit
         path: "/", // pastikan cookie tersedia di seluruh path
