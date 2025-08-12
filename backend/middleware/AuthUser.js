@@ -75,32 +75,42 @@ export const destroyToken = async (req, res) => {
     return res.status(200).json({ msg: "Token berhasil dihapus (logout berhasil)" });
 };
 
-// Middleware untuk verifikasi user login (menggunakan Bearer JWT, RS256)
 export const verifyUser = (req, res, next) => {
-    const authHeader = req.headers['authorization'];
-    if (!authHeader || !authHeader.startsWith('Bearer ')) {
-        return res.status(401).json({ msg: "Mohon login ke akun Anda!" });
-    }
-    const token = authHeader.split(' ')[1];
+  let token = null;
 
-    // Cek apakah token sudah di-blacklist (misal setelah logout)
-    if (blacklistedTokens.has(token)) {
-        return res.status(401).json({ msg: "Token sudah tidak berlaku, silakan login kembali." });
-    }
+  // Cek dari header Authorization Bearer
+  const authHeader = req.headers['authorization'];
+  if (authHeader && authHeader.startsWith('Bearer ')) {
+    token = authHeader.split(' ')[1];
+  }
 
-    if (!PUBLIC_KEY) {
-        return res.status(500).json({ msg: "Server error: public key tidak ditemukan" });
-    }
+  // Kalau token belum ada, coba ambil dari cookie bernama 'token'
+  if (!token && req.cookies && req.cookies.token) {
+    token = req.cookies.token;
+  }
 
-    try {
-        const decoded = jwt.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] });
-        req.user = decoded;
-        req.userId = decoded.id || decoded._id;
-        req.role = decoded.role;
-        next();
-    } catch (err) {
-        return res.status(401).json({ msg: "Token tidak valid atau kadaluarsa" });
-    }
+  if (!token) {
+    return res.status(401).json({ msg: "Mohon login ke akun Anda!" });
+  }
+
+  // Cek token blacklist
+  if (blacklistedTokens.has(token)) {
+    return res.status(401).json({ msg: "Token sudah tidak berlaku, silakan login kembali." });
+  }
+
+  if (!PUBLIC_KEY) {
+    return res.status(500).json({ msg: "Server error: public key tidak ditemukan" });
+  }
+
+  try {
+    const decoded = jwt.verify(token, PUBLIC_KEY, { algorithms: ["RS256"] });
+    req.user = decoded;
+    req.userId = decoded.id || decoded._id;
+    req.role = decoded.role;
+    next();
+  } catch (err) {
+    return res.status(401).json({ msg: "Token tidak valid atau kadaluarsa" });
+  }
 };
 
 // Middleware hanya untuk admin

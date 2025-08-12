@@ -3,6 +3,7 @@ import cors from "cors";
 import session from "express-session";
 import dotenv from "dotenv";
 import path from "path";
+import cookieParser from "cookie-parser"; // tambahkan import cookie-parser
 import connectMongoDB from "./config/Database.js";
 import PerusahaanRoute from "./routes/perusahaan.js";
 import AlumniRoute from "./routes/alumni.js";
@@ -50,6 +51,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(cookieParser()); // pasang cookie-parser di express app
 
 // Serve folder uploads sebagai static file agar file upload bisa diakses publik
 app.use('/uploads', express.static('uploads'));
