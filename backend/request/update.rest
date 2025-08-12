@@ -27,13 +27,13 @@ Content-Length: 370
 
 
 ### Update Profil Alumni (Endpoint PATCH /alumni/me/profil)
-PATCH https://tugasakhir-production-6c6c.up.railway.app/alumni/me/profil
+PATCH http://localhost:5000/alumni/me/profil
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODhlNzczMzJmNmVlNmEyZTMwN2QwNSIsIm5hbWUiOiJuYW5kYSBuYWRsaXJpbiAyIiwiZW1haWwiOiJhbHVtbmkudXBkYXRlZEBleGFtcGxlLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ0MjU5NzYsImV4cCI6MTc1NDQyNzc3Nn0.fk9rGuDW8uTQrbqxBeHJpZeLJm0kS00Kt6FcOSj6OLfhEShCnkuCQ03nJUntzIEq-prZwvEDiFqW9dU8ZQ4giPI0beEu8wR56eQYyjwJY7zbavVyIoOjxLsKXOYrSsv2w--DAZGC2IzYjxVnwoZFSvg4Kl2hqveT5meuPBI--IIJIvHPMybTvIMMKfmv4n5xF0hzVJYCPr3lCPX96oOCeLMKjlp8bd7-9bgkEpGu50F_GsT1HTMBkRg10v7-f8RKraDns3s_zAfGos2QK-oYThBdXk-RRvAEKCcIpcOGC3FwqqBnc4x_5L3XPVmjFsnTtO4Yvk9AUxJ5bD4cyDCmBA
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWFlMTU1ZGYyODNiN2JlMDkyY2RiNiIsIm5hbWUiOiJOYW5kYSBJa2h3YW51bCBOYWRsaXJpbiIsImVtYWlsIjoibmFuZGEuaWtod2FudWxzQGdtYWlsLmNvbSIsInJvbGUiOiJhbHVtbmkiLCJpYXQiOjE3NTQ5OTc0NDMsImV4cCI6MTc1NDk5OTI0M30.uIKEkzJpTlwKfGGw0PQ7tuabMtmkujXHDHyZmCEpAVTrEs6sRRm1_CxSNDdu1-3uDR5LZET-Xw78lAEZ1_UcBrR898zeZRfjaOzznyqmqxONUpC7yp0XruyUthmrj9oQGTFCvOe76qjLlyk_MRIqlhVRrcw8VEuU45u_EQY3gE3JZwCbf5txzm64aScARb5LmnjGW2srUFdk8KGLkSroabrME9c5OUrMPahHzvZMC4wLAoMLyAEifq6MNfa6EQJGZg1R7sigAfbE1Rl2hJUkC188Ik2bTlRX6U8wR6jAaV0DP7jE-WWcIyIwoxY2ssUF5ckUG3Ab4sTtO___94Dilg
 
 {
-    "name": "nanda nadlirin 2",
-    "nim": "123456789000",
+    "name": "nanda",
+    "nim": "12",
     "nohp": "08123456780",
     "alamat": "Jl. Contoh Alamat No. 1",
     "program_studi": "Teknik Informatika",

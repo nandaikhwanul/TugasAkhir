@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import axios from "axios";
+import { motion } from "framer-motion";
 
 // Ambil token dari sessionStorage (client-side)
 function getTokenFromSessionStorage() {
@@ -189,25 +190,44 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-4xl w-full flex">
-        <div className="w-1/2 pr-8">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className="min-h-screen flex items-center justify-center bg-white py-12 px-4 sm:px-6 lg:px-8"
+    >
+      <div className="max-w-4xl w-full flex flex-col md:flex-row">
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
+          className="w-full md:w-1/2 md:pr-8 mb-8 md:mb-0"
+        >
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-6">Login</h2>
-            <p className="text-gray-600 mb-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-4 sm:mb-6">Login</h2>
+            <p className="text-gray-600 mb-6 sm:mb-8">
               Selamat datang di platform pencarian kerja
             </p>
           </div>
 
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
-              <div>
-                {/* Error email di atas input dan di bawah label */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.1, ease: "easeIn" }}
+              >
                 <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-1">
                   Email
                 </label>
                 {error.email && (
-                  <div className="mb-2 text-sm text-red-600">{error.email}</div>
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-2 text-sm text-red-600"
+                  >
+                    {error.email}
+                  </motion.div>
                 )}
                 <input
                   id="email"
@@ -220,15 +240,24 @@ export default function LoginPage() {
                   autoComplete="username"
                   required
                 />
-              </div>
+              </motion.div>
 
-              <div>
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.2, ease: "easeIn" }}
+              >
                 <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-1">
                   Password
                 </label>
-                {/* Error password di atas input password dan di bawah label */}
                 {error.password && (
-                  <div className="mb-2 text-sm text-red-600">{error.password}</div>
+                  <motion.div 
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="mb-2 text-sm text-red-600"
+                  >
+                    {error.password}
+                  </motion.div>
                 )}
                 <input
                   id="password"
@@ -241,9 +270,14 @@ export default function LoginPage() {
                   autoComplete="current-password"
                   required
                 />
-              </div>
+              </motion.div>
 
-              <div className="flex items-center">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.4, delay: 0.3, ease: "easeIn" }}
+                className="flex items-center"
+              >
                 <input
                   id="remember-me"
                   name="remember-me"
@@ -255,25 +289,36 @@ export default function LoginPage() {
                 <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
                   Save my info
                 </label>
-              </div>
+              </motion.div>
             </div>
 
-            {/* Error general di bawah semua input */}
             {error.general && (
-              <div className="mt-4 text-center text-sm text-red-600">
+              <motion.div 
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                className="mt-4 text-center text-sm text-red-600"
+              >
                 {error.general}
-              </div>
+              </motion.div>
             )}
 
-            <button
+            <motion.button
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.4, ease: "easeIn" }}
               type="submit"
               className={`mt-6 w-full bg-blue-600 text-white py-2 px-4 rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${loading ? "opacity-60 cursor-not-allowed" : ""}`}
               disabled={loading}
             >
               {loading ? "Logging in..." : "Login"}
-            </button>
+            </motion.button>
 
-            <div className="mt-4 text-center text-sm">
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, delay: 0.5, ease: "easeIn" }}
+              className="mt-4 text-center text-sm"
+            >
               <span className="text-gray-900">Tidak Punya Akun ? </span>
               <button
                 type="button"
@@ -282,12 +327,16 @@ export default function LoginPage() {
               >
                 Register sekarang!
               </button>
-            </div>
+            </motion.div>
           </form>
-        </div>
+        </motion.div>
 
-        <div className="w-1/2 flex items-center justify-center">
-          {/* Ganti Three.js dengan image 15.svg */}
+        <motion.div 
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
+          className="w-full md:w-1/2 flex items-center justify-center"
+        >
           <div
             className="w-full h-full flex items-center justify-center"
             style={{
@@ -306,8 +355,8 @@ export default function LoginPage() {
               style={{ objectFit: "contain", maxWidth: "100%", maxHeight: "100%" }}
             />
           </div>
-        </div>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

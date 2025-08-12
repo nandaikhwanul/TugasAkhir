@@ -42,7 +42,11 @@ export const login = async (req, res) => {
     // Validasi input menggunakan express-validator
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-        return res.status(400).json({ msg: "Validasi gagal", errors: errors.array() });
+        const errorObj = errors.array().reduce((acc, curr) => {
+            acc[curr.param] = curr.msg;
+            return acc;
+        }, {});
+        return res.status(400).json({ errors: errorObj });
     }
 
     const { email, password } = req.body;

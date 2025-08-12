@@ -11,7 +11,8 @@ const AlumniSchema = new mongoose.Schema({
     nim: {
         type: String,
         required: true,
-        trim: true
+        trim: true,
+        minlength: 7
     },
     email: {
         type: String,
@@ -30,7 +31,8 @@ const AlumniSchema = new mongoose.Schema({
     },
     nohp: {
         type: String,
-        trim: true
+        trim: true,
+        minlength: 10 // Minimal nomor HP 10 digit
     },
     alamat: {
         type: String,

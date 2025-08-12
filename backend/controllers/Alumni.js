@@ -129,9 +129,18 @@ export const registerAlumni = async (req, res) => {
 };
 
 export const validateUpdateAlumni = [
-    body("name").optional().isString().withMessage("Nama harus berupa string"),
-    body("nim").optional().isString().withMessage("NIM harus berupa string"),
-    body("nohp").optional().isString().withMessage("No HP harus berupa string"),
+    body("name")
+        .optional()
+        .isString().withMessage("Nama harus berupa string")
+        .isLength({ min: 3 }).withMessage("Nama minimal 3 karakter"),
+    body("nim")
+        .optional()
+        .isString().withMessage("NIM harus berupa string")
+        .isLength({ min: 7 }).withMessage("NIM minimal 7 karakter"),
+    body("nohp")
+        .optional()
+        .isString().withMessage("No HP harus berupa string")
+        .isLength({ min: 10 }).withMessage("No HP minimal 10 karakter"),
     body("alamat").optional().isString().withMessage("Alamat harus berupa string"),
     body("program_studi").optional().isString().withMessage("Program Studi harus berupa string"),
     body("tahun_lulus").optional().isInt({ min: 1900, max: 2100 }).withMessage("Tahun lulus tidak valid"),
@@ -153,12 +162,12 @@ export const validateUpdateAlumni = [
 ];
 
 export const updateAlumni = async (req, res) => {
-    const errors = validationResult(req);
-    if (!errors.isEmpty()) {
-        const errorObj = errors.array().reduce((acc, curr) => {
-            acc[curr.param] = curr.msg;
-            return acc;
-        }, {});
+    // Gunakan format error per field sesuai instruksi
+    const errorObj = validationResult(req).array().reduce((acc, curr) => {
+        acc[curr.param] = curr.msg;
+        return acc;
+    }, {});
+    if (Object.keys(errorObj).length > 0) {
         return res.status(400).json({ errors: errorObj });
     }
 
@@ -198,7 +207,13 @@ export const updateAlumni = async (req, res) => {
         alumni.tahun_lulus = tahun_lulus ?? alumni.tahun_lulus;
         alumni.tanggal_lahir = tanggal_lahir ?? alumni.tanggal_lahir;
         alumni.email = email ?? alumni.email;
-        alumni.password = hashPassword;
+
+        // Handle password update with hashing
+        if (typeof password !== "undefined" && password) {
+            // Only update if password is provided and not empty
+            alumni.password = await argon2.hash(password);
+        }
+
         if (typeof foto_profil !== "undefined") {
             alumni.foto_profil = foto_profil;
         }
@@ -221,7 +236,35 @@ export const updateAlumni = async (req, res) => {
         await alumni.save();
         res.status(200).json({ msg: "Alumni Updated" });
     } catch (error) {
-        res.status(400).json({ msg: error.message });
+        // Tangkap error validasi Mongoose dan ubah ke format { errors: { field: "pesan" } }
+        if (error && error.name === "ValidationError" && error.errors) {
+            const mongooseErrors = {};
+            for (const key in error.errors) {
+                if (Object.prototype.hasOwnProperty.call(error.errors, key)) {
+                    mongooseErrors[key] = error.errors[key].message;
+                }
+            }
+            return res.status(400).json({ errors: mongooseErrors });
+        }
+        // Tangkap error pattern: "Alumni validation failed: name: Path `name` (`n`) is shorter than the minimum allowed length (3)."
+        if (
+            error &&
+            typeof error.message === "string" &&
+            error.message.startsWith("Alumni validation failed:")
+        ) {
+            // Coba ekstrak field dan pesan
+            // Contoh: "Alumni validation failed: name: Path `name` (`n`) is shorter than the minimum allowed length (3)."
+            const match = error.message.match(/([a-zA-Z0-9_]+): (.+)$/m);
+            if (match) {
+                const field = match[1];
+                const msg = match[2];
+                return res.status(400).json({ errors: { [field]: msg } });
+            }
+            // fallback: kirim global error
+            return res.status(400).json({ errors: { global: error.message } });
+        }
+        // fallback: error lain
+        res.status(400).json({ errors: { global: error.message } });
     }
 };
 

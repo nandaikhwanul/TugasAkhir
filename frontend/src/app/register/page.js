@@ -2,6 +2,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
+import { motion } from "framer-motion";
 import RegisterAlumni from "../register/alumni";
 import RegisterPerusahaan from "../register/perusahaan";
 
@@ -49,30 +50,51 @@ export default function RegisterPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAFAFD] p-4">
-      <div className="max-w-6xl w-full flex gap-8">
-        <div className="flex-1 flex items-center justify-center">
+    <motion.div 
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.5, ease: "easeInOut" }}
+      className="min-h-screen flex items-center justify-center bg-[#FAFAFD] p-4"
+    >
+      <div className="max-w-6xl w-full flex flex-col md:flex-row gap-8 md:overflow-y-hidden">
+        <motion.div 
+          initial={{ opacity: 0, x: -50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
+          className="flex-1 flex items-center justify-center"
+        >
           <Image
             src="/08.svg"
             alt="Register illustration"
             width={500}
             height={500}
             priority
+            className="max-w-full h-auto"
           />
-        </div>
-        <div className="flex-1 max-w-md">
+        </motion.div>
+        <motion.div 
+          initial={{ opacity: 0, x: 50 }}
+          animate={{ opacity: 1, x: 0 }}
+          transition={{ duration: 0.5, delay: 0.2, ease: "easeInOut" }}
+          className="flex-1 max-w-md w-full overflow-y-hidden"
+        >
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold text-gray-900 mb-2">
+            <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 mb-2">
               Sign up
             </h2>
-            <p className="text-gray-600">
+            <p className="text-sm sm:text-base text-gray-600">
               Buat akunmu disini untuk mengakses dan menemukan segala jenis
               lowongan !
             </p>
           </div>
-          <div className="flex gap-4 mb-6">
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.3, ease: "easeInOut" }}
+            className="flex gap-4 mb-6"
+          >
             <button
-              className={`flex-1 py-2 px-4 rounded-md font-semibold text-sm transition ${
+              className={`flex-1 py-2 px-4 rounded-md font-semibold text-xs sm:text-sm transition ${
                 mode === "alumni"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 text-gray-700"
@@ -88,7 +110,7 @@ export default function RegisterPage() {
               Alumni
             </button>
             <button
-              className={`flex-1 py-2 px-4 rounded-md font-semibold text-sm transition ${
+              className={`flex-1 py-2 px-4 rounded-md font-semibold text-xs sm:text-sm transition ${
                 mode === "perusahaan"
                   ? "bg-blue-600 text-white"
                   : "bg-gray-200 text-gray-700"
@@ -103,16 +125,26 @@ export default function RegisterPage() {
             >
               Perusahaan
             </button>
-          </div>
+          </motion.div>
           {error && (
-            <div className="text-red-500 mb-4 text-sm text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-red-500 mb-4 text-xs sm:text-sm text-center"
+            >
               {typeof error === 'string' ? error : 'Terjadi kesalahan'}
-            </div>
+            </motion.div>
           )}
           {success && (
-            <div className="text-green-600 mb-4 text-sm text-center">
+            <motion.div 
+              initial={{ opacity: 0, y: -10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3 }}
+              className="text-green-600 mb-4 text-xs sm:text-sm text-center"
+            >
               {typeof success === 'string' ? success : 'Berhasil'}
-            </div>
+            </motion.div>
           )}
           {mode === "alumni" ? (
             <RegisterAlumni
@@ -139,14 +171,19 @@ export default function RegisterPage() {
               router={router}
             />
           )}
-          <p className="text-center text-sm text-gray-600 mt-4">
+          <motion.p 
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.4, ease: "easeInOut" }}
+            className="text-center text-xs sm:text-sm text-gray-600 mt-4"
+          >
             Sudah punya akun?{" "}
             <a href="/login" className="text-blue-600">
               Login di sini
             </a>
-          </p>
-        </div>
+          </motion.p>
+        </motion.div>
       </div>
-    </div>
+    </motion.div>
   );
 }

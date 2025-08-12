@@ -9,7 +9,8 @@ import {
     checkOldPassword,
     toggleSaveLowongan,
     getSavedLowongan,
-    unsaveLowongan // tambahkan import unsaveLowongan
+    unsaveLowongan,
+    validateUpdateAlumni // tambahkan import unsaveLowongan
 } from "../controllers/Alumni.js";
 import { verifyUser, alumniOnly } from "../middleware/AuthUser.js";
 
@@ -27,7 +28,7 @@ router.patch('/alumni/me', verifyUser, updateAlumni);
 
 // Endpoint khusus update profil alumni (PATCH /alumni/me/profil)
 // Admin bisa update alumni manapun dengan id di body/query, alumni hanya bisa update dirinya sendiri
-router.patch('/alumni/me/profil', verifyUser, updateAlumni);
+router.patch('/alumni/me/profil', validateUpdateAlumni, verifyUser, updateAlumni);
 
 // Endpoint khusus update foto profil alumni (PATCH /alumni/me/foto-profil)
 // Admin bisa update alumni manapun dengan id di body/query, alumni hanya bisa update dirinya sendiri

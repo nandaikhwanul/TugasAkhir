@@ -156,14 +156,7 @@ export default function AlumniDashboard() {
         <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
           <div className="bg-white rounded-lg shadow-lg p-6 max-w-lg w-full relative">
             {/* Tombol Lewati step ini */}
-            <button
-              className="absolute top-3 right-3 text-blue-600 hover:underline bg-transparent border-none p-0 m-0 font-semibold"
-              style={{ background: "none", border: "none" }}
-              onClick={handleCloseModal}
-              type="button"
-            >
-              Lewati step ini
-            </button>
+            
             <AlumniStepper />
           </div>
         </div>

@@ -1,9 +1,9 @@
 ### Login Alumni
-POST https://tugasakhir-production-6c6c.up.railway.app/login
+POST http://localhost:5000/login
 Content-Type: application/json
 
 {
-    "email": "alumni.updated@example.com",
+    "email": "nanda.ikhwanuls@gmail.com",
     "password": "123456"
 }
 
