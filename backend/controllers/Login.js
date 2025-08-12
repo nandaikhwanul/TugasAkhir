@@ -17,14 +17,13 @@ try {
     PRIVATE_KEY = null;
 }
 
-// Helper untuk set cookie JWT (hanya lewat Set-Cookie, tidak perlu set header Authorization)
-function setTokenCookie(res, token) {
+// Helper untuk membuat header Set-Cookie manual
+function setTokenCookieHeader(res, token) {
     // 30 menit
-    const maxAge = 30 * 60 * 1000;
-    res.cookie("token", token, {
-        maxAge: maxAge,
-        path: "/"
-    });
+    const maxAge = 30 * 60; // detik
+    // Secure/SameSite bisa diatur sesuai kebutuhan
+    const cookie = `token=${encodeURIComponent(token)}; Max-Age=${maxAge}; Path=/; HttpOnly`;
+    res.setHeader("Set-Cookie", cookie);
 }
 
 // Middleware express-validator untuk login
@@ -77,7 +76,7 @@ export const login = async (req, res) => {
             user.token = token;
             await user.save();
 
-            setTokenCookie(res, token);
+            setTokenCookieHeader(res, token);
 
             responseData = {
                 msg: "Login berhasil sebagai alumni",
@@ -113,7 +112,7 @@ export const login = async (req, res) => {
             user.token = token;
             await user.save();
 
-            setTokenCookie(res, token);
+            setTokenCookieHeader(res, token);
 
             responseData = {
                 msg: "Login berhasil sebagai perusahaan",
@@ -151,7 +150,7 @@ export const login = async (req, res) => {
                 await user.save();
             }
 
-            setTokenCookie(res, token);
+            setTokenCookieHeader(res, token);
 
             responseData = {
                 msg: "Login berhasil sebagai admin",
@@ -189,7 +188,7 @@ export const login = async (req, res) => {
                 await user.save();
             }
 
-            setTokenCookie(res, token);
+            setTokenCookieHeader(res, token);
 
             responseData = {
                 msg: "Login berhasil sebagai superadmin",
@@ -251,10 +250,9 @@ export const logoutUser = async (req, res) => {
             await UserModel.updateOne({ _id: userId }, { $set: { token: null } });
         }
 
-        // Hapus cookie token
-        res.clearCookie("token", {
-            path: "/"
-        });
+        // Hapus cookie token dengan header Set-Cookie
+        const expiredCookie = `token=; Max-Age=0; Path=/; HttpOnly`;
+        res.setHeader("Set-Cookie", expiredCookie);
 
         req.session.destroy((err) => {
             if (err) return res.status(400).json({ msg: "Tidak dapat logout" });
