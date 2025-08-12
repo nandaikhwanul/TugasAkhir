@@ -4,6 +4,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Navbar from "../../navbar/page";
 import Loader from "../../loading/loadingDesign";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Modal konfirmasi hapus
 function ConfirmDeleteModal({ open, onClose, onConfirm }) {
@@ -30,18 +31,6 @@ function ConfirmDeleteModal({ open, onClose, onConfirm }) {
       </div>
     </div>
   );
-}
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
 }
 
 // Helper: parse tanggal_lahir string (yyyy-mm-dd) to {tahun, bulan, tanggal}
@@ -79,7 +68,7 @@ export default function SettingAlumniPage() {
       setLoading(true);
       setError("");
       setSuccess("");
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Unauthorized: Token not found.");
         setLoading(false);
@@ -145,7 +134,7 @@ export default function SettingAlumniPage() {
   };
 
   const handleEditSave = async (a, idx) => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Unauthorized: Token not found.");
       setSuccess("");
@@ -240,7 +229,7 @@ export default function SettingAlumniPage() {
     setDeletingIdx(idx);
     setError("");
     setSuccess("");
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Unauthorized: Token not found.");
       setSuccess("");

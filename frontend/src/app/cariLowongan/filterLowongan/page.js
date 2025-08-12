@@ -4,6 +4,7 @@ import { FiSearch, FiChevronDown } from "react-icons/fi";
 import ListLowonganPage from "../listLowongan/page";
 import SavedPage from "../saved/page";
 import RekomendasiPage from "../rekomendasi/page";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 const filterMenu = [
   { label: "Rekomendasi" },
@@ -22,6 +23,9 @@ export default function CariLowonganPage() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState(0);
   const [searchInput, setSearchInput] = useState(""); // for controlled input
+
+  // Ambil token dari sessionStorage (bisa digunakan jika perlu)
+  const token = getTokenFromSessionStorage();
 
   // On mount, restore activeFilter from localStorage if exists
   useEffect(() => {

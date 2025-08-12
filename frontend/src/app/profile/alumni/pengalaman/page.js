@@ -2,13 +2,7 @@
 
 import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
-
-// Helper to get token from cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Format date to "MMM YYYY"
 function formatMonthYear(dateStr) {
@@ -42,7 +36,7 @@ export default function PengalamanCard() {
   useEffect(() => {
     async function fetchPengalaman() {
       setLoadingPengalaman(true);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setPengalaman([]);
         setLoadingPengalaman(false);
@@ -106,7 +100,7 @@ export default function PengalamanCard() {
       return;
     }
 
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setPengalamanError("Token tidak ditemukan.");
       setPengalamanSaving(false);

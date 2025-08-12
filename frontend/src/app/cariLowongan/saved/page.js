@@ -1,13 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-// Helper: ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper: format tanggal
 function formatDate(dateStr) {
@@ -52,7 +46,7 @@ export default function SavedLowonganPage() {
     setLoading(true);
     setErr("");
     try {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       const res = await fetch(
         "https://tugasakhir-production-6c6c.up.railway.app/alumni/me/saved-lowongan",
         {
@@ -99,7 +93,7 @@ export default function SavedLowonganPage() {
   const handleUnsave = async (lowonganId) => {
     setUnsaving((prev) => ({ ...prev, [lowonganId]: true }));
     try {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/unsave-lowongan", {
         method: "POST",
         headers: {

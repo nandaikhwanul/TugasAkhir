@@ -43,7 +43,9 @@ const initialForm = {
   tipe_kerja: "",
   gaji_min: "",
   gaji_max: "",
-  batas_lamaran: "",
+  batas_lamaran_bulan: "",
+  batas_lamaran_hari: "",
+  batas_lamaran_tahun: "",
   batas_pelamar: "",
   status: "open",
 };
@@ -55,6 +57,15 @@ function parseKualifikasiToList(kualifikasi) {
     .split(/\r?\n/)
     .map((s) => s.trim())
     .filter((s) => s.length > 0);
+}
+
+// Helper: Format batas lamaran ke YYYY-MM-DD
+function formatBatasLamaran(tahun, bulan, hari) {
+  if (!tahun || !bulan || !hari) return "";
+  // Pad bulan dan hari ke 2 digit
+  const mm = bulan.toString().padStart(2, "0");
+  const dd = hari.toString().padStart(2, "0");
+  return `${tahun}-${mm}-${dd}`;
 }
 
 export default function BuatLowongan() {
@@ -290,6 +301,39 @@ export default function BuatLowongan() {
       );
     }
     if (step === 2) {
+      // Generate tahun, bulan, hari untuk batas lamaran
+      const tahunSekarang = new Date().getFullYear();
+      const tahunList = [];
+      for (let t = tahunSekarang; t <= tahunSekarang + 5; t++) tahunList.push(t);
+      const bulanList = [
+        { value: "01", label: "Januari" },
+        { value: "02", label: "Februari" },
+        { value: "03", label: "Maret" },
+        { value: "04", label: "April" },
+        { value: "05", label: "Mei" },
+        { value: "06", label: "Juni" },
+        { value: "07", label: "Juli" },
+        { value: "08", label: "Agustus" },
+        { value: "09", label: "September" },
+        { value: "10", label: "Oktober" },
+        { value: "11", label: "November" },
+        { value: "12", label: "Desember" },
+      ];
+      // Hari tergantung bulan & tahun
+      const watchBulan = watch("batas_lamaran_bulan");
+      const watchTahun = watch("batas_lamaran_tahun");
+      let hariMax = 31;
+      if (watchBulan && watchTahun) {
+        const bulan = parseInt(watchBulan, 10);
+        const tahun = parseInt(watchTahun, 10);
+        if ([4, 6, 9, 11].includes(bulan)) hariMax = 30;
+        else if (bulan === 2) {
+          hariMax = (tahun % 4 === 0 && (tahun % 100 !== 0 || tahun % 400 === 0)) ? 29 : 28;
+        }
+      }
+      const hariList = [];
+      for (let h = 1; h <= hariMax; h++) hariList.push(h);
+
       return (
         <>
           <div className="flex gap-4">
@@ -359,24 +403,49 @@ export default function BuatLowongan() {
               <label className="block font-semibold text-gray-800 mb-1.5 text-[15px]">
                 Batas Lamaran
               </label>
-              <input
-                type="date"
-                {...register("batas_lamaran", {
-                  required: "Batas lamaran wajib diisi",
-                  validate: (value) => {
-                    if (!value) return "Batas lamaran wajib diisi";
-                    const today = new Date();
-                    const inputDate = new Date(value);
-                    today.setHours(0,0,0,0);
-                    if (inputDate < today) return "Tanggal batas lamaran tidak boleh di masa lalu";
-                    return true;
-                  }
-                })}
-                className={`w-full bg-gray-100 border ${errors.batas_lamaran ? "border-red-400" : "border-gray-300"} rounded-lg px-3 py-3 text-gray-800 text-[15px] outline-none focus:border-blue-600`}
-              />
-              {errors.batas_lamaran && (
-                <span className="text-red-500 text-sm">{errors.batas_lamaran.message}</span>
+              <div className="flex gap-2">
+                <select
+                  {...register("batas_lamaran_bulan", {
+                    required: "Bulan wajib dipilih",
+                  })}
+                  className={`w-1/3 bg-gray-100 border ${errors.batas_lamaran_bulan ? "border-red-400" : "border-gray-300"} rounded-lg px-2 py-3 text-gray-800 text-[15px] outline-none focus:border-blue-600`}
+                >
+                  <option value="">Bulan</option>
+                  {bulanList.map((b) => (
+                    <option key={b.value} value={b.value}>{b.label}</option>
+                  ))}
+                </select>
+                <select
+                  {...register("batas_lamaran_hari", {
+                    required: "Hari wajib dipilih",
+                  })}
+                  className={`w-1/3 bg-gray-100 border ${errors.batas_lamaran_hari ? "border-red-400" : "border-gray-300"} rounded-lg px-2 py-3 text-gray-800 text-[15px] outline-none focus:border-blue-600`}
+                >
+                  <option value="">Hari</option>
+                  {hariList.map((h) => (
+                    <option key={h} value={h.toString().padStart(2, "0")}>{h}</option>
+                  ))}
+                </select>
+                <select
+                  {...register("batas_lamaran_tahun", {
+                    required: "Tahun wajib dipilih",
+                  })}
+                  className={`w-1/3 bg-gray-100 border ${errors.batas_lamaran_tahun ? "border-red-400" : "border-gray-300"} rounded-lg px-2 py-3 text-gray-800 text-[15px] outline-none focus:border-blue-600`}
+                >
+                  <option value="">Tahun</option>
+                  {tahunList.map((t) => (
+                    <option key={t} value={t}>{t}</option>
+                  ))}
+                </select>
+              </div>
+              {(errors.batas_lamaran_bulan || errors.batas_lamaran_hari || errors.batas_lamaran_tahun) && (
+                <span className="text-red-500 text-sm">
+                  {errors.batas_lamaran_bulan?.message || errors.batas_lamaran_hari?.message || errors.batas_lamaran_tahun?.message}
+                </span>
               )}
+              <div className="text-gray-500 text-xs mt-1">
+                Pilih bulan, hari, dan tahun untuk batas lamaran.
+              </div>
             </div>
           </div>
           <div className="flex gap-4 mt-4">
@@ -498,6 +567,9 @@ export default function BuatLowongan() {
       const form = getValues();
       const kualifikasiList = parseKualifikasiToList(form.kualifikasi);
 
+      // Compose batas lamaran string
+      const batasLamaranStr = formatBatasLamaran(form.batas_lamaran_tahun, form.batas_lamaran_bulan, form.batas_lamaran_hari);
+
       return (
         <div className="p-2">
           <div className="bg-gradient-to-br from-blue-50 to-white border border-blue-200 rounded-xl p-6 mb-4 text-gray-800 shadow-lg relative overflow-hidden">
@@ -576,7 +648,7 @@ export default function BuatLowongan() {
                   <span className="font-semibold">Batas Lamaran:</span>
                 </div>
                 <div className="ml-7 mb-3">
-                  {form.batas_lamaran ? form.batas_lamaran : <span className="text-gray-400">-</span>}
+                  {batasLamaranStr ? batasLamaranStr : <span className="text-gray-400">-</span>}
                 </div>
                 <div className="flex items-center gap-2 mb-2">
                   <FaUsers className="text-blue-500" />
@@ -621,7 +693,18 @@ export default function BuatLowongan() {
     const fieldsPerStep = [
       ["judul_pekerjaan"],
       ["deskripsi", "kualifikasi"],
-      ["gaji_min", "gaji_max", "batas_lamaran", "batas_pelamar", "provinsi", "kota", "tipe_kerja", "status"],
+      [
+        "gaji_min",
+        "gaji_max",
+        "batas_lamaran_bulan",
+        "batas_lamaran_hari",
+        "batas_lamaran_tahun",
+        "batas_pelamar",
+        "provinsi",
+        "kota",
+        "tipe_kerja",
+        "status"
+      ],
       [],
       [],
     ];
@@ -649,6 +732,23 @@ export default function BuatLowongan() {
           ? `${data.gaji_min} - ${data.gaji_max}`
           : "";
 
+      // Compose batas_lamaran string
+      const batasLamaranStr = formatBatasLamaran(
+        data.batas_lamaran_tahun,
+        data.batas_lamaran_bulan,
+        data.batas_lamaran_hari
+      );
+
+      // Validate batasLamaranStr
+      let batasLamaranISO = "";
+      if (batasLamaranStr) {
+        // Convert to ISO string (set to 00:00:00 local time)
+        const dateObj = new Date(`${batasLamaranStr}T00:00:00`);
+        if (!isNaN(dateObj.getTime())) {
+          batasLamaranISO = dateObj.toISOString();
+        }
+      }
+
       const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
         method: "POST",
         headers: {
@@ -660,9 +760,7 @@ export default function BuatLowongan() {
           ...data,
           gaji: gajiGabungan,
           lokasi: lokasiGabungan,
-          batas_lamaran: data.batas_lamaran
-            ? new Date(data.batas_lamaran).toISOString()
-            : "",
+          batas_lamaran: batasLamaranISO,
           batas_pelamar: data.batas_pelamar ? parseInt(data.batas_pelamar, 10) : "",
         }),
       });

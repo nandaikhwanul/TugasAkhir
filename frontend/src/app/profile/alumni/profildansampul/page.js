@@ -1,18 +1,13 @@
 "use client";
 
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { FaPencilAlt } from "react-icons/fa";
-
-// Helper to get token from cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Helper untuk resolve URL foto_profil alumni
 function getFotoProfilUrl(foto_profil) {
-  if (!foto_profil) return "";
+  if (foto_profil === undefined || foto_profil === null) return null; // undefined atau null, return null
+  if (!foto_profil) return ""; // Empty string atau falsy lainnya
   if (/^https?:\/\//.test(foto_profil)) return foto_profil;
   if (foto_profil.startsWith("/uploads/")) {
     return `https://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
@@ -28,6 +23,35 @@ function getFotoSampulUrl(foto_sampul) {
     return `https://tugasakhir-production-6c6c.up.railway.app${foto_sampul}`;
   }
   return `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/sampul/${foto_sampul}`;
+}
+
+// Helper untuk random background color
+function getRandomBgColor() {
+  // Pilihan warna-warna pastel yang enak dilihat
+  const colors = [
+    "bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200",
+    "bg-gradient-to-r from-green-200 via-blue-200 to-purple-200",
+    "bg-gradient-to-r from-yellow-200 via-pink-200 to-red-200",
+    "bg-gradient-to-r from-blue-200 via-cyan-200 to-green-200",
+    "bg-gradient-to-r from-orange-200 via-yellow-200 to-pink-200",
+    "bg-gradient-to-r from-teal-200 via-lime-200 to-green-200",
+    "bg-gradient-to-r from-fuchsia-200 via-pink-200 to-rose-200",
+    "bg-gradient-to-r from-sky-200 via-blue-200 to-indigo-200",
+    "bg-gradient-to-r from-amber-200 via-orange-200 to-red-200",
+    "bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200",
+  ];
+  // Pilih random
+  return colors[Math.floor(Math.random() * colors.length)];
+}
+
+// Helper untuk mengambil inisial dari nama
+function getInitials(name) {
+  if (!name) return "";
+  const words = name.trim().split(" ");
+  if (words.length === 1) {
+    return words[0][0]?.toUpperCase() || "";
+  }
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
 }
 
 export default function AlumniPreview() {
@@ -46,11 +70,17 @@ export default function AlumniPreview() {
   const fileInputSampulRef = useRef(null);
   const fileInputProfilRef = useRef(null);
 
+  // Simpan warna random untuk background sampul jika belum ada foto
+  const [randomBgClass, setRandomBgClass] = useState("");
+
+  // Simpan warna random untuk background profil jika belum ada foto_profil
+  const [randomProfileBgClass, setRandomProfileBgClass] = useState("");
+
   // Fetch alumni data
   useEffect(() => {
     async function fetchAlumni() {
       setLoading(true);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setLoading(false);
         return;
@@ -69,12 +99,21 @@ export default function AlumniPreview() {
           tahun_lulus: data.tahun_lulus || "",
           alamat: data.alamat || "",
         });
+        // Jika belum ada foto_sampul, set warna random sekali saja
+        if (!data.foto_sampul) {
+          setRandomBgClass(getRandomBgColor());
+        }
+        // Jika foto_profil undefined/null (belum pernah diisi), set warna random
+        if (data.foto_profil === undefined || data.foto_profil === null) {
+          setRandomProfileBgClass(getRandomBgColor());
+        }
       } catch (err) {
         setAlumni(null);
       }
       setLoading(false);
     }
     fetchAlumni();
+    // eslint-disable-next-line
   }, []);
 
   // Handler for file input click
@@ -96,7 +135,7 @@ export default function AlumniPreview() {
   const handleSampulChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) return;
       const formData = new FormData();
       formData.append("foto_sampul", file);
@@ -113,6 +152,8 @@ export default function AlumniPreview() {
         if (!res.ok) throw new Error("Failed to update cover photo");
         const updated = await res.json();
         setAlumni((prev) => ({ ...prev, foto_sampul: updated.foto_sampul }));
+        // Jika berhasil upload, hapus warna random
+        setRandomBgClass("");
       } catch (err) {
         setFormError("Gagal update foto sampul.");
       }
@@ -123,7 +164,7 @@ export default function AlumniPreview() {
   const handleProfilChange = async (e) => {
     const file = e.target.files[0];
     if (file) {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) return;
       const formData = new FormData();
       formData.append("foto_profil", file);
@@ -140,6 +181,8 @@ export default function AlumniPreview() {
         if (!res.ok) throw new Error("Failed to update profile photo");
         const updated = await res.json();
         setAlumni((prev) => ({ ...prev, foto_profil: updated.foto_profil }));
+        // Jika berhasil upload, hapus warna random profil
+        setRandomProfileBgClass("");
       } catch (err) {
         setFormError("Gagal update foto profil.");
       }
@@ -189,7 +232,7 @@ export default function AlumniPreview() {
       return;
     }
 
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setFormError("Token tidak ditemukan.");
       setSaving(false);
@@ -244,6 +287,16 @@ export default function AlumniPreview() {
   // Helper: break word utility for long text
   const breakWordClass = "break-words whitespace-pre-line";
 
+  // Cek apakah ada foto sampul
+  const fotoSampulUrl = getFotoSampulUrl(alumni.foto_sampul);
+
+  // Cek apakah ada foto profil
+  const fotoProfilUrl = getFotoProfilUrl(alumni.foto_profil);
+
+  // Inisial untuk profil jika foto_profil === undefined atau null
+  const showInitials = alumni && (alumni.foto_profil === undefined || alumni.foto_profil === null);
+  const initials = getInitials(alumni.name);
+
   return (
     <div className="h-full bg-gray-100 p-8">
       <div className="bg-white rounded-lg shadow-xl pb-8">
@@ -260,14 +313,20 @@ export default function AlumniPreview() {
         </div>
         {/* Foto Sampul dengan hover icon edit */}
         <div className="w-full h-[250px] relative group">
-          <img
-            src={
-              getFotoSampulUrl(alumni.foto_sampul) ||
-              "https://vojislavd.com/ta-template-demo/assets/img/profile-background.jpg"
-            }
-            className="w-full h-full object-cover rounded-tl-lg rounded-tr-lg"
-            alt="Foto Sampul"
-          />
+          {fotoSampulUrl ? (
+            <img
+              src={fotoSampulUrl}
+              className="w-full h-full object-cover rounded-tl-lg rounded-tr-lg"
+              alt="Foto Sampul"
+            />
+          ) : (
+            <div
+              className={`w-full h-full rounded-tl-lg rounded-tr-lg flex items-center justify-center ${randomBgClass}`}
+              style={{ minHeight: 250, height: 250 }}
+            >
+              {/* Warna random jika belum ada foto sampul */}
+            </div>
+          )}
           <button
             type="button"
             className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
@@ -291,14 +350,21 @@ export default function AlumniPreview() {
         <div className="flex flex-col items-center -mt-20 relative">
           {/* Foto Profil dengan hover icon edit */}
           <div className="relative group w-40 h-40 flex items-center justify-center">
-            <img
-              src={
-                getFotoProfilUrl(alumni.foto_profil) ||
-                "https://vojislavd.com/ta-template-demo/assets/img/profile.jpg"
-              }
-              className="w-40 h-40 border-4 border-white rounded-full object-cover"
-              alt="Foto Profil"
-            />
+            {showInitials ? (
+              <div
+                className={`w-40 h-40 border-4 border-white rounded-full flex items-center justify-center text-5xl font-bold text-white select-none ${randomProfileBgClass}`}
+                style={{ userSelect: "none" }}
+                aria-label="Inisial Profil"
+              >
+                {initials}
+              </div>
+            ) : (
+              <img
+                src={fotoProfilUrl}
+                className="w-40 h-40 border-4 border-white rounded-full object-cover"
+                alt="Foto Profil"
+              />
+            )}
             <button
               type="button"
               className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"

@@ -856,3 +856,70 @@ export const countPendingLowonganByPerusahaan = async (req, res) => {
     }
 };
 
+// Endpoint: GET /lowongan/filter
+// Query params: lokasi, tipe_kerja, gaji_min, gaji_max, kualifikasi (comma separated)
+export const filterLowongan = async (req, res) => {
+    try {
+        const { lokasi, tipe_kerja, gaji_min, gaji_max, kualifikasi } = req.query;
+
+        // Build filter object
+        const filter = {};
+
+        if (lokasi) {
+            // Case-insensitive partial match
+            filter.lokasi = { $regex: lokasi, $options: "i" };
+        }
+
+        if (tipe_kerja) {
+            // Exact match, case-insensitive
+            filter.tipe_kerja = { $regex: `^${tipe_kerja}$`, $options: "i" };
+        }
+
+        // Karena field gaji di schema adalah String, filter range tidak bisa pakai $gte/$lte.
+        // Maka, filter gaji_min/gaji_max hanya akan mencari lowongan yang gaji-nya mengandung angka minimum/maksimum (string match).
+        // Atau, jika format gaji adalah "5000000-7000000", kita bisa coba parsing angka awal/akhir.
+        // Berikut pendekatan sederhana: cari lowongan yang gaji-nya mengandung angka minimum/maksimum.
+        if (gaji_min || gaji_max) {
+            // Buat regex untuk mencari angka di string gaji
+            let gajiRegex = "";
+            if (gaji_min && gaji_max) {
+                // Cari string gaji yang mengandung range antara gaji_min dan gaji_max
+                // Contoh: "5000000-7000000" atau "Rp 5.000.000 - 7.000.000"
+                // Kita cari string yang mengandung kedua angka
+                gajiRegex = `${gaji_min}.*${gaji_max}|${gaji_max}.*${gaji_min}`;
+            } else if (gaji_min) {
+                gajiRegex = gaji_min;
+            } else if (gaji_max) {
+                gajiRegex = gaji_max;
+            }
+            filter.gaji = { $regex: gajiRegex, $options: "i" };
+        }
+
+        if (kualifikasi) {
+            // kualifikasi bisa berupa string (1 skill) atau comma separated
+            let skills = [];
+            if (Array.isArray(kualifikasi)) {
+                skills = kualifikasi;
+            } else if (typeof kualifikasi === "string") {
+                skills = kualifikasi.split(",").map(s => s.trim()).filter(Boolean);
+            }
+            if (skills.length > 0) {
+                // Cari lowongan yang memiliki SEMUA kualifikasi yang diminta
+                filter.kualifikasi = { $all: skills };
+            }
+        }
+
+        // Hanya tampilkan lowongan yang sudah diverifikasi/published
+        filter.status = "published";
+
+        const lowongans = await Lowongan.find(filter).sort({ createdAt: -1 });
+
+        res.status(200).json({
+            count: lowongans.length,
+            data: lowongans
+        });
+    } catch (error) {
+        res.status(500).json({ msg: error.message });
+    }
+};
+

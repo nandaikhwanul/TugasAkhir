@@ -20,13 +20,7 @@ import {
   FaPlus,
   FaTrashAlt,
 } from "react-icons/fa";
-
-// Helper to get token from cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Format date to "DD MMM, YYYY"
 function formatDate(dateStr) {
@@ -114,7 +108,7 @@ export default function PersonalInfoCard() {
   useEffect(() => {
     async function fetchAlumni() {
       setLoading(true);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setLoading(false);
         return;
@@ -378,7 +372,7 @@ export default function PersonalInfoCard() {
       return;
     }
 
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setFormError("Token tidak ditemukan.");
       setSaving(false);

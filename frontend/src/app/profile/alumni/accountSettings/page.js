@@ -2,15 +2,7 @@
 import { useState, useEffect } from "react";
 import { FiEdit2 } from "react-icons/fi";
 import { FiEye, FiEyeOff } from "react-icons/fi"; // Import eye icons
-
-// Helper: get token from cookie
-function getTokenFromCookie(name = "token") {
-  if (typeof document === "undefined") return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop().split(";").shift();
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // SVG Illustration (cat & dog, black & white, dot style)
 function AccountSettingsIllustration() {
@@ -102,7 +94,7 @@ export default function AccountSettingsPage() {
       setLoading(true);
       setFetchError("");
       try {
-        const token = getTokenFromCookie("token");
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setFetchError("Token tidak ditemukan. Silakan login ulang.");
           setLoading(false);
@@ -143,7 +135,7 @@ export default function AccountSettingsPage() {
       setEmailError("Data profil belum dimuat. Silakan coba lagi.");
       return;
     }
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setEmailError("Token tidak ditemukan. Silakan login ulang.");
       return;
@@ -203,7 +195,7 @@ export default function AccountSettingsPage() {
       setPasswordError("Data profil belum dimuat. Silakan coba lagi.");
       return;
     }
-    const token = getTokenFromCookie("token");
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setPasswordError("Token tidak ditemukan. Silakan login ulang.");
       return;

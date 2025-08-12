@@ -2,7 +2,6 @@
 import { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "../navbar/page";
-import TokenKadaluarsaRedirect from "../tokenKadaluarsa";
 import {
   IoArrowDownOutline,
   IoArrowUpOutline,
@@ -289,7 +288,6 @@ export default function LowonganPerusahaanListPage() {
 
   return (
     <div className="min-h-screen bg-gray-100 px-2">
-      <TokenKadaluarsaRedirect />
       <Navbar />
       <div className="max-w-7xl mx-auto relative top-20">
       <NeuButtonBar />

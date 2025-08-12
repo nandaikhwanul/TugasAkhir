@@ -436,6 +436,9 @@ export default function AlumniDashboardPage() {
             <p className="text-gray-500 mt-1 text-base sm:text-lg">
               Selamat datang kembali! Semangat mencari peluang baru 🚀
             </p>
+            <p>
+            Gabung bersama generasi pencari kerja masa kini! <b>Upload CV-mu sekarang</b> dan tingkatkan peluangmu. Biar perusahaan yang menemukan kamu!
+            </p>
           </div>
           {/* Bagian tengah: Vector Image */}
           <div className="hidden md:flex flex-shrink-0 items-start justify-center w-[200px] lg:w-[320px] xl:w-[400px] drop-shadow-2xl">
@@ -444,12 +447,12 @@ export default function AlumniDashboardPage() {
               alt="Dashboard Vector"
               width={200}
               height={400}
-              style={{ objectFit: "contain", width: "100%", height: "auto" }}
+              style={{ objectFit: "contain", width: "100%", height: "auto", opacity: "50%" }}
               priority
             />
           </div>
           {/* Statistik */}
-          <div className="flex flex-wrap items-center bg-white rounded-lg shadow px-4 sm:px-6 py-3 gap-4 sm:gap-6 min-w-[220px] sm:min-w-[320px] w-full md:w-auto">
+          <div className="flex flex-wrap items-center bg-white rounded-lg shadow px-4 sm:px-6 py-3 gap-4 sm:gap-6 min-w-[220px] sm:min-w-[320px] w-full md:w-auto absolute top-5">
             {loadingStat ? (
               <div className="text-gray-400 text-sm">Memuat statistik...</div>
             ) : errorStat ? (
@@ -516,7 +519,7 @@ export default function AlumniDashboardPage() {
             <span className="flex items-center gap-2 justify-center">
               <FaVideo className="text-white drop-shadow" size={22} />
               <span>
-                Tingkatkan skill dan wawasanmu lewat pelatihan & podcast inspiratif! 🚀
+                Gabung bersama generasi pencari kerja masa kini! <b>Upload CV-mu sekarang</b> dan tingkatkan peluangmu. Biar perusahaan yang menemukan kamu!
               </span>
             </span>
           </div>

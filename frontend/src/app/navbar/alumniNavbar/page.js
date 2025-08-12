@@ -78,7 +78,12 @@ export default function AlumniNavbar() {
         const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setProfileImage(getProfileImageUrl(res.data.foto_profil));
+        // Jika foto_profil tidak ada atau kosong, setProfileImage("") supaya nanti pakai InitialsAvatar
+        if (!res.data.foto_profil) {
+          setProfileImage("");
+        } else {
+          setProfileImage(getProfileImageUrl(res.data.foto_profil));
+        }
         setProfileName(res.data.name || "");
       } catch (err) {
         setProfileImage("");
@@ -295,11 +300,21 @@ export default function AlumniNavbar() {
               aria-haspopup="true"
               aria-expanded={dropdownOpen}
             >
+              {/* 
+                Kalo profileImage kosong, tampilkan InitialsAvatar.
+                Kalo profileImage ada, tampilkan img.
+                (Sudah handled di useEffect di atas, jadi di sini cukup cek profileImage)
+              */}
               {profileImage ? (
                 <img
                   className="h-8 w-8 rounded-full object-cover"
                   src={profileImage}
                   alt="Profile"
+                  onError={(e) => {
+                    // Jika gambar gagal load, fallback ke InitialsAvatar
+                    e.target.onerror = null;
+                    setProfileImage("");
+                  }}
                 />
               ) : (
                 <InitialsAvatar name={profileName} />

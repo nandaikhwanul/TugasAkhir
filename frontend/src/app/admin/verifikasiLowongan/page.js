@@ -5,18 +5,7 @@ import Navbar from "../../navbar/page";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useForm } from "react-hook-form";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // LinkedIn-style avatar color generator
 function stringToColor(str) {
@@ -126,7 +115,7 @@ function PreviewModal({ open, onClose, lowonganId }) {
       setLoading(true);
       setError("");
       setDetail(null);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Token tidak ditemukan. Silakan login ulang.");
         setLoading(false);
@@ -304,7 +293,7 @@ export default function VerifikasiLowonganPage() {
     const fetchPendingLowongan = async () => {
       setLoading(true);
       setError("");
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Token tidak ditemukan. Silakan login ulang.");
         setLoading(false);
@@ -354,7 +343,7 @@ export default function VerifikasiLowonganPage() {
   const handleApprove = async (lowonganId) => {
     setProcessingId(lowonganId);
     setError("");
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Token tidak ditemukan. Silakan login ulang.");
       setProcessingId(null);
@@ -399,7 +388,7 @@ export default function VerifikasiLowonganPage() {
   const handleReject = async (lowonganId, alasan) => {
     setProcessingId(lowonganId);
     setError("");
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Token tidak ditemukan. Silakan login ulang.");
       setProcessingId(null);

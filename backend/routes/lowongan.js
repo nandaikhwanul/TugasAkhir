@@ -16,7 +16,8 @@ import {
     countActiveLowonganByPerusahaanSinceLastWeek,
     getLowonganTraffic,
     incrementLowonganTraffic,
-    countPendingLowonganByPerusahaan // <-- tambahkan import controller
+    countPendingLowonganByPerusahaan, // <-- tambahkan import controller
+    filterLowongan // <-- tambahkan import controller untuk filterLowongan
 } from "../controllers/Lowongan.js";
 import {
     authAdminVerifikasiLowongan,
@@ -33,6 +34,9 @@ router.get("/", authAlumniLowongan, getAllLowongan);
 
 // Search lowongan (khusus alumni, query: q)
 router.get("/search", authAlumniLowongan, searchLowongan);
+
+// Tambahkan route filter lowongan (umum, tanpa auth khusus)
+router.get("/filter", filterLowongan);
 
 // Create lowongan (hanya perusahaan)
 router.post("/", authPerusahaanLowongan, createLowongan);

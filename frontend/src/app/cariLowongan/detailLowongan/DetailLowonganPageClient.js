@@ -2,13 +2,7 @@
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Navbar from "../../navbar/page";
-
-// Helper: ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper: format tanggal ke "Apr 14, 2024" (en-US)
 function formatDate(dateStr) {
@@ -53,7 +47,7 @@ export default function DetailLowonganPageClient() {
       try {
         const id = searchParams.get("id");
         if (!id) throw new Error("ID lowongan tidak ditemukan di URL");
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch(
           `https://tugasakhir-production-6c6c.up.railway.app/lowongan/preview/alumni/${id}`,
@@ -116,7 +110,7 @@ export default function DetailLowonganPageClient() {
     setApplySuccess("");
     setApplyError("");
     try {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) throw new Error("Token tidak ditemukan");
       if (!job || !job._id) throw new Error("ID lowongan tidak ditemukan");
       const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar", {

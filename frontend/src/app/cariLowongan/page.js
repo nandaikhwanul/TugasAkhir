@@ -1,12 +1,14 @@
 "use client";
 import FilterLowongan from "./filterLowongan/page";
 import Navbar from "../navbar/page";
-import TokenKadaluarsaRedirect from "../tokenKadaluarsa";
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 export default function FilterJobsSidebar() {
+  // Ambil token hanya dari sessionStorage
+  const token = getTokenFromSessionStorage();
+
   return (
     <div>
-      <TokenKadaluarsaRedirect />
       <Navbar />
       <div className="flex w-screen min-h-screen bg-gray-100 items-start pt-8 px-0 fixed left-0 top-0">
         {/* Sidebar tetap, tapi kosong */}

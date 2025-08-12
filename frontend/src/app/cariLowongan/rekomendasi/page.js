@@ -1,13 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-
-// Helper: ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper: format tanggal ke string lokal Indonesia
 function formatDate(dateStr) {
@@ -43,7 +37,7 @@ function getLogoUrl(logo) {
 // Helper: increment traffic lowongan
 async function incrementTrafficLowongan(lowonganId) {
   try {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) throw new Error("Token tidak ditemukan");
     await fetch(`https://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/traffic`, {
       method: "POST",
@@ -72,7 +66,7 @@ export default function RekomendasiLowonganPage() {
       setLoading(true);
       setError(null);
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setError("Token tidak ditemukan.");
           setLoading(false);

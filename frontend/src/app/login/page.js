@@ -1,26 +1,17 @@
 "use client";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
-import axios from "axios";
-
-// Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Simpan info login ke localStorage
 function saveLoginInfo(email, password) {
   try {
     localStorage.setItem("savedLoginEmail", email);
     localStorage.setItem("savedLoginPassword", password);
-  } catch (e) {}
+    console.debug("Saved login info to localStorage:", { email, password });
+  } catch (e) {
+    console.error("Failed to save login info:", e);
+  }
 }
 
 // Hapus info login dari localStorage
@@ -28,21 +19,23 @@ function clearLoginInfo() {
   try {
     localStorage.removeItem("savedLoginEmail");
     localStorage.removeItem("savedLoginPassword");
-  } catch (e) {}
+    console.debug("Cleared login info from localStorage");
+  } catch (e) {
+    console.error("Failed to clear login info:", e);
+  }
 }
 
 // Ambil info login dari localStorage
 function getSavedLoginInfo() {
   if (typeof window === "undefined") return { email: "", password: "" };
-  return {
-    email: localStorage.getItem("savedLoginEmail") || "",
-    password: localStorage.getItem("savedLoginPassword") || "",
-  };
+  const email = localStorage.getItem("savedLoginEmail") || "";
+  const password = localStorage.getItem("savedLoginPassword") || "";
+  console.debug("Loaded saved login info from localStorage:", { email, password });
+  return { email, password };
 }
 
 // Helper untuk set cookie token secara manual (jika perlu)
 function setTokenCookie(token, options = {}) {
-  // options: {maxAge, path, expires, secure, sameSite}
   let cookie = `token=${encodeURIComponent(token)}`;
   if (options.maxAge) cookie += `; Max-Age=${options.maxAge}`;
   if (options.path) cookie += `; Path=${options.path}`;
@@ -50,35 +43,35 @@ function setTokenCookie(token, options = {}) {
   if (options.secure) cookie += `; Secure`;
   if (options.sameSite) cookie += `; SameSite=${options.sameSite}`;
   document.cookie = cookie;
+  console.debug("Set token cookie:", cookie);
 }
 
 export default function LoginPage() {
-  // Login hanya pakai email
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  // error: { email: string, password: string, general: string }
   const [error, setError] = useState({ email: "", password: "", general: "" });
   const [loading, setLoading] = useState(false);
   const [checkingToken, setCheckingToken] = useState(true);
   const [rememberMe, setRememberMe] = useState(false);
   const router = useRouter();
 
-  // Prefill email/password jika ada di localStorage
   useEffect(() => {
     const saved = getSavedLoginInfo();
     if (saved.email || saved.password) {
       setEmail(saved.email);
       setPassword(saved.password);
       setRememberMe(true);
+      console.debug("Auto-filled login form with saved credentials.");
     }
   }, []);
 
-  // Cek token di cookie sebelum render login
+  // Cek token dari sessionStorage sebelum render login
   useEffect(() => {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
+    console.debug("Token from sessionStorage:", token);
     if (token) {
+      console.debug("Token found, redirecting to /dashboard");
       router.replace("/dashboard");
-      // Jangan render login page sama sekali, biar langsung redirect
       return;
     }
     setCheckingToken(false);
@@ -89,7 +82,6 @@ export default function LoginPage() {
     setError({ email: "", password: "", general: "" });
     setLoading(true);
 
-    // Simple client-side validation
     let hasError = false;
     let newError = { email: "", password: "", general: "" };
     if (!email) {
@@ -106,89 +98,121 @@ export default function LoginPage() {
     if (hasError) {
       setError(newError);
       setLoading(false);
+      console.debug("Validation error:", newError);
       return;
     }
 
     try {
-      // Kirim email dan password
-      const payload = {
-        email,
-        password,
-      };
+      const payload = { email, password };
+      console.debug("Submitting login payload:", payload);
 
-      // Kirim request login
-      // Kita perlu akses header Set-Cookie dari response, tapi browser tidak expose header ini ke JS.
-      // Namun, jika backend mengirim Set-Cookie dengan withCredentials:true, cookie akan otomatis terset.
-      // Untuk jaga-jaga, jika backend mengirim token di body, kita bisa set cookie manual.
-      const response = await axios.post(
-        "https://tugasakhir-production-6c6c.up.railway.app/login",
-        payload,
-        {
-          withCredentials: true,
-          headers: { "Content-Type": "application/json" },
-        }
-      );
+      // Ganti ke fetch agar bisa ambil cookie dari body JSON response
+      fetch("https://tugasakhir-production-6c6c.up.railway.app/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include", // agar cookie dari server tetap dikirim/disimpan browser
+        body: JSON.stringify(payload),
+      })
+        .then(async (res) => {
+          setLoading(false);
+          let responseData = {};
+          try {
+            responseData = await res.json();
+          } catch (e) {
+            responseData = {};
+          }
 
-      // Cek jika response.data mengandung token, set cookie manual (fallback)
-      if (response && response.data && response.data.token) {
-        // Set cookie selama 30 menit (1800 detik), path=/, secure, SameSite=None
-        setTokenCookie(response.data.token, {
-          maxAge: 1800,
-          path: "/",
-          secure: false,
-          sameSite: "None",
+          if (res.ok) {
+            // Ambil cookie/token dari body JSON response
+            let token = null;
+            if (responseData.cookie) {
+              // Jika backend mengirimkan cookie string (misal: "token=xxx; Path=/; ...")
+              // Ambil nilai token dari string cookie
+              const match = responseData.cookie.match(/token=([^;]+)/);
+              if (match) {
+                token = match[1];
+              }
+            }
+            // Atau jika backend mengirimkan token langsung
+            if (!token && responseData.token) {
+              token = responseData.token;
+            }
+
+            if (token) {
+              // Simpan token ke sessionStorage
+              if (typeof window !== "undefined") {
+                window.sessionStorage.setItem("token", token);
+                console.debug("Token set to sessionStorage from response body (cookie/token field)");
+              }
+              // (Opsional) juga set cookie jika ingin, tapi source of truth sessionStorage
+              setTokenCookie(token, {
+                maxAge: 1800,
+                path: "/",
+                secure: false,
+                sameSite: "None",
+              });
+            }
+
+            if (rememberMe) {
+              saveLoginInfo(email, password);
+            } else {
+              clearLoginInfo();
+            }
+            console.debug("Redirecting to /dashboard after successful login");
+            router.push("/dashboard");
+          } else {
+            let msg = "Terjadi kesalahan pada server. Silakan coba lagi.";
+            msg = responseData.message || responseData.msg || msg;
+            let newError = { email: "", password: "", general: "" };
+            if (
+              /email/i.test(msg) &&
+              (/tidak ditemukan|not found|invalid|salah|required|wajib/i.test(msg) || /email/i.test(msg))
+            ) {
+              newError.email = msg;
+            } else if (
+              /password/i.test(msg) &&
+              (/salah|invalid|required|wajib/i.test(msg) || /password/i.test(msg))
+            ) {
+              newError.password = msg;
+            } else {
+              newError.general = msg;
+            }
+            setError(newError);
+            console.error("Login error:", msg);
+          }
+        })
+        .catch((err) => {
+          setLoading(false);
+          setError({
+            email: "",
+            password: "",
+            general: "Terjadi kesalahan pada server. Silakan coba lagi.",
+          });
+          console.error("Login error: Network/Server error", err);
         });
-      }
-
-      // Setelah login, token akan terset di cookie oleh backend (karena withCredentials)
-      if (rememberMe) {
-        saveLoginInfo(email, password);
-      } else {
-        clearLoginInfo();
-      }
-      router.push("/dashboard");
     } catch (err) {
-      // Default error state
-      let newError = { email: "", password: "", general: "" };
-      if (err.response) {
-        // Cek error spesifik dari backend
-        let msg = err.response.data?.message || err.response.data?.msg || "Terjadi kesalahan pada server.";
-        // Deteksi error email/password dari pesan
-        if (
-          /email/i.test(msg) &&
-          (/tidak ditemukan|not found|invalid|salah|required|wajib/i.test(msg) || /email/i.test(msg))
-        ) {
-          newError.email = msg;
-        } else if (
-          /password/i.test(msg) &&
-          (/salah|invalid|required|wajib/i.test(msg) || /password/i.test(msg))
-        ) {
-          newError.password = msg;
-        } else {
-          newError.general = msg;
-        }
-      } else {
-        newError.general = "Terjadi kesalahan pada server. Silakan coba lagi.";
-      }
-      setError(newError);
-    } finally {
       setLoading(false);
+      let newError = { email: "", password: "", general: "" };
+      newError.general = "Terjadi kesalahan pada server. Silakan coba lagi.";
+      setError(newError);
+      console.error("Login error:", err);
     }
   };
 
   const handleGoToRegister = () => {
+    console.debug("Navigating to /register");
     router.push("/register");
   };
 
   if (checkingToken) {
-    // Bisa ganti dengan spinner atau null, biar ga render login page dulu
+    console.debug("Checking token, not rendering login form yet.");
     return null;
   }
 
-  // Helper: apakah error.email adalah "user tidak ditemukan"?
   function isUserNotFound(msg) {
     if (!msg) return false;
-    // Cek kata kunci "tidak ditemukan" atau "not found"
     return /tidak ditemukan|not found/i.test(msg);
   }
 
@@ -206,7 +230,6 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit}>
             <div className="space-y-4">
               <div>
-                {/* Error email di atas input dan di bawah label */}
                 <label htmlFor="email" className="block text-sm font-medium text-gray-900 mb-1">
                   Email
                 </label>
@@ -230,7 +253,6 @@ export default function LoginPage() {
                 <label htmlFor="password" className="block text-sm font-medium text-gray-900 mb-1">
                   Password
                 </label>
-                {/* Error password di atas input password dan di bawah label */}
                 {error.password && (
                   <div className="mb-2 text-sm text-red-600">{error.password}</div>
                 )}
@@ -262,7 +284,6 @@ export default function LoginPage() {
               </div>
             </div>
 
-            {/* Error general di bawah semua input */}
             {error.general && (
               <div className="mt-4 text-center text-sm text-red-600">
                 {error.general}
@@ -291,7 +312,6 @@ export default function LoginPage() {
         </div>
 
         <div className="w-1/2 flex items-center justify-center">
-          {/* Ganti Three.js dengan image 15.svg */}
           <div
             className="w-full h-full flex items-center justify-center"
             style={{

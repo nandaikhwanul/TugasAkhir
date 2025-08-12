@@ -20,3 +20,6 @@ Authorization: Bearer token
   "lowonganId": "6887ae184587ec05bb5fac4a"
 }
 
+### Filter Lowongan (umum, tanpa auth khusus)
+GET https://tugasakhir-production-6c6c.up.railway.app/lowongan/filter?lokasi=Jakarta&tipe_kerja=Full%20Time&gaji_min=5000000&gaji_max=10000000&kualifikasi=JavaScript,React
+

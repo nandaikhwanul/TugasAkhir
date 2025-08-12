@@ -9,13 +9,7 @@ import {
   FaExclamationTriangle,
   FaSpinner,
 } from "react-icons/fa";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 export default function TambahAlumniPage() {
   const [nim, setNim] = useState("");
@@ -48,7 +42,7 @@ export default function TambahAlumniPage() {
     if (!selectedFile) return;
 
     setLoadingFile(true);
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setErrorFile("Token tidak ditemukan. Silakan login ulang.");
       setLoadingFile(false);
@@ -96,7 +90,7 @@ export default function TambahAlumniPage() {
       return;
     }
     setLoadingNim(true);
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setErrorNim("Token tidak ditemukan. Silakan login ulang.");
       setLoadingNim(false);

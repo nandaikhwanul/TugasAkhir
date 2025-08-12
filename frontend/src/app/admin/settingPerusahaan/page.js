@@ -4,19 +4,7 @@ import Navbar from "../../navbar/page";
 import Loader from "../../loading/loadingDesign";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import tokenKadaluarsa from "../../tokenKadaluarsa"; // <--- import tokenKadaluarsa.js
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // SVG icons
 const PencilIcon = ({ className = "" }) => (
@@ -81,7 +69,7 @@ export default function SettingPerusahaanPage() {
       setLoading(true);
       setError("");
       setSuccess("");
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setError("Unauthorized: Token not found.");
         setLoading(false);
@@ -116,7 +104,7 @@ export default function SettingPerusahaanPage() {
     setPatchLoading(true);
     setError("");
     setSuccess("");
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     try {
       const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`, {
         method: "PATCH",
@@ -182,7 +170,7 @@ export default function SettingPerusahaanPage() {
     setPatchLoading(true);
     setError("");
     setSuccess("");
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     try {
       const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/admin/perusahaan/${id}`, {
         method: "PATCH",
@@ -217,7 +205,7 @@ export default function SettingPerusahaanPage() {
     setLoading(true);
     setError("");
     setSuccess("");
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
 
     if (!token) {
       toast.error("Anda tidak memiliki izin. Silakan login ulang.", {
@@ -340,7 +328,6 @@ export default function SettingPerusahaanPage() {
   return (
     <div className="min-h-screen bg-white">
       <Navbar />
-      {tokenKadaluarsa()}
       <ToastContainer />
       <div
         className={

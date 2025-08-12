@@ -188,8 +188,10 @@ export const login = async (req, res) => {
                 await user.save();
             }
 
+            // Set-Cookie header untuk token JWT
             setTokenCookieHeader(res, token);
 
+            // Response body sesuai contoh prompt
             responseData = {
                 msg: "Login berhasil sebagai superadmin",
                 id: user._id,

@@ -9,8 +9,9 @@ const adminSidebarItems = [
   { name: "Setting Perusahaan", link: "/admin/settingPerusahaan", icon: "🏢" },
   { name: "Verifikasi Lowongan", link: "/admin/verifikasiLowongan", icon: "✅" },
   { name: "Bot Pesan", link: "/admin/botPesan", icon: "🤖" },
-  { name: "Profil", link: "/profile", icon: "👤" },
-  { name: "Tambah Alumni", link: "/admin/tambahAlumni", icon: "👤" },
+  { name: "Profil", link: "/profile", icon: "🧑‍💼" },
+  { name: "Tambah Alumni", link: "/admin/tambahAlumni", icon: "➕🎓" },
+  { name: "Pengaturan Video", link: "/admin/videoDashboard", icon: "🎬" },
   // Logout akan dipisah, jangan masukkan di sini
 ];
 
@@ -25,11 +26,40 @@ function removeTokenSession() {
   }
 }
 
+// Komponen Hamburger
+function Hamburger({ open, setOpen }) {
+  return (
+    <button
+      className="fixed top-4 left-4 z-40 flex flex-col justify-center items-center w-10 h-10 rounded bg-gray-900 text-white shadow focus:outline-none"
+      aria-label={open ? "Tutup menu" : "Buka menu"}
+      onClick={() => setOpen((v) => !v)}
+      type="button"
+    >
+      <span
+        className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
+          open ? "rotate-45 translate-y-1.5" : ""
+        }`}
+      ></span>
+      <span
+        className={`block h-0.5 w-6 bg-white my-1 transition-all duration-300 ${
+          open ? "opacity-0" : ""
+        }`}
+      ></span>
+      <span
+        className={`block h-0.5 w-6 bg-white transition-all duration-300 ${
+          open ? "-rotate-45 -translate-y-1.5" : ""
+        }`}
+      ></span>
+    </button>
+  );
+}
+
 export default function AdminSidebar() {
   const router = useRouter();
   const [activePath, setActivePath] = useState("");
   const [isAdmin, setIsAdmin] = useState(null); // null: loading, false: not admin, true: admin
   const [adminUsername, setAdminUsername] = useState(""); // username admin
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   useEffect(() => {
     // Cek role admin dari token sessionStorage dan endpoint, ambil username admin
@@ -71,6 +101,24 @@ export default function AdminSidebar() {
     }
   }, [router]);
 
+  // Tutup sidebar jika route berubah (misal klik menu di mobile/desktop)
+  useEffect(() => {
+    setSidebarOpen(false);
+  }, [activePath]);
+
+  // Optional: Tutup sidebar jika resize ke desktop (bisa dihapus jika ingin hamburger selalu ada)
+  // useEffect(() => {
+  //   function handleResize() {
+  //     if (window.innerWidth >= 768) {
+  //       setSidebarOpen(false);
+  //     }
+  //   }
+  //   if (typeof window !== "undefined") {
+  //     window.addEventListener("resize", handleResize);
+  //     return () => window.removeEventListener("resize", handleResize);
+  //   }
+  // }, []);
+
   const handleNav = (link) => {
     router.push(link);
     setActivePath(link);
@@ -106,82 +154,105 @@ export default function AdminSidebar() {
     return null;
   }
 
+  // Sidebar classes: always slide in/out, controlled by sidebarOpen
+  const sidebarBase =
+    "h-screen w-56 bg-gray-900 text-white flex flex-col fixed top-0 left-0 shadow-lg z-30 transition-transform duration-300";
+  const sidebarSlide =
+    sidebarOpen
+      ? "translate-x-0"
+      : "-translate-x-full";
+  const sidebarClass = `${sidebarBase} ${sidebarSlide}`;
+
   return (
-    <aside
-      className="h-screen w-56 bg-gray-900 text-white flex flex-col fixed top-0 left-0 shadow-lg z-30"
-      style={{
-        minWidth: 220,
-        overflowY: "auto",
-        scrollbarWidth: "none", // Firefox
-        msOverflowStyle: "none", // IE 10+
-      }}
-      // Hide scrollbar for Chrome, Safari and Opera
-      // eslint-disable-next-line react/no-unknown-property
-      css={{
-        "&::-webkit-scrollbar": {
-          display: "none",
-        },
-      }}
-    >
-      <style jsx global>{`
-        .admin-sidebar-hide-scrollbar::-webkit-scrollbar {
-          display: none !important;
-        }
-        .admin-sidebar-hide-scrollbar {
-          -ms-overflow-style: none !important;
-          scrollbar-width: none !important;
-        }
-      `}</style>
-      {/* Foto profile admin */}
-      <div className="flex flex-col items-center py-8 border-b border-gray-800">
-        <img
-          src={ADMIN_PROFILE_PHOTO}
-          alt="Admin Profile"
-          className="w-20 h-20 rounded-full border-4 border-blue-700 object-cover mb-3 shadow"
+    <>
+      {/* Hamburger button (selalu tampil di desktop & mobile) */}
+      <Hamburger open={sidebarOpen} setOpen={setSidebarOpen} />
+      {/* Overlay for all screen sizes */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0  z-20"
+          onClick={() => setSidebarOpen(false)}
+          aria-label="Tutup menu"
         />
-        <div className="font-bold text-xl mt-1">Admin Panel</div>
-        <div className="text-xs text-gray-400 mt-1">
-          {adminUsername ? adminUsername : "admin@domain.com"}
+      )}
+      <aside
+        className={sidebarClass}
+        style={{
+          minWidth: 220,
+          overflowY: "auto",
+          scrollbarWidth: "none", // Firefox
+          msOverflowStyle: "none", // IE 10+
+          zIndex: 30,
+          transition: "transform 0.3s",
+        }}
+        // Hide scrollbar for Chrome, Safari and Opera
+        // eslint-disable-next-line react/no-unknown-property
+        css={{
+          "&::-webkit-scrollbar": {
+            display: "none",
+          },
+        }}
+      >
+        <style jsx global>{`
+          .admin-sidebar-hide-scrollbar::-webkit-scrollbar {
+            display: none !important;
+          }
+          .admin-sidebar-hide-scrollbar {
+            -ms-overflow-style: none !important;
+            scrollbar-width: none !important;
+          }
+        `}</style>
+        {/* Foto profile admin */}
+        <div className="flex flex-col items-center py-8 border-b border-gray-800">
+          <img
+            src={ADMIN_PROFILE_PHOTO}
+            alt="Admin Profile"
+            className="w-20 h-20 rounded-full border-4 border-blue-700 object-cover mb-3 shadow"
+          />
+          <div className="font-bold text-xl mt-1">Admin Panel</div>
+          <div className="text-xs text-gray-400 mt-1">
+            {adminUsername ? adminUsername : "admin@domain.com"}
+          </div>
         </div>
-      </div>
-      <nav className="flex-1 admin-sidebar-hide-scrollbar" style={{ overflowY: "auto" }}>
-        <ul className="mt-6 space-y-2 px-2">
-          {adminSidebarItems.map((item) => (
-            <li key={item.name}>
-              <button
-                onClick={() => handleNav(item.link)}
-                className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition text-left font-medium cursor-pointer ${
-                  activePath === item.link
-                    ? "bg-blue-700 text-white"
-                    : "hover:bg-gray-800"
-                }`}
-                style={{ outline: "none", border: "none", background: "none", cursor: "pointer" }}
-              >
-                <span className="text-lg">{item.icon}</span>
-                <span>{item.name}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
-      </nav>
-      {/* Tombol logout dipisah di bawah, tidak kena scroll */}
-      <div className="px-2 w-full">
-        <button
-          onClick={handleLogout}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition text-left font-medium mb-2 cursor-pointer ${
-            activePath === logoutItem.link
-              ? "bg-blue-700 text-white"
-              : "hover:bg-gray-800"
-          }`}
-          style={{ outline: "none", border: "none", background: "none", cursor: "pointer" }}
-        >
-          <span className="text-lg">{logoutItem.icon}</span>
-          <span>{logoutItem.name}</span>
-        </button>
-      </div>
-      <div className="py-4 text-xs text-gray-400 text-center border-t border-gray-800">
-        &copy; {new Date().getFullYear()} Admin Only
-      </div>
-    </aside>
+        <nav className="flex-1 admin-sidebar-hide-scrollbar" style={{ overflowY: "auto" }}>
+          <ul className="mt-6 space-y-2 px-2">
+            {adminSidebarItems.map((item) => (
+              <li key={item.name}>
+                <button
+                  onClick={() => handleNav(item.link)}
+                  className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition text-left font-medium cursor-pointer ${
+                    activePath === item.link
+                      ? "bg-blue-700 text-white"
+                      : "hover:bg-gray-800"
+                  }`}
+                  style={{ outline: "none", border: "none", background: "none", cursor: "pointer" }}
+                >
+                  <span className="text-lg">{item.icon}</span>
+                  <span>{item.name}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+        {/* Tombol logout dipisah di bawah, tidak kena scroll */}
+        <div className="px-2 w-full">
+          <button
+            onClick={handleLogout}
+            className={`w-full flex items-center gap-3 px-4 py-3 rounded-md transition text-left font-medium mb-2 cursor-pointer ${
+              activePath === logoutItem.link
+                ? "bg-blue-700 text-white"
+                : "hover:bg-gray-800"
+            }`}
+            style={{ outline: "none", border: "none", background: "none", cursor: "pointer" }}
+          >
+            <span className="text-lg">{logoutItem.icon}</span>
+            <span>{logoutItem.name}</span>
+          </button>
+        </div>
+        <div className="py-4 text-xs text-gray-400 text-center border-t border-gray-800">
+          &copy; {new Date().getFullYear()} Admin Only
+        </div>
+      </aside>
+    </>
   );
 }

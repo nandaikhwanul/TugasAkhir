@@ -302,6 +302,12 @@ export default function PerusahaanNavbar() {
                   Buat Lowongan
                 </Link>
               </li>
+              {/* Tambahkan button Forum */}
+              <li>
+                <Link href="/forumalumni" className="text-black text-sm hover:text-blue-600">
+                  Forum
+                </Link>
+              </li>
             </ul>
           </div>
           {/* Profile & Search */}

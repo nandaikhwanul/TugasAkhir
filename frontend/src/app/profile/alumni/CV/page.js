@@ -3,13 +3,7 @@ import React, { useRef, useState, useEffect } from "react";
 import { HiOutlineCloudArrowUp } from "react-icons/hi2";
 import { HiOutlineDocumentArrowUp } from "react-icons/hi2";
 import { HiOutlineTrash } from "react-icons/hi";
-
-// Helper: get token from cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Helper: get base API URL (for file serving)
 const API_BASE_URL = "https://tugasakhir-production-6c6c.up.railway.app/";
@@ -27,7 +21,7 @@ export default function UploadCV() {
   useEffect(() => {
     const fetchCV = async () => {
       setLoadingCv(true);
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setLoadingCv(false);
         return;
@@ -111,7 +105,7 @@ export default function UploadCV() {
       alert("Silakan pilih file CV (PDF) terlebih dahulu.");
       return;
     }
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       alert("Token tidak ditemukan. Silakan login ulang.");
       return;
@@ -154,7 +148,7 @@ export default function UploadCV() {
   // Delete CV
   const handleDeleteCV = async () => {
     if (!window.confirm("Yakin ingin menghapus CV?")) return;
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       alert("Token tidak ditemukan. Silakan login ulang.");
       return;
