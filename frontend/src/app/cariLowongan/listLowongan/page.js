@@ -1,13 +1,7 @@
 "use client";
 import React, { useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-
-// Helper: ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
-}
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 function formatDate(dateStr) {
   if (!dateStr) return "-";
@@ -35,7 +29,7 @@ function timeAgo(dateStr) {
 // Fungsi untuk increment traffic lowongan
 async function incrementTrafficLowongan(lowonganId) {
   try {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) throw new Error("Token tidak ditemukan");
     await fetch(`https://tugasakhir-production-6c6c.up.railway.app/lowongan/${lowonganId}/traffic`, {
       method: "POST",
@@ -56,7 +50,7 @@ async function incrementTrafficLowongan(lowonganId) {
 // Fungsi untuk toggle save/unsave lowongan
 async function toggleSaveLowongan(lowonganId) {
   try {
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) throw new Error("Token tidak ditemukan");
     const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me/toggle-save-lowongan", {
       method: "POST",
@@ -128,7 +122,7 @@ export default function ListLowonganPage({ search = "" }) {
       setLoading(true);
       setErr(null);
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) throw new Error("Token tidak ditemukan");
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
           headers: { Authorization: `Bearer ${token}` },

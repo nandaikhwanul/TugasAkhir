@@ -27,6 +27,9 @@ import {
 } from "../middleware/AuthLowongan.js";
 import { verifyUser } from "../middleware/AuthUser.js";
 
+// Tambahan: import controller bulk insert
+import { bulkInsertLowongan } from "../controllers/bulkingLowongan.js";
+
 const router = express.Router();
 
 // Semua lowongan (khusus alumni, untuk rekomendasi)
@@ -82,5 +85,8 @@ router.get("/:id/traffic", authPerusahaanLowongan, getLowonganTraffic);
 
 // Endpoint: POST /lowongan/:id/traffic (hanya perusahaan pemilik lowongan)
 router.post("/:id/traffic", verifyUser, incrementLowonganTraffic);
+
+// Tambahkan endpoint bulk insert lowongan (umum, tanpa auth khusus, misal untuk admin/tools)
+router.post("/bulk", bulkInsertLowongan);
 
 export default router;

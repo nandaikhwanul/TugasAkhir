@@ -75,7 +75,8 @@ export default function LoginPage() {
       return;
     }
     setCheckingToken(false);
-  }, [router]);
+    // eslint-disable-next-line
+  }, []); // <--- HAPUS router dari dependency array, hanya [] saja
 
   const handleSubmit = async (e) => {
     e.preventDefault();

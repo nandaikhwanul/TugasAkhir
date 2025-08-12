@@ -1,9 +1,18 @@
 // Ambil token hanya dari sessionStorage
-export function getTokenFromSessionStorage() {
+export function getTokenFromSessionStorage({ redirectIfMissing = true } = {}) {
   if (typeof window === "undefined") return null;
   try {
     const token = window.sessionStorage.getItem("token");
-    if (!token) return null;
+    if (!token) {
+      // Jangan redirect jika dipanggil dari halaman /login (redirectIfMissing = false)
+      if (redirectIfMissing && typeof window !== "undefined") {
+        // Cek apakah sudah di halaman /login
+        if (!window.location.pathname.startsWith("/login")) {
+          window.location.href = "/login";
+        }
+      }
+      return null;
+    }
 
     // Cek expired JWT
     const parts = token.split(".");
@@ -30,4 +39,9 @@ export function getTokenFromSessionStorage() {
   } catch (e) {
     return null;
   }
+}
+
+// Versi khusus untuk login: hanya cek token tanpa redirect
+export function checkTokenFromSessionStorage() {
+  return getTokenFromSessionStorage({ redirectIfMissing: false });
 }
