@@ -34,13 +34,17 @@ const app = express();
 // Connect to MongoDB
 connectMongoDB();
 
+app.set('trust proxy', 1); // penting untuk cookie secure di Railway/Heroku
+
 app.use(session({
     secret: process.env.SESS_SECRET || "default_secret",
     resave: false,
     saveUninitialized: false,
     cookie: {
         secure: process.env.NODE_ENV === "production" ? true : false,
-        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax"
+        sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+        httpOnly: true,
+        // domain: ".railway.app" // opsional, jika ingin cookie bisa diakses subdomain
     }
 }));
 
