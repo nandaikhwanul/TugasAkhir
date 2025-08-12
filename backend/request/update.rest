@@ -33,7 +33,7 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWFlMTU1Z
 
 {
     "name": "nanda",
-    "nim": "12",
+    "nim": "1225313",
     "nohp": "08123456780",
     "alamat": "Jl. Contoh Alamat No. 1",
     "program_studi": "Teknik Informatika",

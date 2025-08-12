@@ -18,13 +18,15 @@ try {
     PRIVATE_KEY = null;
 }
 
-// Helper untuk set cookie JWT
+// Helper untuk set cookie JWT yang kompatibel dengan frontend Next.js (deploy/production)
 function setTokenCookie(res, token) {
     res.cookie("token", token, {
-        httpOnly: false,
-        secure: true,
-        sameSite: "none",
-        maxAge: 30 * 60 * 1000 // 30 menit
+        httpOnly: false, // harus false agar bisa diakses client-side (Next.js sessionStorage/cookie)
+        secure: true, // true di production (https)
+        sameSite: "none", // agar bisa cross-site (misal frontend dan backend beda domain)
+        maxAge: 30 * 60 * 1000, // 30 menit
+        path: "/", // pastikan cookie tersedia di seluruh path
+        // domain: ".yourdomain.com" // opsional, set jika frontend/backend beda subdomain
     });
 }
 
