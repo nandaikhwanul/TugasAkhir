@@ -21,5 +21,5 @@ Authorization: Bearer token
 }
 
 ### Filter Lowongan (umum, tanpa auth khusus) - Contoh filter satu field saja
-GET https://tugasakhir-production-6c6c.up.railway.app/lowongan/filter?tipe_kerja=Part%20Time
+GET https://tugasakhir-production-6c6c.up.railway.app/lowongan/filter?kualifikasi=UI/UX
 
