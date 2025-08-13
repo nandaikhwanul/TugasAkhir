@@ -41,13 +41,24 @@ export const checkOldPassword = async (req, res) => {
 // Endpoint untuk perusahaan melihat detail alumni (termasuk skill)
 export const getAlumniDetailForPerusahaan = async (req, res) => {
     try {
-        const alumni = await Alumni.findById(req.params.id, [
-            'name', 'nim', 'nohp', 'alamat', 'email', 'role', 
-            'foto_profil', 'foto_sampul', 'deskripsi', 
-            'program_studi', 'tahun_lulus', 'tanggal_lahir', 'skill'
-        ]);
+        // Gunakan .lean() agar hasilnya plain object, bukan Mongoose Document
+        const alumni = await Alumni.findById(
+            req.params.id,
+            [
+                'name', 'nim', 'nohp', 'alamat', 'email', 'role',
+                'foto_profil', 'foto_sampul', 'deskripsi',
+                'program_studi', 'tahun_lulus', 'tanggal_lahir', 'skill'
+            ]
+        ).lean();
+
         if (!alumni) return res.status(404).json({ msg: "Alumni tidak ditemukan" });
-        res.status(200).json(alumni);
+
+        // Pastikan field foto_profil dan foto_sampul selalu ada (null jika undefined)
+        res.status(200).json({
+            ...alumni,
+            foto_profil: alumni.foto_profil ?? null,
+            foto_sampul: alumni.foto_sampul ?? null,
+        });
     } catch (error) {
         res.status(500).json({ msg: error.message });
     }
