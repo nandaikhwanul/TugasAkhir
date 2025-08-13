@@ -424,7 +424,7 @@ export default function SavedLowonganPage() {
                         router.push(`/cariLowongan/detailLowongan?id=${item._id}`);
                       }}
                     >
-                      Detail
+                      Lihat
                       <svg
                         width="20"
                         height="20"

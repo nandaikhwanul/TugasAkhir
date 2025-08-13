@@ -302,7 +302,7 @@ function ListLowonganCustomTampilan({
                       disabled={item.status !== "open"}
                       title={item.status === "open" ? "Lamar pekerjaan ini" : "Lowongan sudah ditutup"}
                     >
-                      Lamar
+                      Lihat
                       <svg width="20" height="20" viewBox="0 0 20 20" fill="none" className="inline ml-2" xmlns="http://www.w3.org/2000/svg">
                         <path d="M7 5l5 5-5 5" stroke="#fff" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
                       </svg>
