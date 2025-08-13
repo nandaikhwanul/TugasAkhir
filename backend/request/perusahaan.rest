@@ -39,3 +39,6 @@ Content-Type: application/json
   "fotoPath": "uploads/foto_perusahaan/foto-1753646637702-531518091.jpg"
 }
 
+### Melihat detail pengalaman alumni (read-only, untuk perusahaan)
+GET http://localhost:5000/pengalaman/perusahaan/665f1e2b3b2a4c0012a4b123
+

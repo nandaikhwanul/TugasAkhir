@@ -116,3 +116,17 @@ export const deletePengalaman = async (req, res) => {
         res.status(500).json({ msg: error.message });
     }
 };
+
+// Mendapatkan pengalaman berdasarkan ID untuk perusahaan (read-only, tanpa cek kepemilikan)
+export const getPengalamanByIdForPerusahaan = async (req, res) => {
+    try {
+        const pengalaman = await Pengalaman.findById(req.params.id);
+        if (!pengalaman) {
+            return res.status(404).json({ msg: "Pengalaman tidak ditemukan" });
+        }
+        res.status(200).json({ data: pengalaman });
+    } catch (error) {
+        res.status(500).json({ msg: error.message });
+    }
+};
+
