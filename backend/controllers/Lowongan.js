@@ -909,8 +909,8 @@ export const filterLowongan = async (req, res) => {
             }
         }
 
-        // Hanya tampilkan lowongan yang sudah diverifikasi/published
-        filter.status = "published";
+        // Tampilkan hanya lowongan yang status-nya "open" atau "closed"
+        filter.status = { $in: ["open", "closed"] };
 
         const lowongans = await Lowongan.find(filter).sort({ createdAt: -1 });
 

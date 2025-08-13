@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import ListLowonganPage from "../listLowongan/page";
 import SavedPage from "../saved/page";
@@ -20,15 +20,14 @@ const lokasiOptions = [
   "Lainnya",
 ];
 
-// Pastikan value tipe kerja sesuai backend (harus persis, case, dsb)
-// Misal backend pakai: "full_time", "part_time", "internship", "freelance", "remote"
+// Value harus persis dengan backend (case sensitive, spasi, dsb)
 const tipeKerjaOptions = [
   { label: "", value: "" },
-  { label: "Full Time", value: "full_time" },
-  { label: "Part Time", value: "part_time" },
-  { label: "Internship", value: "internship" },
-  { label: "Freelance", value: "freelance" },
-  { label: "Remote", value: "remote" },
+  { label: "Full Time", value: "Full Time" },
+  { label: "Part Time", value: "Part Time" },
+  { label: "Internship", value: "Internship" },
+  { label: "Freelance", value: "Freelance" },
+  { label: "Remote", value: "Remote" },
 ];
 
 const gajiRangeOptions = [
@@ -74,7 +73,6 @@ export default function CariLowonganPage() {
 
   // Filter states
   const [lokasi, setLokasi] = useState("");
-  // tipeKerja di state tetap string, tapi value-nya harus persis dengan backend
   const [tipeKerja, setTipeKerja] = useState("");
   const [gajiMin, setGajiMin] = useState("");
   const [gajiMax, setGajiMax] = useState("");
@@ -134,8 +132,21 @@ export default function CariLowonganPage() {
     }
   }
 
-  // Semua state filter dioper ke ListLowonganPage sebagai props
-  // (search, lokasi, tipe_kerja, gaji_min, gaji_max, kualifikasi)
+  // Gabungkan semua filter ke dalam satu objek agar mudah dipakai sebagai dependency
+  // Untuk endpoint /lowongan/filter, gunakan parameter query sesuai backend
+  // Endpoint: GET https://tugasakhir-production-6c6c.up.railway.app/lowongan/filter?lokasi=Jakarta&tipe_kerja=Full%20Time&gaji_min=5000000&gaji_max=10000000&kualifikasi=JavaScript,React
+  const filterProps = useMemo(() => ({
+    // search param intentionally omitted, only use backend params
+    lokasi,
+    tipe_kerja: tipeKerja,
+    gaji_min: gajiMin,
+    gaji_max: gajiMax,
+    kualifikasi: kualifikasi.length > 0 ? kualifikasi.join(",") : "",
+    fullWidth: true,
+    useFilterEndpoint: true, // agar ListLowonganPage pakai endpoint filter
+    filterEndpoint: "https://tugasakhir-production-6c6c.up.railway.app/lowongan/filter",
+  }), [lokasi, tipeKerja, gajiMin, gajiMax, kualifikasi]);
+
   return (
     <div className="flex flex-col flex-1 w-full">
       {/* Top Search Bar */}
@@ -183,7 +194,6 @@ export default function CariLowonganPage() {
               onChange={e => setTipeKerja(e.target.value)}
             >
               <option value="">Tipe Kerja</option>
-              {/* Pastikan value option sesuai backend */}
               {tipeKerjaOptions.slice(1).map(opt => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
@@ -289,17 +299,8 @@ export default function CariLowonganPage() {
         ) : activeFilter === 1 ? (
           // Semua Lowongan
           <div className="mb-20 h-screen">
-            <ListLowonganPage
-              search={search}
-              lokasi={lokasi}
-              // Kirim tipe_kerja persis sesuai value backend
-              tipe_kerja={tipeKerja}
-              gaji_min={gajiMin}
-              gaji_max={gajiMax}
-              kualifikasi={kualifikasi.length > 0 ? kualifikasi.join(",") : ""}
-              fullWidth
-              useFilterEndpoint
-            />
+            {/* ListLowonganPage akan otomatis pakai endpoint /lowongan/filter jika useFilterEndpoint true dan filterEndpoint diberikan */}
+            <ListLowonganPage key={JSON.stringify(filterProps)} {...filterProps} />
           </div>
         ) : (
           // Disimpan
