@@ -336,7 +336,7 @@ export const getAllLowongan = async (req, res) => {
 };
 
 
-// Preview Lowongan untuk Alumni, field deskripsi sekarang dikirim ke frontend
+// Preview Lowongan untuk Alumni, sekarang juga mengirim skill, foto_profil, foto_sampul, dan media_sosial perusahaan
 export const previewLowonganForAlumni = async (req, res) => {
     try {
         // Pastikan user adalah alumni
@@ -350,25 +350,29 @@ export const previewLowonganForAlumni = async (req, res) => {
             return res.status(400).json({ msg: "ID lowongan harus disediakan di query (?id=...)" });
         }
 
-        // Cari lowongan dengan status "open" dan id sesuai
+        // Cari lowongan dengan status "open" dan id sesuai, populate field tambahan perusahaan
         const l = await Lowongan.findOne({ _id: lowonganId, status: "open" })
-            .populate("perusahaan", "nama_perusahaan logo_perusahaan bidang_perusahaan");
+            .populate("perusahaan", "nama_perusahaan logo_perusahaan bidang_perusahaan skill foto_profil foto_sampul media_sosial");
 
         if (!l) {
             return res.status(404).json({ msg: "Lowongan tidak ditemukan atau tidak tersedia untuk alumni" });
         }
 
-        // Format preview: info penting + deskripsi + jumlah_pelamar + batas_pelamar
+        // Format preview: info penting + deskripsi + jumlah_pelamar + batas_pelamar + skill, foto_profil, foto_sampul, media_sosial perusahaan
         const preview = {
             _id: l._id,
             judul_pekerjaan: l.judul_pekerjaan,
-            deskripsi: l.deskripsi, // field deskripsi sekarang dikirim ke frontend
-            kualifikasi: l.kualifikasi, // tambahkan kualifikasi ke preview
+            deskripsi: l.deskripsi,
+            kualifikasi: l.kualifikasi,
             perusahaan: l.perusahaan ? {
                 _id: l.perusahaan._id,
                 nama_perusahaan: l.perusahaan.nama_perusahaan,
                 logo_perusahaan: l.perusahaan.logo_perusahaan,
-                bidang_perusahaan: l.perusahaan.bidang_perusahaan
+                bidang_perusahaan: l.perusahaan.bidang_perusahaan,
+                skill: l.perusahaan.skill ?? [],
+                foto_profil: l.perusahaan.foto_profil ?? "",
+                foto_sampul: l.perusahaan.foto_sampul ?? "",
+                media_sosial: typeof l.perusahaan.media_sosial !== "undefined" ? l.perusahaan.media_sosial : null
             } : null,
             lokasi: l.lokasi,
             tipe_kerja: l.tipe_kerja,
@@ -376,8 +380,8 @@ export const previewLowonganForAlumni = async (req, res) => {
             batas_lamaran: l.batas_lamaran,
             status: l.status,
             createdAt: l.createdAt,
-            jumlah_pelamar: l.jumlah_pelamar, // tambahkan jumlah_pelamar
-            batas_pelamar: l.batas_pelamar // tambahkan batas_pelamar
+            jumlah_pelamar: l.jumlah_pelamar,
+            batas_pelamar: l.batas_pelamar
         };
 
         res.status(200).json({ preview });

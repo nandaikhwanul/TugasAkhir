@@ -8,12 +8,12 @@ Content-Type: application/json
 }
 
 ### Login Perusahaan
-POST http://localhost:5000/login
+POST https://tugasakhir-production-6c6c.up.railway.app/login
 Content-Type: application/json
 
 {
-    "email": "info21@suksesselalu.com",
-    "password": "abcdef"
+    "email": "hrd@majujaya.com",
+    "password": "123456"
 }
 
 ### Login Admin
