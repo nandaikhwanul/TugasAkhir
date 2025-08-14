@@ -536,4 +536,32 @@ export const getStatistikLamaranAlumni = async (req, res) => {
   }
 };
 
+// Mendapatkan daftar semua lamaran yang dilakukan oleh alumni yang sedang login
+// GET /pelamar/alumni/me
+export const getListLamaranAlumni = async (req, res) => {
+  try {
+    // Pastikan user sudah login dan merupakan alumni
+    const user = req.user;
+    if (!user || (!user._id && !user.id) || user.role !== "alumni") {
+      return res.status(401).json({ message: 'User belum login atau token tidak valid.' });
+    }
+    const alumniId = (user._id || user.id).toString();
+
+    // Ambil semua lamaran milik alumni ini, urutkan terbaru dulu
+    const daftarLamaran = await Pelamar.find({ alumni: alumniId })
+      .sort({ createdAt: -1 })
+      .populate('lowongan') // jika ingin detail lowongan
+      .populate('alumni', 'nama email'); // jika ingin info alumni (opsional)
+
+    res.status(200).json({
+      message: "Daftar lamaran alumni ditemukan.",
+      data: daftarLamaran
+    });
+  } catch (err) {
+    let errorMsg = err && err.message ? err.message : String(err);
+    res.status(500).json({ message: "Terjadi kesalahan pada server.", error: errorMsg });
+  }
+};
+
+
 

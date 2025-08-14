@@ -6,7 +6,8 @@ import {
   countPelamarByLowongan,
   getJumlahPelamarDiterimaDitolak,
   getPelamarPerBulanPerTahun,
-  getStatistikLamaranAlumni // tambahkan import controller baru
+  getStatistikLamaranAlumni, // tambahkan import controller baru
+  getListLamaranAlumni // import controller baru untuk endpoint tambahan
 } from '../controllers/Pelamar.js';
 import { authAlumni, authPerusahaan } from '../middleware/AuthPelamar.js';
 
@@ -42,6 +43,10 @@ router.get('/pelamar/grafik/per-bulan-tahun', authPerusahaan, getPelamarPerBulan
 // Route baru: statistik lamaran alumni (khusus alumni yang sedang login)
 // GET /pelamar/statistik/alumni
 router.get('/pelamar/statistik/alumni', authAlumni, getStatistikLamaranAlumni);
+
+// Route baru: daftar semua lamaran alumni yang sedang login
+// GET /pelamar/alumni/me
+router.get('/pelamar/alumni/me', authAlumni, getListLamaranAlumni);
 
 // Route rekomendasi lowongan untuk alumni
 // POST /pelamar/rekomendasi-lowongan

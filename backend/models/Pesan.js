@@ -28,6 +28,7 @@ const PesanSchema = new mongoose.Schema({
     default: 'terkirim',
     trim: true
   },
+  // Field untuk menandai pesan yang sudah dibaca
   sudah_dibaca: {
     type: Boolean,
     default: false
