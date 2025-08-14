@@ -5,7 +5,7 @@ import {
     createPengalaman,
     updatePengalaman,
     deletePengalaman,
-    getPengalamanByIdForPerusahaan
+    getPengalamanByAlumniIdForPerusahaan
 } from "../controllers/Pengalaman.js";
 import { verifyUser } from "../middleware/AuthUser.js";
 
@@ -21,7 +21,7 @@ router.get("/me", verifyUser, getPengalamanByAlumni);
 router.get("/:id", verifyUser, getPengalamanById);
 
 // Endpoint untuk perusahaan mendapatkan pengalaman (tanpa auth user)
-router.get("/perusahaan/:id", getPengalamanByIdForPerusahaan);
+router.get("/perusahaan/:id", getPengalamanByAlumniIdForPerusahaan);
 
 // Membuat pengalaman baru
 router.post("/", verifyUser, createPengalaman);

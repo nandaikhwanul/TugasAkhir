@@ -101,13 +101,7 @@ const AlumniSchema = new mongoose.Schema({
         ],
         default: []
         // Daftar link portofolio alumni
-    },
-    pengalaman: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Pengalaman"
-        }
-    ]
+    }
 }, {
     collection: "alumni",
     timestamps: true
