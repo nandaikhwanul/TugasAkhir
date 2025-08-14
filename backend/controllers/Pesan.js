@@ -458,7 +458,7 @@ export const getPesanUntukAlumni = async (req, res) => {
 
     const pesanList = await Pesan.find({ penerima: alumniId })
       .sort({ createdAt: -1 })
-      .populate('pengirim', 'nama_perusahaan email_perusahaan');
+      .populate('pengirim', 'nama_perusahaan email_perusahaan logo_perusahaan');
 
     return res.status(200).json({
       message: 'Daftar pesan untuk alumni ditemukan.',
@@ -560,6 +560,39 @@ export const updateSudahDibaca = async (req, res) => {
     await pesan.save();
 
     return res.status(200).json({ message: 'Status sudah_dibaca berhasil diupdate.', pesan });
+  } catch (error) {
+    return res.status(500).json({ message: 'Terjadi kesalahan server.', error: error.message });
+  }
+};
+
+// Endpoint untuk menghapus pesan (hanya penerima atau pengirim yang boleh menghapus)
+export const deletePesan = async (req, res) => {
+  try {
+    const user = req.user;
+    if (!user || (!user._id && !user.id)) {
+      return res.status(401).json({ message: 'User belum login atau token tidak valid.' });
+    }
+    const pesanId = req.params.id;
+    if (!pesanId) {
+      return res.status(400).json({ message: 'ID pesan harus disertakan.' });
+    }
+
+    const pesan = await Pesan.findById(pesanId);
+    if (!pesan) {
+      return res.status(404).json({ message: 'Pesan tidak ditemukan.' });
+    }
+
+    const userId = (user._id && user._id.toString()) || (user.id && user.id.toString());
+    const penerimaId = pesan.penerima && pesan.penerima.toString();
+    const pengirimId = pesan.pengirim && pesan.pengirim.toString();
+
+    if (userId !== penerimaId && userId !== pengirimId) {
+      return res.status(403).json({ message: 'Anda tidak diizinkan menghapus pesan ini.' });
+    }
+
+    await Pesan.findByIdAndDelete(pesanId);
+
+    return res.status(200).json({ message: 'Pesan berhasil dihapus.' });
   } catch (error) {
     return res.status(500).json({ message: 'Terjadi kesalahan server.', error: error.message });
   }

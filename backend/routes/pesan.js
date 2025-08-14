@@ -7,7 +7,8 @@ import {
   updateSudahDibaca,
   logoutWhatsAppBot,
   getWhatsAppQr,
-  initWhatsAppClient
+  initWhatsAppClient,
+  deletePesan // tambahkan import deletePesan
 } from '../controllers/Pesan.js';
 import { verifyUser } from '../middleware/AuthUser.js';
 import { sendMessage } from '../controllers/Whatsapp.js';
@@ -53,5 +54,8 @@ router.get('/whatsapp-status', (req, res) => {
     res.status(500).json({ message: 'Gagal cek status WhatsApp client', error: err.message });
   });
 });
+
+// ROUTE BARU: Hapus pesan (hanya penerima atau pengirim yang boleh menghapus)
+router.delete('/:id', verifyUser, deletePesan);
 
 export default router;
