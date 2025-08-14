@@ -257,7 +257,7 @@ export const updateStatusLowongan = async (req, res) => {
     }
 };
 
-// getAllLowongan khusus untuk alumni (hanya alumni yang bisa akses, dan rekomendasi hanya untuk alumni)
+// getAllLowongan khusus untuk alumni (hanya alumni yang bisa akses, tanpa rekomendasi)
 export const getAllLowongan = async (req, res) => {
     try {
         // Hanya alumni yang boleh mengakses endpoint ini
@@ -265,71 +265,34 @@ export const getAllLowongan = async (req, res) => {
             return res.status(403).json({ msg: "Hanya alumni yang dapat mengakses daftar lowongan ini" });
         }
 
-        // Ambil semua lowongan (bisa diubah jika ingin filter status open saja)
-        const lowonganList = await Lowongan.find().populate("perusahaan", "nama_perusahaan logo_perusahaan");
+        // Ambil semua lowongan dan populate nama_perusahaan & logo_perusahaan
+        const lowonganList = await Lowongan.find()
+            .populate("perusahaan", "nama_perusahaan logo_perusahaan");
 
-        // Jika ada query rekomendasi untuk alumni tertentu, jalankan mesin.py
-        const { rekomendasi_alumni_id, top_n } = req.query;
-        if (rekomendasi_alumni_id) {
-            // Pastikan alumni yang meminta rekomendasi adalah dirinya sendiri
-            if (String(req.user._id) !== String(rekomendasi_alumni_id)) {
-                return res.status(403).json({ msg: "Anda hanya dapat meminta rekomendasi untuk akun Anda sendiri" });
-            }
-
-            // Siapkan data alumni dan lowongan untuk dikirim ke Python
-            const Alumni = (await import("../models/Alumni.js")).default;
-            const alumniList = await Alumni.find({}, "_id program_studi").lean();
-            // Format lowongan agar kualifikasi selalu array of string
-            const lowonganListForPy = lowonganList.map(l => ({
-                _id: l._id.toString(),
-                judul_pekerjaan: l.judul_pekerjaan,
-                kualifikasi: Array.isArray(l.kualifikasi) ? l.kualifikasi : [l.kualifikasi]
-            }));
-
-            // Siapkan input untuk Python (JSON string)
-            const inputData = JSON.stringify({
-                alumni_list: alumniList,
-                lowongan_list: lowonganListForPy,
-                alumni_id: rekomendasi_alumni_id,
-                top_n: top_n ? parseInt(top_n) : 5
-            });
-
-            // Jalankan mesin.py dengan child_process
-            const py = spawn("python3", ["MachineLearning/mesin.py"]);
-            let pyData = "";
-            let pyErr = "";
-
-            py.stdin.write(inputData);
-            py.stdin.end();
-
-            py.stdout.on("data", (data) => {
-                pyData += data.toString();
-            });
-
-            py.stderr.on("data", (data) => {
-                pyErr += data.toString();
-            });
-
-            py.on("close", (code) => {
-                // Tambahkan console log untuk debugging
-                console.log("Python process exited with code:", code);
-                console.log("Python stdout:", pyData);
-                console.log("Python stderr:", pyErr);
-
-                if (code !== 0 || pyErr) {
-                    return res.status(500).json({ msg: "Gagal menjalankan rekomendasi Python", error: pyErr });
+        // Format agar frontend dapat langsung akses nama_perusahaan & logo_perusahaan
+        const result = lowonganList.map(l => ({
+            _id: l._id,
+            judul_pekerjaan: l.judul_pekerjaan,
+            deskripsi: l.deskripsi,
+            kualifikasi: l.kualifikasi,
+            lokasi: l.lokasi,
+            tipe_kerja: l.tipe_kerja,
+            gaji: l.gaji,
+            batas_lamaran: l.batas_lamaran,
+            status: l.status,
+            createdAt: l.createdAt,
+            jumlah_pelamar: l.jumlah_pelamar,
+            batas_pelamar: l.batas_pelamar,
+            perusahaan: l.perusahaan
+                ? {
+                    _id: l.perusahaan._id,
+                    nama_perusahaan: l.perusahaan.nama_perusahaan,
+                    logo_perusahaan: l.perusahaan.logo_perusahaan
                 }
-                try {
-                    const rekomendasi = JSON.parse(pyData);
-                    return res.status(200).json({ rekomendasi });
-                } catch (e) {
-                    return res.status(500).json({ msg: "Gagal parsing hasil rekomendasi", error: e.message });
-                }
-            });
-        } else {
-            // Default: tampilkan semua lowongan
-            res.status(200).json(lowonganList);
-        }
+                : null
+        }));
+
+        res.status(200).json(result);
     } catch (error) {
         res.status(500).json({ msg: error.message });
     }
