@@ -2,7 +2,7 @@ import Admin from '../models/Admin.js';
 import Alumni from '../models/Alumni.js';
 import Perusahaan from '../models/Perusahaan.js';
 import argon2 from "argon2";
-
+import Lowongan from '../models/Lowongan.js';
 /**
  * Semua pengecekan admin JWT di controller DIHAPUS,
  * karena sudah dilakukan oleh middleware verifyUser & adminOnly di route.
@@ -153,3 +153,16 @@ export const deletePerusahaan = async (req, res) => {
         res.status(400).json({ msg: error.message });
     }
 };
+
+// ========== HANYA ADMIN YANG BISA: Hapus semua lowongan ==========
+
+
+export const deleteAllLowongan = async (req, res) => {
+    try {
+        const result = await Lowongan.deleteMany({});
+        res.status(200).json({ msg: "Semua lowongan berhasil dihapus", deletedCount: result.deletedCount });
+    } catch (error) {
+        res.status(500).json({ msg: error.message });
+    }
+};
+

@@ -5,7 +5,8 @@ import {
     registerAdmin, 
     getAdminMe, 
     deleteAlumni,
-    deletePerusahaan
+    deletePerusahaan,
+    deleteAllLowongan // tambahkan import controller deleteAllLowongan
 } from "../controllers/Admin.js";
 import { verifyUser, adminOnly } from "../middleware/AuthUser.js";
 import { updateAlumni, validateUpdateAlumni } from "../controllers/Alumni.js";
@@ -46,5 +47,8 @@ router.delete('/perusahaan/:id', verifyUser, adminOnly, deletePerusahaan);
 // Tambahkan route preview lowongan untuk admin
 // GET /admin/lowongan/preview?id=...
 router.get('/lowongan/preview', verifyUser, adminOnly, previewLowonganForAdmin);
+
+// Tambahkan route untuk hapus semua lowongan (hanya admin)
+router.delete('/lowongan', verifyUser, adminOnly, deleteAllLowongan);
 
 export default router;
