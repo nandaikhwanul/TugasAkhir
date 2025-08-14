@@ -2,6 +2,7 @@ import CV from "../models/CV.js";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
+import Alumni from "../models/Alumni.js";
 
 // Konfigurasi multer untuk upload file PDF saja
 const storage = multer.diskStorage({
@@ -141,3 +142,32 @@ export const deleteCV = async (req, res) => {
     res.status(500).json({ message: "Gagal menghapus CV.", error: error.message });
   }
 };
+
+
+
+export const getCVByAlumniId = async (req, res) => {
+  try {
+    const { alumniId } = req.params;
+
+    // Cek apakah alumni dengan id tersebut ada
+    const alumni = await Alumni.findById(alumniId);
+    if (!alumni) {
+      return res.status(404).json({ message: "Alumni tidak ditemukan." });
+    }
+
+    // Ambil CV terbaru milik alumni
+    const cv = await CV.findOne({ alumni: alumniId }).sort({ uploadedAt: -1 });
+
+    if (!cv) {
+      return res.status(404).json({ message: "CV tidak ditemukan untuk alumni ini." });
+    }
+
+    return res.status(200).json({
+      message: "CV alumni ditemukan.",
+      cv,
+    });
+  } catch (error) {
+    res.status(500).json({ message: "Gagal mengambil CV.", error: error.message });
+  }
+};
+
