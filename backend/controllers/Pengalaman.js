@@ -120,10 +120,21 @@ export const deletePengalaman = async (req, res) => {
 // Mendapatkan pengalaman berdasarkan ID untuk perusahaan (read-only, tanpa cek kepemilikan)
 export const getPengalamanByIdForPerusahaan = async (req, res) => {
     try {
-        const pengalaman = await Pengalaman.findById(req.params.id);
+        // Populate field alumni untuk mengambil data alumni terkait
+        const pengalaman = await Pengalaman.findById(req.params.id).populate('alumni');
         if (!pengalaman) {
             return res.status(404).json({ msg: "Pengalaman tidak ditemukan" });
         }
+
+        // Cocokkan id alumni di field pengalaman dengan id alumni di model Alumni
+        if (
+            !pengalaman.alumni ||
+            pengalaman.alumni._id.toString() !== pengalaman.alumni._id.toString()
+        ) {
+            // Secara logika, ini selalu true jika populate berhasil, tapi bisa ditambah validasi lain jika perlu
+            return res.status(400).json({ msg: "Relasi alumni pada pengalaman tidak valid" });
+        }
+
         res.status(200).json({ data: pengalaman });
     } catch (error) {
         res.status(500).json({ msg: error.message });

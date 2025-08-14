@@ -40,5 +40,5 @@ Content-Type: application/json
 }
 
 ### Melihat detail pengalaman alumni (read-only, untuk perusahaan)
-GET http://localhost:5000/pengalaman/perusahaan/665f1e2b3b2a4c0012a4b123
+GET https://tugasakhir-production-6c6c.up.railway.app/pengalaman/perusahaan/689b8ede3349c645fc80b2a0
 
