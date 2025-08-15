@@ -13,7 +13,8 @@ const EMPTY_ABOUT_MESSAGE = (
   </span>
 );
 
-export default function AboutCard() {
+// Komponen pembungkus agar tidak error saat build/prerender (Next.js 13+)
+function AboutCardInner() {
   const [alumni, setAlumni] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
@@ -21,18 +22,23 @@ export default function AboutCard() {
   const alumniId = searchParams.get("id");
 
   useEffect(() => {
+    let ignore = false;
     async function fetchAlumni() {
       setLoading(true);
       setError("");
       const token = getTokenFromSessionStorage();
       if (!token) {
-        setError("Token tidak ditemukan.");
-        setLoading(false);
+        if (!ignore) {
+          setError("Token tidak ditemukan.");
+          setLoading(false);
+        }
         return;
       }
       if (!alumniId) {
-        setError("ID alumni tidak ditemukan di URL.");
-        setLoading(false);
+        if (!ignore) {
+          setError("ID alumni tidak ditemukan di URL.");
+          setLoading(false);
+        }
         return;
       }
       try {
@@ -46,14 +52,17 @@ export default function AboutCard() {
         );
         if (!res.ok) throw new Error("Gagal mengambil data alumni.");
         const data = await res.json();
-        setAlumni(data);
+        if (!ignore) setAlumni(data);
       } catch (err) {
-        setAlumni(null);
-        setError(err.message || "Gagal mengambil data alumni.");
+        if (!ignore) {
+          setAlumni(null);
+          setError(err.message || "Gagal mengambil data alumni.");
+        }
       }
-      setLoading(false);
+      if (!ignore) setLoading(false);
     }
     fetchAlumni();
+    return () => { ignore = true; };
   }, [alumniId]);
 
   if (loading) {
@@ -79,8 +88,8 @@ export default function AboutCard() {
   }
 
   return (
-    <div className="flex flex-col w-[1457px] h-full">
-      <div className="flex-1 bg-gradient-to-br from-blue-50 to-white rounded-t-lg p-8 relative w-full">
+    <div className="flex flex-col w-full max-w-[91rem] h-full  rounded-none">
+      <div className="flex-1 bg-gradient-to-br from-blue-50 to-white rounded-t-none p-8 relative w-full">
         <div className="flex items-center gap-3 mb-2">
           <FaUserCircle className="text-blue-300 text-3xl" />
           <h4 className="text-2xl text-blue-900 font-semibold tracking-tight">Tentang</h4>
@@ -98,4 +107,26 @@ export default function AboutCard() {
       </div>
     </div>
   );
+}
+
+// Export default dibungkus komponen client-only
+export default function AboutCard() {
+  // Hindari error saat build/prerender: pastikan komponen hanya render di client
+  // (karena useSearchParams dan sessionStorage hanya ada di client)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) {
+    // Hindari error saat SSR/prerender
+    return (
+      <div className="h-full bg-gradient-to-br from-blue-50 to-gray-100 p-8 flex items-center justify-center rounded-lg">
+        <span className="text-gray-400 flex items-center gap-2">
+          <FaUserCircle className="text-blue-200 text-2xl" />
+          Memuat...
+        </span>
+      </div>
+    );
+  }
+  return <AboutCardInner />;
 }

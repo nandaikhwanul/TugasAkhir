@@ -2,7 +2,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Format date to "MMM YYYY"
 function formatMonthYear(dateStr) {
@@ -14,7 +13,8 @@ function formatMonthYear(dateStr) {
   });
 }
 
-export default function PengalamanCard() {
+// Komponen pembungkus agar tidak error saat build/prerender (Next.js 13+)
+function PengalamanCardInner() {
   // Ambil id alumni dari query string (?id=...)
   const searchParams = useSearchParams();
   const alumniId = searchParams.get("id");
@@ -27,11 +27,14 @@ export default function PengalamanCard() {
   const breakWordClass = "break-words whitespace-pre-line";
 
   useEffect(() => {
+    let ignore = false;
     async function fetchPengalamanAlumni() {
       setLoadingPengalaman(true);
       if (!alumniId) {
-        setPengalaman([]);
-        setLoadingPengalaman(false);
+        if (!ignore) {
+          setPengalaman([]);
+          setLoadingPengalaman(false);
+        }
         return;
       }
       try {
@@ -46,19 +49,22 @@ export default function PengalamanCard() {
         );
         if (!res.ok) throw new Error("Gagal mengambil data pengalaman");
         const data = await res.json();
-        if (Array.isArray(data.data)) {
-          setPengalaman(data.data);
-        } else if (data.data) {
-          setPengalaman([data.data]);
-        } else {
-          setPengalaman([]);
+        if (!ignore) {
+          if (Array.isArray(data.data)) {
+            setPengalaman(data.data);
+          } else if (data.data) {
+            setPengalaman([data.data]);
+          } else {
+            setPengalaman([]);
+          }
         }
       } catch (err) {
-        setPengalaman([]);
+        if (!ignore) setPengalaman([]);
       }
-      setLoadingPengalaman(false);
+      if (!ignore) setLoadingPengalaman(false);
     }
     fetchPengalamanAlumni();
+    return () => { ignore = true; };
   }, [alumniId]);
 
   return (
@@ -107,4 +113,24 @@ export default function PengalamanCard() {
       </div>
     </div>
   );
+}
+
+// Export default dibungkus komponen client-only
+export default function PengalamanCard() {
+  // Hindari error saat build/prerender: pastikan komponen hanya render di client
+  // (karena useSearchParams hanya ada di client)
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) {
+    // Hindari error saat SSR/prerender
+    return (
+      <div className="flex-1 bg-white rounded-lg shadow-xl mt-4 p-8 group relative">
+        <h5 className="text-lg text-black font-semibold mb-2">Pengalaman</h5>
+        <div className="text-gray-400">Memuat...</div>
+      </div>
+    );
+  }
+  return <PengalamanCardInner />;
 }

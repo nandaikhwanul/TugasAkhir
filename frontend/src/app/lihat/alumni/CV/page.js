@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
@@ -28,7 +28,8 @@ function getCVFileUrl(filePath) {
   return `${API_BASE_URL}/uploads/cv/${normalized}`;
 }
 
-export default function LihatCVAlumni() {
+// Komponen utama yang fetch dan tampilkan CV
+function LihatCVAlumniInner() {
   const searchParams = useSearchParams();
   const alumniId = searchParams.get("id");
   const [cvData, setCvData] = useState(null); // { fileUrl, fileName, ... }
@@ -96,13 +97,25 @@ export default function LihatCVAlumni() {
         <embed
           src={fileUrl}
           type="application/pdf"
-            className="w-full h-[70vh] min-h-[400px] object-contain"
-            
+          className="w-full h-[70vh] min-h-[400px] object-contain"
         />
       </div>
       <div className="mt-4 text-gray-700 text-sm">
         CV Alumni{cvData.fileName ? <>: <span className="font-semibold">{cvData.fileName}</span></> : null}
       </div>
     </div>
+  );
+}
+
+// Export default dibungkus Suspense
+export default function LihatCVAlumni() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col items-center justify-center min-h-[60vh]">
+        <div className="text-gray-500 text-lg">Memuat CV...</div>
+      </div>
+    }>
+      <LihatCVAlumniInner />
+    </Suspense>
   );
 }

@@ -10,6 +10,8 @@ import {
   FaBook,
   // FaIdCard, // nim tidak dipakai
 } from "react-icons/fa";
+
+// NOTE: useSearchParams and sessionStorage are client-only, so we must ensure this component only renders on client
 import { useSearchParams } from "next/navigation";
 import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
@@ -24,7 +26,8 @@ function formatDate(dateStr) {
   });
 }
 
-export default function PersonalInfoCard() {
+// Client-only wrapper to avoid Next.js prerender error
+function PersonalInfoCardInner() {
   const searchParams = useSearchParams();
   const alumniId = searchParams.get("id");
 
@@ -33,12 +36,15 @@ export default function PersonalInfoCard() {
 
   // Fetch alumni data for perusahaan (read-only)
   useEffect(() => {
+    let ignore = false;
     async function fetchAlumni() {
       setLoading(true);
       const token = getTokenFromSessionStorage();
       if (!token || !alumniId) {
-        setLoading(false);
-        setAlumni(null);
+        if (!ignore) {
+          setLoading(false);
+          setAlumni(null);
+        }
         return;
       }
       try {
@@ -52,16 +58,17 @@ export default function PersonalInfoCard() {
         );
         if (!res.ok) throw new Error("Gagal mengambil data alumni");
         const data = await res.json();
-        console.log("DEBUG alumni data:", data); // debug data pake console.log
+        // console.log("DEBUG alumni data:", data); // debug data pake console.log
 
         // Use the data object directly, fallback to null if not present
-        setAlumni(data || null);
+        if (!ignore) setAlumni(data || null);
       } catch (err) {
-        setAlumni(null);
+        if (!ignore) setAlumni(null);
       }
-      setLoading(false);
+      if (!ignore) setLoading(false);
     }
     fetchAlumni();
+    return () => { ignore = true; };
   }, [alumniId]);
 
   if (loading) {
@@ -179,4 +186,23 @@ export default function PersonalInfoCard() {
       </div>
     </div>
   );
+}
+
+// Export default dibungkus client-only mounting (to avoid SSR/prerender error)
+export default function PersonalInfoCard() {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+  if (!mounted) {
+    // Hindari error saat SSR/prerender
+    return (
+      <div className="h-full bg-gray-100 p-8 flex items-center justify-center">
+        <span className="text-gray-400 flex items-center gap-2">
+          <FaUser className="inline-block text-blue-200" /> Memuat...
+        </span>
+      </div>
+    );
+  }
+  return <PersonalInfoCardInner />;
 }

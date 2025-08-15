@@ -1,12 +1,14 @@
 "use client";
 
-
-import PersonalInfo from "./personalInfo/page";
-import AboutCard from "./about/page";
-import PengalamanCard from "./pengalaman/page";
-import UploadCV from "./CV/page";
+import dynamic from "next/dynamic";
 import Navbar from "../../navbar/page";
 import { useRouter } from "next/navigation";
+
+// Import komponen lain secara dinamis agar tidak error saat build/prerender
+const PersonalInfo = dynamic(() => import("./personalInfo/page"), { ssr: false });
+const AboutCard = dynamic(() => import("./about/page"), { ssr: false });
+const PengalamanCard = dynamic(() => import("./pengalaman/page"), { ssr: false });
+const UploadCV = dynamic(() => import("./CV/page"), { ssr: false });
 
 export default function AlumniProfilePage() {
   const router = useRouter();
@@ -14,9 +16,9 @@ export default function AlumniProfilePage() {
   return (
     <>
       <Navbar />
-      <div className="w-full overflow-x-hidden bg-gray-100 min-h-screen">
+      <div className="w-full overflow-x-hidden bg-gray-100 min-h-screen ">
         {/* Tombol Back */}
-        <div className="w-full px-8 pt-6">
+        <div className="w-full px-8 pt-6 mb-10">
           <button
             onClick={() => router.back()}
             className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-medium transition-colors bg-white rounded px-4 py-2 shadow border border-gray-200"
@@ -54,6 +56,7 @@ export default function AlumniProfilePage() {
               <PengalamanCard />
             </div>
             <div className="w-1/2">
+              {/* UploadCV di-load hanya di client-side via dynamic import */}
               <UploadCV />
             </div>
           </div>
