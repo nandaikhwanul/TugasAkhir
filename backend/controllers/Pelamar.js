@@ -498,41 +498,65 @@ export const getPelamarPerBulanPerTahun = async (req, res) => {
 // Mendapatkan total lowongan yang dilamar, diterima, dan ditolak oleh user (alumni) yang sedang login
 export const getStatistikLamaranAlumni = async (req, res) => {
   try {
-    // Diasumsikan sudah ada middleware auth yang set req.userId (alumni)
-    const alumniId = req.userId;
+    const user = req.user;
+    if (!user || user.role !== "alumni") {
+      return res.status(401).json({ message: 'User belum login atau token tidak valid.' });
+    }
 
-    // Agregasi untuk menghitung jumlah lamaran per status
-    const hasil = await Pelamar.aggregate([
-      { $match: { alumni: alumniId } },
-      {
-        $group: {
-          _id: "$status", // status: "diterima", "ditolak", "pending", dll
-          total: { $sum: 1 }
-        }
+    const alumniId = (user._id || user.id);
+
+    // Konversi ke ObjectId jika memungkinkan
+    let objectIdAlumni;
+    try {
+      objectIdAlumni = new mongoose.Types.ObjectId(alumniId);
+    } catch (err) {
+      objectIdAlumni = alumniId;
+    }
+
+    // Ambil semua lowongan unik yang pernah dilamar (history)
+    const uniqueLowongan = await Pelamar.distinct("lowongan", { alumni: objectIdAlumni });
+    const jumlahDilamar = uniqueLowongan.length;
+
+    // Ambil semua pelamar milik alumni ini untuk menghitung status per lowongan unik
+    const pelamarList = await Pelamar.find({ alumni: objectIdAlumni });
+
+    // Buat map untuk status terakhir per lowongan (misal, status terbaru berdasarkan tanggalMelamar)
+    // Namun, jika satu lowongan bisa dilamar berkali-kali, kita ambil status terakhir (tanggalMelamar terbaru)
+    const statusPerLowongan = {};
+    pelamarList.forEach(p => {
+      const lowonganId = p.lowongan.toString();
+      if (
+        !statusPerLowongan[lowonganId] ||
+        (statusPerLowongan[lowonganId].tanggalMelamar < p.tanggalMelamar)
+      ) {
+        statusPerLowongan[lowonganId] = {
+          status: p.status,
+          tanggalMelamar: p.tanggalMelamar
+        };
       }
-    ]);
-
-    // Normalisasi hasil ke bentuk { diterima: x, ditolak: y, dilamar: z }
-    // "dilamar" = total semua status
-    let statistik = {
-      diterima: 0,
-      ditolak: 0,
-      dilamar: 0
-    };
-
-    hasil.forEach(item => {
-      if (item._id === "diterima") statistik.diterima = item.total;
-      else if (item._id === "ditolak") statistik.ditolak = item.total;
-      statistik.dilamar += item.total;
     });
+
+    // Hitung jumlah status diterima, ditolak, pending dari status terakhir tiap lowongan
+    let diterima = 0, ditolak = 0, pending = 0;
+    Object.values(statusPerLowongan).forEach(item => {
+      if (item.status === "diterima") diterima++;
+      else if (item.status === "ditolak") ditolak++;
+      else if (item.status === "pending") pending++;
+    });
+
+    let statistik = {
+      diterima,
+      ditolak,
+      pending,
+      dilamar: jumlahDilamar
+    };
 
     res.status(200).json({
       msg: "Statistik lamaran alumni",
       data: statistik
     });
   } catch (err) {
-    let errorMsg = err && err.message ? err.message : String(err);
-    res.status(500).json({ message: "Terjadi kesalahan pada server.", error: errorMsg });
+    res.status(500).json({ message: "Terjadi kesalahan pada server.", error: err.message });
   }
 };
 
