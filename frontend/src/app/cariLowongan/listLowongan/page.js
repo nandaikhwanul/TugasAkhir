@@ -88,7 +88,7 @@ export default function ListLowonganPageTampilanSaja({ filteredLowongan: filtere
     setLoading(true);
     setError(null);
 
-    fetch("http://localhost:5000/lowongan", {
+    fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
       method: "GET",
       headers: {
         Authorization: `Bearer ${token}`,
