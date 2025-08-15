@@ -98,9 +98,9 @@ export const getAllForumPosts = async (req, res) => {
       .sort(sort)
       .skip(skip)
       .limit(lim)
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
 
     const posts = await query;
@@ -124,9 +124,9 @@ export const getForumPostById = async (req, res) => {
   try {
     const { id } = req.params;
     const post = await ForumPost.findById(id)
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.json(post);
@@ -371,7 +371,11 @@ export const getSavedForumPosts = async (req, res) => {
     }
 
     // Cari semua post yang disimpan oleh user ini
-    const savedPosts = await ForumPost.find({ savedBy: userId });
+    const savedPosts = await ForumPost.find({ savedBy: userId })
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
+      .populate("category", "name");
 
     res.json({ savedPosts: savedPosts || [] });
   } catch (err) {
@@ -392,7 +396,11 @@ export const pinForumPost = async (req, res) => {
       id,
       { pinned: true },
       { new: true }
-    );
+    )
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
+      .populate("category", "name");
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.json(post);
   } catch (err) {
@@ -412,7 +420,11 @@ export const unpinForumPost = async (req, res) => {
       id,
       { pinned: false },
       { new: true }
-    );
+    )
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
+      .populate("category", "name");
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.json(post);
   } catch (err) {
@@ -432,7 +444,11 @@ export const highlightForumPost = async (req, res) => {
       id,
       { highlighted: true },
       { new: true }
-    );
+    )
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
+      .populate("category", "name");
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.json(post);
   } catch (err) {
@@ -452,7 +468,11 @@ export const unhighlightForumPost = async (req, res) => {
       id,
       { highlighted: false },
       { new: true }
-    );
+    )
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
+      .populate("category", "name");
     if (!post) return res.status(404).json({ message: "Post not found" });
     res.json(post);
   } catch (err) {
@@ -470,9 +490,9 @@ export const getPostsByCategory = async (req, res) => {
       .sort(sort)
       .skip(skip)
       .limit(lim)
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
     const total = await ForumPost.countDocuments({ category: categoryId });
     res.json({
@@ -504,9 +524,9 @@ export const getPostsByAuthor = async (req, res) => {
       .sort(sort)
       .skip(skip)
       .limit(lim)
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
     const total = await ForumPost.countDocuments(filter);
     res.json({
@@ -539,9 +559,9 @@ export const searchForumPosts = async (req, res) => {
       .sort(sort)
       .skip(skip)
       .limit(lim)
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
     const total = await ForumPost.countDocuments(filter);
     res.json({
@@ -572,9 +592,9 @@ export const getTrendingPosts = async (req, res) => {
     const posts = await ForumPost.find()
       .sort({ popularity: -1, likes: -1, comments: -1, createdAt: -1 })
       .limit(parseInt(limit, 10))
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
     res.json(posts);
   } catch (err) {
@@ -589,9 +609,9 @@ export const getPopularPosts = async (req, res) => {
     const posts = await ForumPost.find()
       .sort({ likes: -1, createdAt: -1 })
       .limit(parseInt(limit, 10))
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
     res.json(posts);
   } catch (err) {
@@ -606,9 +626,9 @@ export const getRecentPosts = async (req, res) => {
     const posts = await ForumPost.find()
       .sort({ createdAt: -1 })
       .limit(parseInt(limit, 10))
-      .populate("alumni", "name email")
-      .populate("admin", "name email")
-      .populate("perusahaan", "name email")
+      .populate("alumni", "name email foto_profil")
+      .populate("admin", "name email foto_profil")
+      .populate("perusahaan", "name email email_perusahaan logo_perusahaan")
       .populate("category", "name");
     res.json(posts);
   } catch (err) {
