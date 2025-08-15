@@ -4,10 +4,10 @@ import path from "path";
 import fs from "fs";
 import Alumni from "../models/Alumni.js";
 
-// Konfigurasi multer untuk upload file PDF saja
+// Konfigurasi multer untuk upload file gambar saja (jpg, jpeg, png, webp, bmp, gif)
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, "uploads/cv/"); // pastikan folder uploads/cv/ sudah ada
+    cb(null, "uploads/cv/"); // tetap simpan di folder uploads/cv/
   },
   filename: function (req, file, cb) {
     const uniqueSuffix = Date.now() + "-" + Math.round(Math.random() * 1E9);
@@ -15,17 +15,26 @@ const storage = multer.diskStorage({
   }
 });
 
+const allowedImageTypes = [
+  "image/jpeg",
+  "image/png",
+  "image/jpg",
+  "image/webp",
+  "image/bmp",
+  "image/gif"
+];
+
 const fileFilter = (req, file, cb) => {
-  if (file.mimetype === "application/pdf") {
+  if (allowedImageTypes.includes(file.mimetype)) {
     cb(null, true);
   } else {
-    cb(new Error("Hanya file PDF yang diperbolehkan."), false);
+    cb(new Error("Hanya file gambar (jpg, jpeg, png, webp, bmp, gif) yang diperbolehkan."), false);
   }
 };
 
 export const uploadCVMulter = multer({ storage, fileFilter });
 
-// Controller untuk upload CV (PDF) oleh alumni
+// Controller untuk upload CV (gambar) oleh alumni
 export const uploadCV = async (req, res) => {
   try {
     // Pastikan file ada
@@ -49,7 +58,7 @@ export const uploadCV = async (req, res) => {
     await newCV.save();
 
     res.status(201).json({
-      message: "CV berhasil diupload.",
+      message: "CV (gambar) berhasil diupload.",
       cv: newCV,
     });
   } catch (error) {
@@ -143,8 +152,6 @@ export const deleteCV = async (req, res) => {
   }
 };
 
-
-
 export const getCVByAlumniId = async (req, res) => {
   try {
     const { alumniId } = req.params;
@@ -170,4 +177,3 @@ export const getCVByAlumniId = async (req, res) => {
     res.status(500).json({ message: "Gagal mengambil CV.", error: error.message });
   }
 };
-
