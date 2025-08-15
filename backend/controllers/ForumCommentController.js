@@ -63,9 +63,9 @@ export const getCommentsByPost = async (req, res) => {
 
     const comments = await ForumComment.find({ post: postId, parent: null })
       .populate([
-        { path: "alumni", select: "name" },
-        { path: "admin", select: "name" },
-        { path: "perusahaan", select: "name" }
+        { path: "alumni", select: "name email foto_profil" },
+        { path: "admin", select: "name email foto_profil" },
+        { path: "perusahaan", select: "nama_perusahaan email_perusahaan logo_perusahaan" }
       ])
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -82,9 +82,9 @@ export const getCommentById = async (req, res) => {
   try {
     const { commentId } = req.params;
     const comment = await ForumComment.findById(commentId).populate([
-      { path: "alumni", select: "name" },
-      { path: "admin", select: "name" },
-      { path: "perusahaan", select: "name" }
+      { path: "alumni", select: "name email foto_profil" },
+      { path: "admin", select: "name email foto_profil" },
+      { path: "perusahaan", select: "nama_perusahaan email_perusahaan logo_perusahaan" }
     ]);
     if (!comment) return res.status(404).json({ message: "Comment not found" });
     res.json(comment);
@@ -181,9 +181,9 @@ export const getRepliesByComment = async (req, res) => {
     const { commentId } = req.params;
     const replies = await ForumComment.find({ parent: commentId })
       .populate([
-        { path: "alumni", select: "name" },
-        { path: "admin", select: "name" },
-        { path: "perusahaan", select: "name" }
+        { path: "alumni", select: "name email foto_profil" },
+        { path: "admin", select: "name email foto_profil" },
+        { path: "perusahaan", select: "nama_perusahaan email_perusahaan logo_perusahaan" }
       ])
       .sort({ createdAt: 1 });
     res.json(replies);
@@ -225,9 +225,9 @@ export const searchComments = async (req, res) => {
       content: { $regex: q, $options: "i" },
     })
       .populate([
-        { path: "alumni", select: "name" },
-        { path: "admin", select: "name" },
-        { path: "perusahaan", select: "name" }
+        { path: "alumni", select: "name email foto_profil" },
+        { path: "admin", select: "name email foto_profil" },
+        { path: "perusahaan", select: "nama_perusahaan email_perusahaan logo_perusahaan" }
       ])
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -340,9 +340,9 @@ export const getRecentComments = async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const comments = await ForumComment.find()
       .populate([
-        { path: "alumni", select: "name" },
-        { path: "admin", select: "name" },
-        { path: "perusahaan", select: "name" }
+        { path: "alumni", select: "name email foto_profil" },
+        { path: "admin", select: "name email foto_profil" },
+        { path: "perusahaan", select: "nama_perusahaan email_perusahaan logo_perusahaan" }
       ])
       .sort({ createdAt: -1 })
       .skip((page - 1) * limit)
@@ -359,9 +359,9 @@ export const getPopularComments = async (req, res) => {
     const { page = 1, limit = 20 } = req.query;
     const comments = await ForumComment.find()
       .populate([
-        { path: "alumni", select: "name" },
-        { path: "admin", select: "name" },
-        { path: "perusahaan", select: "name" }
+        { path: "alumni", select: "name email foto_profil" },
+        { path: "admin", select: "name email foto_profil" },
+        { path: "perusahaan", select: "nama_perusahaan email_perusahaan logo_perusahaan" }
       ])
       .sort({ likes: -1, createdAt: -1 })
       .skip((page - 1) * limit)
