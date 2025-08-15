@@ -2,7 +2,6 @@
 import { useEffect, useState, useMemo, useRef } from "react";
 import { IoArrowDownOutline, IoArrowUpOutline, IoCheckmarkCircle, IoCloseCircle, IoHelpCircle, IoPencil, IoTrash } from "react-icons/io5";
 import Navbar from "../../navbar/page";
-import TokenKadaluarsaRedirect from "../../tokenKadaluarsa";
 import NeuButtonBar from "../../lowonganPerusahaanList/bar/page";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -852,7 +851,6 @@ export default function LowonganPerusahaanListPage() {
   return (
     <div className="min-h-screen bg-gray-100 px-2">
       <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={true} closeOnClick pauseOnFocusLoss draggable pauseOnHover />
-      <TokenKadaluarsaRedirect />
       <Navbar />
       <div className="max-w-7xl mx-auto relative top-20">
         <NeuButtonBar />

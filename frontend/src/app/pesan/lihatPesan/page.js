@@ -23,12 +23,33 @@ function truncateTextByWords(text, maxWords = 10) {
   return words.slice(0, maxWords).join(" ") + "...";
 }
 
+// Helper untuk decode JWT dan ambil payload
+function parseJwt(token) {
+  if (!token) return null;
+  try {
+    const base64Url = token.split(".")[1];
+    const base64 = base64Url.replace(/-/g, "+").replace(/_/g, "/");
+    const jsonPayload = decodeURIComponent(
+      atob(base64)
+        .split("")
+        .map(function (c) {
+          return "%" + ("00" + c.charCodeAt(0).toString(16)).slice(-2);
+        })
+        .join("")
+    );
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+
 export default function LihatPesan() {
   const [pesanList, setPesanList] = useState([]);
   const [selectedPesan, setSelectedPesan] = useState(null);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   const [deleting, setDeleting] = useState(false);
+  const [userRole, setUserRole] = useState(null);
 
   // Fungsi untuk menandai pesan sudah dibaca
   const markAsRead = async (pesan) => {
@@ -42,6 +63,10 @@ export default function LihatPesan() {
       setFetchError("Token tidak ditemukan. Silakan login ulang.");
       return;
     }
+    // Ambil role dari token
+    const payload = parseJwt(token);
+    const role = payload && payload.role ? payload.role : null;
+
     try {
       // Optimistically update UI
       setPesanList((prev) =>
@@ -51,16 +76,33 @@ export default function LihatPesan() {
       );
       setSelectedPesan({ ...pesan, sudah_dibaca: true });
 
-      const res = await fetch(
-        `https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/${pesan._id}/dibaca`,
-        {
+      let endpoint = "";
+      let options = {
+        method: "PATCH",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ sudah_dibaca: true }),
+      };
+
+      if (role === "alumni") {
+        // Gunakan endpoint khusus alumni
+        endpoint = `https://tugasakhir-production-6c6c.up.railway.app/pesan/${pesan._id}/sudah-dibaca`;
+      } else {
+        // Endpoint lama untuk non-alumni
+        endpoint = `https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/${pesan._id}/dibaca`;
+        // Untuk endpoint lama, PATCH tanpa body
+        options = {
           method: "PATCH",
           headers: {
             Authorization: `Bearer ${token}`,
             "Content-Type": "application/json",
           },
-        }
-      );
+        };
+      }
+
+      const res = await fetch(endpoint, options);
       if (!res.ok) {
         // Rollback UI if failed
         setPesanList((prev) =>
@@ -100,7 +142,20 @@ export default function LihatPesan() {
                   return;
                 }
                 try {
-                  const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/${pesanId}`, {
+                  // Ambil role dari token
+                  const payload = parseJwt(token);
+                  const role = payload && payload.role ? payload.role : null;
+
+                  let endpoint = "";
+                  if (role === "alumni") {
+                    // Endpoint khusus alumni
+                    endpoint = `https://tugasakhir-production-6c6c.up.railway.app/pesan/${pesanId}`;
+                  } else {
+                    // Endpoint lama untuk non-alumni
+                    endpoint = `https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/${pesanId}`;
+                  }
+
+                  const res = await fetch(endpoint, {
                     method: "DELETE",
                     headers: {
                       Authorization: `Bearer ${token}`,
@@ -156,7 +211,18 @@ export default function LihatPesan() {
           setLoading(false);
           return;
         }
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas", {
+        // Cek role dari token
+        const payload = parseJwt(token);
+        let endpoint = "https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas";
+        let role = null;
+        if (payload && payload.role) {
+          role = payload.role;
+          setUserRole(role);
+        }
+        if (role === "alumni") {
+          endpoint = "https://tugasakhir-production-6c6c.up.railway.app/pesan/alumni/me";
+        }
+        const res = await fetch(endpoint, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -165,14 +231,42 @@ export default function LihatPesan() {
           throw new Error("Gagal mengambil pesan");
         }
         const data = await res.json();
-        setPesanList(data.data || []);
-        // Pilih pesan pertama secara default
-        if (data.data && data.data.length > 0) {
-          // Jika pesan pertama belum dibaca, tandai sebagai sudah dibaca
-          if (!data.data[0].sudah_dibaca) {
-            markAsRead(data.data[0]);
+
+        // Transformasi data agar field pengirim_info konsisten
+        let pesanData = (data.data || []).map((pesan) => {
+          if (role === "alumni" && pesan.pengirim && pesan.pengirim.nama_perusahaan) {
+            // Untuk alumni, gunakan nama_perusahaan dan email_perusahaan
+            return {
+              ...pesan,
+              pengirim_info: {
+                name: pesan.pengirim.nama_perusahaan,
+                email: pesan.pengirim.email_perusahaan,
+              },
+            };
+          } else if (pesan.pengirim_info) {
+            // Untuk non-alumni, sudah ada pengirim_info
+            return pesan;
           } else {
-            setSelectedPesan(data.data[0]);
+            // Fallback jika tidak ada pengirim_info
+            return {
+              ...pesan,
+              pengirim_info: {
+                name: "Tanpa Nama",
+                email: "-",
+              },
+            };
+          }
+        });
+
+        setPesanList(pesanData);
+
+        // Pilih pesan pertama secara default
+        if (pesanData && pesanData.length > 0) {
+          // Jika pesan pertama belum dibaca, tandai sebagai sudah dibaca
+          if (!pesanData[0].sudah_dibaca) {
+            markAsRead(pesanData[0]);
+          } else {
+            setSelectedPesan(pesanData[0]);
           }
         }
       } catch (err) {

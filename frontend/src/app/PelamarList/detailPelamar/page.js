@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { getTokenFromSessionStorage } from "../../sessiontoken"; // buat dapat token
 
 // Helper: Ambil pelamarId dan lowonganId dari query string (URL)
 function getIdsFromQuery() {
@@ -29,18 +30,6 @@ function getPelamarIdFromPath() {
     return last;
   }
   return "";
-}
-
-// Helper: Ambil token dari cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
 }
 
 // Helper: Ambil data alumni dari pelamar (bisa null)
@@ -100,7 +89,8 @@ export default function DetailPelamarPage({ open = true, onClose, pelamar: pelam
         pelamarId = getPelamarIdFromPath();
       }
 
-      const token = getTokenFromCookie();
+      // Ganti: Ambil token dari session storage
+      const token = getTokenFromSessionStorage();
 
       if (!pelamarId) {
         setError("ID pelamar tidak ditemukan di URL (query string pelamarId).");

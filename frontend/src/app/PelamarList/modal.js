@@ -1,16 +1,5 @@
 import React, { useState } from "react";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Hapus channel Email
 const CHANNELS = [
@@ -143,7 +132,7 @@ export default function VerifikasiModal({
       return;
     }
 
-    const token = getTokenFromCookie();
+    const token = getTokenFromSessionStorage();
     if (!token) {
       setError("Token tidak ditemukan. Silakan login ulang.");
       return;

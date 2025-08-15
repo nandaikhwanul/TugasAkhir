@@ -1,6 +1,7 @@
 "use client";
 import { Suspense } from "react";
 import NavbarPage from "../navbar/page";
+import PelamarListPageLogic from "./logicPelamarList";
 
 // Suspense fallback UI
 function LoadingPelamarList() {
@@ -15,16 +16,10 @@ function LoadingPelamarList() {
   );
 }
 
-// Suspended PelamarListPage (sudah dipindah ke file lain)
-function PelamarListPageSuspended() {
-  // Suspensi, tidak ada isi di sini.
-  return null;
-}
-
 export default function PelamarListPage() {
   return (
     <Suspense fallback={<LoadingPelamarList />}>
-      <PelamarListPageSuspended />
+      <PelamarListPageLogic />
     </Suspense>
   );
 }

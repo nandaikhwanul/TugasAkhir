@@ -190,7 +190,7 @@ export default function AlumniNavbar() {
     },
     {
       label: "Riwayat Lamaran",
-      href: "/alumni/riwayat-lamaran",
+      href: "/riwayatLamaran",
       type: "link",
     },
     {
@@ -214,11 +214,7 @@ export default function AlumniNavbar() {
           {/* Logo */}
           <div className="z-10 flex items-center" style={{ minWidth: 0 }}>
             <Link href="/dashboard" className="flex items-center space-x-2">
-              <img
-                alt="Logo"
-                className="h-8 w-8 object-contain"
-                style={{ display: "block" }}
-              />
+              
               <span className="font-bold text-lg text-blue-700 hidden sm:inline">AlumniConnect</span>
             </Link>
           </div>

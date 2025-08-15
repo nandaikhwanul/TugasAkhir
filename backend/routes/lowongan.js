@@ -33,7 +33,7 @@ import { bulkInsertLowongan } from "../controllers/bulkingLowongan.js";
 const router = express.Router();
 
 // Semua lowongan (khusus alumni, untuk rekomendasi)
-router.get("/", authAlumniLowongan, getAllLowongan);
+router.get("/", verifyUser, getAllLowongan);
 
 // Search lowongan (khusus alumni, query: q)
 router.get("/search", authAlumniLowongan, searchLowongan);

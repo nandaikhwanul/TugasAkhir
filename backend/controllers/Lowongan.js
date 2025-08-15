@@ -258,6 +258,7 @@ export const updateStatusLowongan = async (req, res) => {
 };
 
 // getAllLowongan khusus untuk alumni (hanya alumni yang bisa akses, tanpa rekomendasi)
+// Tampilkan juga nama_lowongan (alias judul_pekerjaan) seperti pada rekomendasiLowongan
 export const getAllLowongan = async (req, res) => {
     try {
         // Hanya alumni yang boleh mengakses endpoint ini
@@ -265,32 +266,30 @@ export const getAllLowongan = async (req, res) => {
             return res.status(403).json({ msg: "Hanya alumni yang dapat mengakses daftar lowongan ini" });
         }
 
-        // Ambil semua lowongan dan populate nama_perusahaan & logo_perusahaan
-        const lowonganList = await Lowongan.find()
-            .populate("perusahaan", "nama_perusahaan logo_perusahaan");
+        // Ambil semua lowongan dengan status "aktif" atau "open" dan populate field perusahaan (untuk ambil nama_perusahaan, logo_perusahaan, bidang_perusahaan)
+        const lowonganList = await Lowongan.find({ status: { $in: ["aktif", "open"] } })
+            .populate({
+                path: "perusahaan",
+                select: "nama_perusahaan logo_perusahaan bidang_perusahaan"
+            });
 
-        // Format agar frontend dapat langsung akses nama_perusahaan & logo_perusahaan
-        const result = lowonganList.map(l => ({
-            _id: l._id,
-            judul_pekerjaan: l.judul_pekerjaan,
-            deskripsi: l.deskripsi,
-            kualifikasi: l.kualifikasi,
-            lokasi: l.lokasi,
-            tipe_kerja: l.tipe_kerja,
-            gaji: l.gaji,
-            batas_lamaran: l.batas_lamaran,
-            status: l.status,
-            createdAt: l.createdAt,
-            jumlah_pelamar: l.jumlah_pelamar,
-            batas_pelamar: l.batas_pelamar,
-            perusahaan: l.perusahaan
-                ? {
-                    _id: l.perusahaan._id,
-                    nama_perusahaan: l.perusahaan.nama_perusahaan,
-                    logo_perusahaan: l.perusahaan.logo_perusahaan
-                }
-                : null
-        }));
+        // Map hasil agar setiap lowongan mengandung nama_perusahaan, logo_perusahaan, bidang_perusahaan, dan nama_lowongan (alias judul_pekerjaan)
+        const result = (lowonganList || []).map(l => {
+            const obj = l.toObject();
+            // nama_perusahaan, logo_perusahaan, bidang_perusahaan
+            obj.nama_perusahaan = obj.perusahaan && typeof obj.perusahaan === "object" && obj.perusahaan.nama_perusahaan
+                ? obj.perusahaan.nama_perusahaan
+                : null;
+            obj.logo_perusahaan = obj.perusahaan && typeof obj.perusahaan === "object" && obj.perusahaan.logo_perusahaan
+                ? obj.perusahaan.logo_perusahaan
+                : null;
+            obj.bidang_perusahaan = obj.perusahaan && typeof obj.perusahaan === "object" && obj.perusahaan.bidang_perusahaan
+                ? obj.perusahaan.bidang_perusahaan
+                : null;
+            // nama_lowongan = judul_pekerjaan
+            obj.nama_lowongan = obj.judul_pekerjaan || null;
+            return obj;
+        });
 
         res.status(200).json(result);
     } catch (error) {

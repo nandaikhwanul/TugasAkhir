@@ -2,18 +2,7 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
 import Link from "next/link";
-
-// Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie ? document.cookie.split(";").map((c) => c.trim()) : [];
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Helper untuk memastikan nama perusahaan berupa string
 function getNamaPerusahaan(l) {
@@ -90,7 +79,7 @@ export default function LowonganList() {
       setLoading(true);
       setError("");
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         const res = await axios.get("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
           headers: token
             ? { Authorization: `Bearer ${token}` }

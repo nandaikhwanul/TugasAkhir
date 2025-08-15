@@ -1,10 +1,26 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { getTokenFromSessionStorage } from "../../../sessiontoken"; // gunakan ini untuk token
+
+// Helper untuk mengambil inisial dari nama
+function getInitials(name) {
+  if (!name) return "";
+  const words = name.trim().split(" ");
+  if (words.length === 1) {
+    return words[0][0]?.toUpperCase() || "";
+  }
+  return (words[0][0] + words[words.length - 1][0]).toUpperCase();
+}
 
 // Helper untuk foto profil
-function getFotoProfilUrl(foto_profil) {
-  if (!foto_profil) return null;
+function getFotoProfilUrl(foto_profil, name) {
+  if (!foto_profil) {
+    // Jika tidak ada foto, pakai inisial
+    const initials = getInitials(name || "A");
+    // Gunakan ui-avatars dengan inisial
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=4f8cff&color=fff&size=128&font-size=0.5`;
+  }
   // Jika sudah url lengkap
   if (
     typeof foto_profil === "string" &&
@@ -24,8 +40,13 @@ function getFotoProfilUrl(foto_profil) {
 }
 
 // Helper untuk foto sampul
-function getFotoSampulUrl(foto_sampul) {
-  if (!foto_sampul) return null;
+function getFotoSampulUrl(foto_sampul, name) {
+  if (!foto_sampul) {
+    // Jika tidak ada foto sampul, pakai inisial juga (bisa pakai ui-avatars dengan warna berbeda)
+    const initials = getInitials(name || "A");
+    // Gunakan ui-avatars dengan inisial, background abu-abu
+    return `https://ui-avatars.com/api/?name=${encodeURIComponent(initials)}&background=e5e7eb&color=4f8cff&size=256&font-size=0.33`;
+  }
   if (
     typeof foto_sampul === "string" &&
     (foto_sampul.startsWith("http://") || foto_sampul.startsWith("https://"))
@@ -39,13 +60,6 @@ function getFotoSampulUrl(foto_sampul) {
     return `https://tugasakhir-production-6c6c.up.railway.app${foto_sampul}`;
   }
   return `https://tugasakhir-production-6c6c.up.railway.app/uploads/foto_sampul/${foto_sampul}`;
-}
-
-// Helper to get token from cookie
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const match = document.cookie.match(/token=([^;]+)/);
-  return match ? match[1] : null;
 }
 
 // Framer Motion variants for card
@@ -89,7 +103,7 @@ export default function CardRekomendasi() {
       setLoading(true);
       setFetchError(null);
       try {
-        const token = getTokenFromCookie();
+        const token = getTokenFromSessionStorage();
         if (!token) {
           setFetchError("Token tidak ditemukan.");
           setLoading(false);
@@ -192,9 +206,9 @@ export default function CardRekomendasi() {
                 displayedSkills = alumni.skill.slice(0, MAX_SKILL_BADGES);
                 sisaSkill = alumni.skill.length - MAX_SKILL_BADGES;
               }
-              // Gunakan helper untuk foto profil dan sampul
-              const fotoProfilUrl = getFotoProfilUrl(alumni.foto_profil) || "https://ui-avatars.com/api/?name=" + encodeURIComponent(alumni.name || "Alumni");
-              const fotoSampulUrl = getFotoSampulUrl(alumni.foto_sampul);
+              // Gunakan helper untuk foto profil dan sampul, passing name untuk inisial jika null
+              const fotoProfilUrl = getFotoProfilUrl(alumni.foto_profil, alumni.name);
+              const fotoSampulUrl = getFotoSampulUrl(alumni.foto_sampul, alumni.name);
 
               return (
                 <motion.div

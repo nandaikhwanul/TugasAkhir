@@ -1,6 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Navbar from "../../../../navbar/page";
+import { getTokenFromSessionStorage } from "../../../../sessiontoken";
 
 // Helper: konversi plain text ke HTML (ganti \n dengan <br>)
 function plainTextToHtml(str) {
@@ -43,17 +44,8 @@ export default function PreviewLowongan() {
       setLoading(true);
       setError("");
       try {
-        // Ambil token dari cookie
-        let token = null;
-        if (typeof document !== "undefined") {
-          const cookies = document.cookie.split(";").map((c) => c.trim());
-          for (const c of cookies) {
-            if (c.startsWith("token=")) {
-              token = decodeURIComponent(c.substring("token=".length));
-              break;
-            }
-          }
-        }
+        // Ambil token dari session storage
+        const token = getTokenFromSessionStorage();
         if (!token) {
           if (typeof window !== "undefined") {
             window.location.href = "/login";
@@ -113,17 +105,8 @@ export default function PreviewLowongan() {
     setLamarSuccess("");
     setLamarError("");
     try {
-      // Ambil token dari cookie
-      let token = null;
-      if (typeof document !== "undefined") {
-        const cookies = document.cookie.split(";").map((c) => c.trim());
-        for (const c of cookies) {
-          if (c.startsWith("token=")) {
-            token = decodeURIComponent(c.substring("token=".length));
-            break;
-          }
-        }
-      }
+      // Ambil token dari session storage
+      const token = getTokenFromSessionStorage();
       if (!token) {
         if (typeof window !== "undefined") {
           window.location.href = "/login";

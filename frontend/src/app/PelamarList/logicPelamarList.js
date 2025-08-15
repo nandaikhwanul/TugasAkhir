@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useRouter, useSearchParams, usePathname } from "next/navigation";
 import VerifikasiModal from "./modal";
 import NavbarPage from "../navbar/page";
+import { getTokenFromSessionStorage } from "../sessiontoken";
 
 // Helper: Avatar generator (inisial)
 function getInitials(name) {
@@ -143,15 +144,9 @@ export default function PelamarListPage() {
   const router = useRouter();
   const pathname = usePathname();
 
-  function getTokenFromCookie() {
-    if (typeof document === "undefined") return null;
-    const cookies = document.cookie.split(";").map((c) => c.trim());
-    for (const c of cookies) {
-      if (c.startsWith("token=")) {
-        return decodeURIComponent(c.substring("token=".length));
-      }
-    }
-    return null;
+  // Ganti: gunakan getTokenFromSessionStorage
+  function getToken() {
+    return getTokenFromSessionStorage();
   }
 
   function getLowonganId(searchParams, pathname) {
@@ -173,7 +168,7 @@ export default function PelamarListPage() {
       setJudulPekerjaan("");
       return;
     }
-    const token = getTokenFromCookie();
+    const token = getToken();
     if (!token) {
       router.push("/login");
       return;
@@ -227,7 +222,7 @@ export default function PelamarListPage() {
     setError("");
     setSuccess("");
     setPelamar([]);
-    const token = getTokenFromCookie();
+    const token = getToken();
     if (!token) {
       router.push("/login");
       return;
@@ -288,7 +283,7 @@ export default function PelamarListPage() {
     setNotifLoadingId(pelamarId);
     setNotifError("");
     setNotifSuccess("");
-    const token = getTokenFromCookie();
+    const token = getToken();
     if (!token) {
       router.push("/login");
       return false;
@@ -333,7 +328,7 @@ export default function PelamarListPage() {
     setSuccess("");
     setNotifError("");
     setNotifSuccess("");
-    const token = getTokenFromCookie();
+    const token = getToken();
     if (!token) {
       router.push("/login");
       return;
@@ -536,7 +531,15 @@ export default function PelamarListPage() {
                       <button
                         type="button"
                         className="mt-2 bg-green-600 hover:bg-green-700 text-white px-5 py-2 rounded-full font-semibold transition w-full md:w-auto shadow-sm"
-                        onClick={() => handleOpenDetailModal(p)}
+                        onClick={() => {
+                          // Arahkan ke halaman /lihat/alumni/page.js dengan id alumni
+                          const alumniId = p.alumni && (p.alumni._id || p.alumni.id);
+                          if (alumniId) {
+                            window.location.href = `/lihat/alumni?id=${alumniId}`;
+                          } else {
+                            alert("ID alumni tidak ditemukan.");
+                          }
+                        }}
                       >
                         Detail
                       </button>

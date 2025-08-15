@@ -278,11 +278,6 @@ export default function PerusahaanNavbar() {
       <div className="absolute z-10 left-6 top-1/2 -translate-y-1/2 flex items-center">
         {/* Search icon di kiri logo */}
         <Link href="/dashboard" className="flex items-center space-x-2">
-          <img
-            alt="Logo"
-            className="h-8 w-8 object-contain"
-            style={{ display: "block" }}
-          />
           <span className="font-bold text-lg text-blue-700 hidden sm:inline">AlumniConnect</span>
         </Link>
       </div>
@@ -304,7 +299,7 @@ export default function PerusahaanNavbar() {
               </li>
               {/* Tambahkan button Forum */}
               <li>
-                <Link href="/forumalumni" className="text-black text-sm hover:text-blue-600">
+                <Link href="/forumAlumni" className="text-black text-sm hover:text-blue-600">
                   Forum
                 </Link>
               </li>
