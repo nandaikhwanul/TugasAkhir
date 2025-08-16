@@ -199,7 +199,7 @@ export default function DetailLowonganPageClient() {
   return (
     <>
       <Navbar />
-      <div className="bg-gray-50 min-h-screen py-8 md:py-12">
+      <div className="bg-gray-100 h-auto py-8 md:py-12">
         <div className="max-w-5xl mx-auto px-4 md:px-6">
           {/* Header Lowongan */}
           <div className="flex flex-col md:flex-row items-start md:items-center gap-6 p-6 md:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">

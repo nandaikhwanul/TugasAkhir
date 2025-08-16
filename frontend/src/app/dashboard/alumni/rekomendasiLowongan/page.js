@@ -176,6 +176,8 @@ export default function RekomendasiLowonganPage() {
   const [loadingRekom, setLoadingRekom] = useState(true);
   const [errorRekom, setErrorRekom] = useState(null);
 
+  const router = useRouter();
+
   useEffect(() => {
     async function fetchRekomendasiLowongan() {
       setLoadingRekom(true);
@@ -213,11 +215,11 @@ export default function RekomendasiLowonganPage() {
     fetchRekomendasiLowongan();
   }, []);
 
-  // Tampilkan hanya 4 card saja
-  const rekomendasiEmpat = rekomendasiLowongan.slice(0, 4);
+  // Tampilkan hanya 8 card saja
+  const rekomendasiDelapan = rekomendasiLowongan.slice(0, 8);
 
   return (
-    <div className="bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 w-full min-h-screen">
+    <div className="bg-gray-100 py-8 px-4 sm:px-6 lg:px-8 w-full h-auto">
       <div className="max-w-7xl mx-auto">
         <div className="flex items-center mb-6">
           <FaFire className="text-orange-500 text-2xl mr-3" />
@@ -229,14 +231,25 @@ export default function RekomendasiLowonganPage() {
           <div className="text-gray-500 text-center py-10">Memuat rekomendasi lowongan...</div>
         ) : errorRekom ? (
           <div className="text-red-500 text-center py-10">{errorRekom}</div>
-        ) : rekomendasiEmpat.length === 0 ? (
+        ) : rekomendasiDelapan.length === 0 ? (
           <div className="text-gray-500 text-center py-10">Belum ada rekomendasi lowongan untukmu saat ini.</div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {rekomendasiEmpat.map((lowongan, idx) => (
-              <LowonganCard key={lowongan._id || idx} lowongan={lowongan} />
-            ))}
-          </div>
+          <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-4 gap-6">
+              {rekomendasiDelapan.map((lowongan, idx) => (
+                <LowonganCard key={lowongan._id || idx} lowongan={lowongan} />
+              ))}
+            </div>
+            <div className="flex justify-end mt-6">
+              <button
+                className="px-5 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 transition font-semibold text-sm"
+                onClick={() => router.push("/cariLowongan")}
+                type="button"
+              >
+                Lihat Semua
+              </button>
+            </div>
+          </>
         )}
       </div>
     </div>

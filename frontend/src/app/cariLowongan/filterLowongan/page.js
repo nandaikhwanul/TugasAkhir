@@ -1,9 +1,10 @@
+// filterLowongan.jsx
 "use client";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
 import SavedPage from "../saved/page";
 import RekomendasiPage from "../rekomendasi/page";
-import ListLowonganPage from "../listLowongan/page";
+import ListLowonganPage from "../listLowongan/page"; // Nama impor yang benar
 import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper for date formatting
@@ -85,6 +86,34 @@ function classNames(...classes) {
 
 const FILTER_KEY = "cariLowonganActiveFilter";
 
+// Helper to flatten perusahaan fields
+function flattenLowonganPerusahaanFields(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item) => {
+    // If already has nama_perusahaan and logo_perusahaan, just return as is
+    if (
+      typeof item.nama_perusahaan !== "undefined" &&
+      typeof item.logo_perusahaan !== "undefined"
+    ) {
+      return item;
+    }
+    // If nested in perusahaan
+    if (item.perusahaan && typeof item.perusahaan === "object") {
+      return {
+        ...item,
+        nama_perusahaan: item.perusahaan.nama_perusahaan ?? "",
+        logo_perusahaan: item.perusahaan.logo_perusahaan ?? "",
+      };
+    }
+    // If fields are missing, just add empty string
+    return {
+      ...item,
+      nama_perusahaan: item.nama_perusahaan ?? "",
+      logo_perusahaan: item.logo_perusahaan ?? "",
+    };
+  });
+}
+
 export default function CariLowonganPage() {
   const [search, setSearch] = useState("");
   const [activeFilter, setActiveFilter] = useState(0);
@@ -96,7 +125,7 @@ export default function CariLowonganPage() {
   const [gajiMax, setGajiMax] = useState("");
   const [kualifikasi, setKualifikasi] = useState([]);
 
-  const [filteredLowongan, setFilteredLowongan] = useState([]);
+  const [allLowongan, setAllLowongan] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
@@ -117,6 +146,7 @@ export default function CariLowonganPage() {
     }
   }, [activeFilter]);
 
+  // Perbaiki logika handleSearch
   function handleSearch(e) {
     e.preventDefault();
     setSearch(searchInput.trim());
@@ -132,8 +162,9 @@ export default function CariLowonganPage() {
       setGajiMin("");
       setGajiMax("");
     } else {
-      setGajiMin(gajiRangeOptions[idx].min);
-      setGajiMax(gajiRangeOptions[idx].max);
+      const selectedOption = gajiRangeOptions[idx];
+      setGajiMin(selectedOption.min);
+      setGajiMax(selectedOption.max);
     }
   }
 
@@ -142,49 +173,35 @@ export default function CariLowonganPage() {
     if (value === "") {
       setKualifikasi([]);
     } else if (kualifikasi.includes(value)) {
-      setKualifikasi(kualifikasi.filter(k => k !== value));
+      setKualifikasi(kualifikasi.filter((k) => k !== value));
     } else {
       setKualifikasi([...kualifikasi, value]);
     }
   }
 
-  // Build query string for filter endpoint
-  function buildFilterQuery() {
-    const params = new URLSearchParams();
-    if (search.trim()) params.append("search", search.trim());
-    if (lokasi) params.append("lokasi", lokasi);
-    if (tipeKerja) params.append("tipe_kerja", tipeKerja);
-    if (gajiMin) params.append("gaji_min", gajiMin);
-    if (gajiMax) params.append("gaji_max", gajiMax);
-    if (kualifikasi.length > 0) params.append("kualifikasi", kualifikasi.join(","));
-    return params.toString();
-  }
-
-  // Fetch filtered lowongan when filter changes and tab is "Semua Lowongan"
+  // Fetch all lowongan (unfiltered) regardless of the tab
   useEffect(() => {
-    if (activeFilter !== 1) return;
     setLoading(true);
     setFetchError(null);
-    const query = buildFilterQuery();
-    const url = `https://tugasakhir-production-6c6c.up.railway.app/lowongan/filter${query ? "?" + query : ""}`;
+    const url = `https://tugasakhir-production-6c6c.up.railway.app/lowongan`;
     fetch(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
-      .then(res => {
+      .then((res) => {
         if (!res.ok) throw new Error("Gagal mengambil data lowongan");
         return res.json();
       })
-      .then(data => {
-        setFilteredLowongan(Array.isArray(data) ? data : (data.data || []));
+      .then((data) => {
+        const arr = Array.isArray(data) ? data : data.data || [];
+        setAllLowongan(flattenLowonganPerusahaanFields(arr));
         setLoading(false);
       })
-      .catch(err => {
+      .catch((err) => {
         setFetchError(err.message || "Terjadi kesalahan");
-        setFilteredLowongan([]);
+        setAllLowongan([]);
         setLoading(false);
       });
-    // eslint-disable-next-line
-  }, [search, lokasi, tipeKerja, gajiMin, gajiMax, kualifikasi, activeFilter, token]);
+  }, [token]);
 
   return (
     <div className="flex flex-col flex-1 w-full min-h-screen bg-[#f4f7fa]">
@@ -200,8 +217,8 @@ export default function CariLowonganPage() {
             placeholder="Pekerjaan apa yang anda inginkan ?"
             className="bg-transparent outline-none w-full text-sm text-black"
             value={searchInput}
-            onChange={e => setSearchInput(e.target.value)}
-            onKeyDown={e => {
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
               if (e.key === "Enter") {
                 handleSearch(e);
               }
@@ -214,10 +231,10 @@ export default function CariLowonganPage() {
             <select
               className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8"
               value={lokasi}
-              onChange={e => setLokasi(e.target.value)}
+              onChange={(e) => setLokasi(e.target.value)}
             >
               <option value="">Lokasi</option>
-              {lokasiOptions.slice(1).map(opt => (
+              {lokasiOptions.slice(1).map((opt) => (
                 <option key={opt} value={opt}>
                   {opt}
                 </option>
@@ -230,10 +247,10 @@ export default function CariLowonganPage() {
             <select
               className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8"
               value={tipeKerja}
-              onChange={e => setTipeKerja(e.target.value)}
+              onChange={(e) => setTipeKerja(e.target.value)}
             >
               <option value="">Tipe Kerja</option>
-              {tipeKerjaOptions.slice(1).map(opt => (
+              {tipeKerjaOptions.slice(1).map((opt) => (
                 <option key={opt.value} value={opt.value}>
                   {opt.label}
                 </option>
@@ -245,13 +262,15 @@ export default function CariLowonganPage() {
           <div className="relative">
             <select
               className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8"
-              value={gajiRangeOptions.findIndex(
-                opt => opt.min === gajiMin && opt.max === gajiMax
-              )}
+              value={
+                gajiRangeOptions.findIndex(
+                  (opt) => opt.min === gajiMin && opt.max === gajiMax
+                ) || ""
+              }
               onChange={handleGajiRangeChange}
             >
               {gajiRangeOptions.map((opt, idx) => (
-                <option key={opt.label} value={idx === 0 ? "" : idx}>
+                <option key={opt.label} value={idx}>
                   {opt.label}
                 </option>
               ))}
@@ -272,7 +291,7 @@ export default function CariLowonganPage() {
             </button>
             <div className="absolute z-10 left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg hidden group-focus-within:block group-hover:block">
               <div className="max-h-60 overflow-y-auto py-2 px-2">
-                {kualifikasiOptions.slice(1).map(opt => (
+                {kualifikasiOptions.slice(1).map((opt) => (
                   <label
                     key={opt}
                     className="flex items-center gap-2 px-2 py-1 cursor-pointer text-sm"
@@ -337,11 +356,25 @@ export default function CariLowonganPage() {
         ) : activeFilter === 1 ? (
           <div className="max-w-6xl mx-auto py-8">
             {loading ? (
-              <div className="text-center text-gray-500 py-8">Memuat lowongan...</div>
+              <div className="text-center text-gray-500 py-8">
+                Memuat lowongan...
+              </div>
             ) : fetchError ? (
-              <div className="text-center text-red-500 py-8">{fetchError}</div>
+              <div className="text-center text-red-500 py-8">
+                {fetchError}
+              </div>
             ) : (
-              <ListLowonganPage lowongan={filteredLowongan} />
+              <ListLowonganPage
+                lowongan={allLowongan}
+                filter={{
+                  search,
+                  lokasi,
+                  tipeKerja,
+                  gajiMin,
+                  gajiMax,
+                  kualifikasi,
+                }}
+              />
             )}
           </div>
         ) : (

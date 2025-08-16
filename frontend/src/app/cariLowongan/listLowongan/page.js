@@ -1,7 +1,23 @@
 "use client";
-import { useState } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { getTokenFromSessionStorage } from "../../sessiontoken";
+import Link from "next/link";
+import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
+
+// Helper untuk flatten field perusahaan ke top-level
+function flattenLowonganPerusahaanFields(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map((item) => {
+    if (item && item.perusahaan) {
+      return {
+        ...item,
+        nama_perusahaan: item.perusahaan.nama_perusahaan || item.nama_perusahaan,
+        logo_perusahaan: item.perusahaan.logo_perusahaan || item.logo_perusahaan,
+      };
+    }
+    return item;
+  });
+}
 
 // Helper untuk format tanggal ke format lokal Indonesia
 function formatDate(dateStr) {
@@ -58,20 +74,226 @@ function getKualifikasiSingkat(item) {
 
 /**
  * Komponen ListLowonganPage menerima prop:
- * - lowongan: array hasil filter dari parent (WAJIB, tidak fetch sendiri)
+ * - filteredLowongan: array hasil filter dari parent (jika ada)
  * - search: string pencarian (optional, untuk tampilan judul)
- * - lokasi, tipeKerja, dsb: filter tambahan (optional, untuk tampilan filter aktif)
+ * - filter: object filter (search, lokasi, tipeKerja, gajiMin, gajiMax)
+ * - sort: { field: string, order: "asc"|"desc" } (opsional)
+ * 
+ * Jika filteredLowongan tidak diberikan, maka komponen akan fetch data sendiri (backward compatible).
+ * Filtering dan sorting dilakukan di dalam komponen hanya dengan memfilter dan mengurutkan array, tanpa memodifikasi objek di dalamnya.
+ * Data SELALU di-flatten sebelum sorting/filtering agar field nama_perusahaan dan logo_perusahaan tetap ada.
  */
-export default function ListLowonganPage({
-  lowongan = [],
-  search = "",
-  lokasi,
-  tipeKerja,
-  ...props
+export default function ListLowonganPageTampilanSaja({
+  filteredLowongan: filteredLowonganProp,
+  search: searchProp,
+  filter = {},
+  sort: sortProp = null, // { field: string, order: "asc"|"desc" }
 }) {
-  const [saving, setSaving] = useState({}); // { [lowonganId]: boolean }
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(filteredLowonganProp ? false : true);
   const [error, setError] = useState(null);
-  const router = useRouter();
+  const [saving, setSaving] = useState({}); // { [lowonganId]: boolean }
+  // Local sort state for dropdown
+  const [localSort, setLocalSort] = useState(
+    sortProp && sortProp.field === "createdAt"
+      ? sortProp
+      : { field: "createdAt", order: "desc" }
+  );
+
+  // Jika tidak ada prop filteredLowongan, fetch data sendiri (backward compatible)
+  useEffect(() => {
+    if (filteredLowonganProp) {
+      setLoading(false);
+      setError(null);
+      setData([]); // Data internal tidak dipakai
+      return;
+    }
+
+    const token = getTokenFromSessionStorage();
+
+    if (!token) {
+      setError("Token tidak ditemukan. Silakan login kembali.");
+      setLoading(false);
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    })
+      .then((res) => {
+        if (res.status === 403) {
+          throw new Error("Akses ditolak. Hanya alumni yang dapat melihat lowongan.");
+        }
+        if (!res.ok) {
+          throw new Error("Gagal mengambil data lowongan.");
+        }
+        return res.json();
+      })
+      .then((result) => {
+        let arr;
+        if (Array.isArray(result)) {
+          arr = result;
+        } else {
+          arr = result.data || [];
+        }
+        // FLATTEN sebelum sorting/filtering
+        setData(flattenLowonganPerusahaanFields(arr));
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Fetch error:", err);
+        setError(err.message || "Terjadi kesalahan saat mengambil data.");
+        setLoading(false);
+      });
+  }, [filteredLowonganProp]);
+
+  // Gunakan prop filteredLowongan jika ada, jika tidak pakai data internal
+  // PASTIKAN flattenLowonganPerusahaanFields dipakai sebelum render/sorting/filtering
+  const baseLowongan = filteredLowonganProp
+    ? flattenLowonganPerusahaanFields(filteredLowonganProp)
+    : data;
+
+  // Sorting function
+  function getSortedLowongan(arr, sortObj) {
+    if (!sortObj || !sortObj.field) return arr;
+    // Copy array agar tidak mutate
+    const sorted = [...arr];
+    sorted.sort((a, b) => {
+      const { field, order } = sortObj;
+      let valA = a[field];
+      let valB = b[field];
+
+      // Handle null/undefined
+      if (valA == null && valB == null) return 0;
+      if (valA == null) return order === "asc" ? 1 : -1;
+      if (valB == null) return order === "asc" ? -1 : 1;
+
+      // Numeric sort for gaji, jumlah_pelamar, traffic, batas_pelamar
+      if (
+        ["gaji", "jumlah_pelamar", "traffic", "batas_pelamar"].includes(field)
+      ) {
+        // gaji bisa string "Rp 5.000.000 - Rp 7.000.000" atau angka
+        const parseGaji = (g) => {
+          if (typeof g === "number") return g;
+          if (typeof g === "string") {
+            const match = g.replace(/\./g, "").match(/(\d+)/g);
+            if (match && match.length > 0) {
+              return parseInt(match[0], 10);
+            }
+          }
+          return 0;
+        };
+        valA = parseGaji(valA);
+        valB = parseGaji(valB);
+        return order === "asc" ? valA - valB : valB - valA;
+      }
+
+      // Date sort for createdAt, batas_lamaran
+      if (["createdAt", "batas_lamaran"].includes(field)) {
+        const dateA = new Date(valA).getTime();
+        const dateB = new Date(valB).getTime();
+        return order === "asc" ? dateA - dateB : dateB - dateA;
+      }
+
+      // String sort (case-insensitive)
+      valA = String(valA).toLowerCase();
+      valB = String(valB).toLowerCase();
+      if (valA < valB) return order === "asc" ? -1 : 1;
+      if (valA > valB) return order === "asc" ? 1 : -1;
+      return 0;
+    });
+    return sorted;
+  }
+
+  // Filtering hanya memfilter array, tidak memodifikasi objek di dalamnya
+  function applyFilter(arr, filterObj) {
+    if (!filterObj) return arr;
+    let result = arr;
+
+    // Search (nama_lowongan, nama_perusahaan, lokasi)
+    if (typeof filterObj.search === "string" && filterObj.search.trim() !== "") {
+      const q = filterObj.search.trim().toLowerCase();
+      result = result.filter(
+        (item) =>
+          (item.nama_lowongan && item.nama_lowongan.toLowerCase().includes(q)) ||
+          (item.nama_perusahaan && item.nama_perusahaan.toLowerCase().includes(q)) ||
+          (item.lokasi && item.lokasi.toLowerCase().includes(q))
+      );
+    }
+
+    // Lokasi
+    if (typeof filterObj.lokasi === "string" && filterObj.lokasi.trim() !== "") {
+      const lokasiQ = filterObj.lokasi.trim().toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.lokasi && item.lokasi.toLowerCase().includes(lokasiQ)
+      );
+    }
+
+    // Tipe Kerja
+    if (typeof filterObj.tipeKerja === "string" && filterObj.tipeKerja.trim() !== "") {
+      const tipeQ = filterObj.tipeKerja.trim().toLowerCase();
+      result = result.filter(
+        (item) =>
+          item.tipe_kerja && item.tipe_kerja.toLowerCase().includes(tipeQ)
+      );
+    }
+
+    // Gaji Min
+    if (typeof filterObj.gajiMin === "number" && !isNaN(filterObj.gajiMin)) {
+      result = result.filter((item) => {
+        // item.gaji bisa string "Rp 5.000.000 - Rp 7.000.000" atau angka
+        if (typeof item.gaji === "number") return item.gaji >= filterObj.gajiMin;
+        if (typeof item.gaji === "string") {
+          // Ambil angka terendah dari string
+          const match = item.gaji.replace(/\./g, "").match(/(\d+)/g);
+          if (match && match.length > 0) {
+            const gajiNum = parseInt(match[0], 10);
+            return gajiNum >= filterObj.gajiMin;
+          }
+        }
+        return false;
+      });
+    }
+
+    // Gaji Max
+    if (typeof filterObj.gajiMax === "number" && !isNaN(filterObj.gajiMax)) {
+      result = result.filter((item) => {
+        if (typeof item.gaji === "number") return item.gaji <= filterObj.gajiMax;
+        if (typeof item.gaji === "string") {
+          // Ambil angka tertinggi dari string
+          const match = item.gaji.replace(/\./g, "").match(/(\d+)/g);
+          if (match && match.length > 0) {
+            const gajiNum = parseInt(match[match.length - 1], 10);
+            return gajiNum <= filterObj.gajiMax;
+          }
+        }
+        return false;
+      });
+    }
+
+    // Tidak ada filter kualifikasi di sini
+
+    return result;
+  }
+
+  // 1. FLATTEN dulu (sudah dilakukan di baseLowongan)
+  // 2. FILTER
+  // 3. SORT
+  const filteredLowongan = getSortedLowongan(
+    applyFilter(baseLowongan, filter),
+    localSort
+  );
+
+  const search = searchProp ?? (filter && filter.search ? filter.search : "");
+  const totalUnSaved = baseLowongan.length;
 
   // Handler untuk tombol save
   const handleSave = async (lowonganId) => {
@@ -104,8 +326,11 @@ export default function ListLowonganPage({
         );
       }
 
-      // Parent harus update list lowongan jika ingin menghapus dari tampilan
-      // (tidak dihapus di sini)
+      // Jika data internal, hapus dari list internal
+      if (!filteredLowonganProp) {
+        setData((prev) => prev.filter((item) => String(item._id) !== String(lowonganId)));
+      }
+      // Jika filteredLowongan dari parent, parent yang harus update list (tidak dihapus di sini)
     } catch (err) {
       setError(err.message || "Terjadi kesalahan saat menyimpan lowongan.");
     } finally {
@@ -113,48 +338,64 @@ export default function ListLowonganPage({
     }
   };
 
-  // Handler untuk tombol "Lihat"
-  const handleLihat = (lowonganId) => {
-    router.push(`/cariLowongan/detailLowongan?id=${encodeURIComponent(lowonganId)}`);
+  // Dropdown handler
+  const handleSortChange = (e) => {
+    const value = e.target.value;
+    if (value === "desc") {
+      setLocalSort({ field: "createdAt", order: "desc" });
+    } else {
+      setLocalSort({ field: "createdAt", order: "asc" });
+    }
   };
-
-  // Untuk tampilan filter aktif (jika ada)
-  const renderActiveFilters = () => {
-    const filters = [];
-    if (lokasi) filters.push(<span key="lokasi" className="bg-[#eaf7e6] text-[#27ae60] px-2 py-1 rounded text-xs mr-2">Lokasi: {lokasi}</span>);
-    if (tipeKerja) filters.push(<span key="tipeKerja" className="bg-[#eaf7e6] text-[#27ae60] px-2 py-1 rounded text-xs mr-2">Tipe: {tipeKerja}</span>);
-    // Tambah filter lain sesuai kebutuhan
-    return filters.length > 0 ? <div className="px-6 mb-2">{filters}</div> : null;
-  };
-
-  if (error) {
-    return <div className="text-center text-red-500 py-8">{error}</div>;
-  }
-
-  const totalUnSaved = lowongan.length;
 
   return (
     <div className="min-h-screen h-screen w-full flex flex-col">
       <div className="flex-1 min-h-0 flex flex-col">
         <div className="w-full font-sans rounded-b-lg flex flex-col flex-1 min-h-0">
-          <div className="text-[20px] text-[#222] font-semibold mb-4 px-6 pt-6">
-            {search && search.trim() !== "" ? (
-              <>
-                Hasil pencarian untuk <span className="font-bold">"{search}"</span>{" "}
-                <span className="text-[#6c757d] font-normal">
-                  ({lowongan.length} hasil)
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-6 pt-6 mb-4">
+            <div className="text-[20px] text-[#222] font-semibold">
+              {search && search.trim() !== "" ? (
+                <>
+                  Hasil pencarian untuk <span className="font-bold">"{search}"</span>{" "}
+                  <span className="text-[#6c757d] font-normal">
+                    ({filteredLowongan.length} dari {totalUnSaved})
+                  </span>
+                </>
+              ) : (
+                <>
+                  Lowongan yang belum disimpan{" "}
+                  <span className="text-[#6c757d] font-normal">
+                    ({totalUnSaved} total)
+                  </span>
+                </>
+              )}
+            </div>
+            {/* Dropdown sorting */}
+            <div className="mt-3 sm:mt-0 flex items-center gap-2">
+              <label htmlFor="sort-lowongan" className="text-[#444] text-[15px] font-medium mr-2">
+                Urutkan:
+              </label>
+              <div className="relative">
+                <select
+                  id="sort-lowongan"
+                  className="appearance-none border border-[#e0e0e0] rounded-lg py-1.5 pl-9 pr-6 text-[15px] text-[#222] bg-white focus:outline-none focus:ring-2 focus:ring-[#4fc3f7] transition"
+                  value={localSort.order}
+                  onChange={handleSortChange}
+                  style={{ minWidth: 120, cursor: "pointer" }}
+                >
+                  <option value="desc">Terbaru</option>
+                  <option value="asc">Terlama</option>
+                </select>
+                <span className="absolute left-2 top-1.5 text-[#4fc3f7] pointer-events-none">
+                  {localSort.order === "desc" ? (
+                    <FaSortAmountDown size={18} />
+                  ) : (
+                    <FaSortAmountUp size={18} />
+                  )}
                 </span>
-              </>
-            ) : (
-              <>
-                Lowongan yang belum disimpan{" "}
-                <span className="text-[#6c757d] font-normal">
-                  ({totalUnSaved} total)
-                </span>
-              </>
-            )}
+              </div>
+            </div>
           </div>
-          {renderActiveFilters()}
           <div
             className="w-full flex-1 overflow-y-auto pb-4 px-0 mb-52"
             style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
@@ -164,14 +405,14 @@ export default function ListLowonganPage({
                 display: none;
               }
             `}</style>
-            {lowongan.length === 0 && (
+            {filteredLowongan.length === 0 && (
               <div className="text-[#6c757d] text-[16px] px-6">
                 {search && search.trim() !== ""
                   ? "Tidak ada lowongan yang cocok dengan pencarian."
                   : "Semua lowongan sudah disimpan atau belum ada lowongan tersedia."}
               </div>
             )}
-            {lowongan.map((item) => {
+            {filteredLowongan.map((item) => {
               const isSaved = false; // Untuk tampilan saja
               return (
                 <div
@@ -427,39 +668,43 @@ export default function ListLowonganPage({
                   {/* Apply Button */}
                   <div className="ml-6 flex flex-col items-end justify-between h-full min-w-[120px]">
                     <div className="mt-14 w-full flex justify-end">
-                      <button
-                        className={` bg-[#4fc3f7] text-white rounded-lg px-6 py-2.5 font-semibold text-[15px] shadow-[0_2px_8px_0_rgba(79,195,247,0.12)] mb-2 flex items-center justify-center transition ${
-                          item.status === "open"
-                            ? "opacity-100 cursor-pointer"
-                            : "opacity-50 pointer-events-none"
-                        } `}
-                        aria-label="Apply"
-                        disabled={item.status !== "open"}
-                        title={
-                          item.status === "open"
-                            ? "Lamar pekerjaan ini"
-                            : "Lowongan sudah ditutup"
-                        }
-                        onClick={() => handleLihat(item._id)}
+                      <Link
+                        href={`/cariLowongan/detailLowongan?id=${item._id ? String(item._id) : ""}`}
                       >
-                        Lihat
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 20 20"
-                          fill="none"
-                          className="inline ml-2"
-                          xmlns="http://www.w3.org/2000/svg"
+                        <span
+                          className={` bg-[#4fc3f7] text-white rounded-lg px-6 py-2.5 font-semibold text-[15px] shadow-[0_2px_8px_0_rgba(79,195,247,0.12)] mb-2 flex items-center justify-center transition ${
+                            item.status === "open"
+                              ? "opacity-100 cursor-pointer"
+                              : "opacity-50 pointer-events-none"
+                          } `}
+                          aria-label="Apply"
+                          title={
+                            item.status === "open"
+                              ? "Lamar pekerjaan ini"
+                              : "Lowongan sudah ditutup"
+                          }
+                          tabIndex={item.status === "open" ? 0 : -1}
+                          style={item.status !== "open" ? { pointerEvents: "none" } : {}}
                         >
-                          <path
-                            d="M7 5l5 5-5 5"
-                            stroke="#fff"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          />
-                        </svg>
-                      </button>
+                          Lihat
+                          <svg
+                            width="20"
+                            height="20"
+                            viewBox="0 0 20 20"
+                            fill="none"
+                            className="inline ml-2"
+                            xmlns="http://www.w3.org/2000/svg"
+                          >
+                            <path
+                              d="M7 5l5 5-5 5"
+                              stroke="#fff"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            />
+                          </svg>
+                        </span>
+                      </Link>
                     </div>
                   </div>
                 </div>
