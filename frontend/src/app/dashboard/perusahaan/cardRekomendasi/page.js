@@ -1,6 +1,7 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { useRouter } from "next/navigation";
 import { getTokenFromSessionStorage } from "../../../sessiontoken"; // gunakan ini untuk token
 
 // Helper untuk mengambil inisial dari nama
@@ -97,6 +98,7 @@ export default function CardRekomendasi() {
   const [alumniList, setAlumniList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const router = useRouter();
 
   useEffect(() => {
     async function fetchAlumni() {
@@ -128,6 +130,11 @@ export default function CardRekomendasi() {
     }
     fetchAlumni();
   }, []);
+
+  // Handler untuk klik card
+  const handleCardClick = () => {
+    router.push("/dashboard/perusahaan/lihat/alumni/page");
+  };
 
   return (
     <div
@@ -218,15 +225,26 @@ export default function CardRekomendasi() {
                   whileInView="visible"
                   viewport={{ amount: 0.2 }}
                   variants={cardVariants}
-                  className="bg-white rounded-2xl shadow-sm border border-[#e3e8f0] w-full sm:w-[340px] p-0 flex flex-col gap-4 relative"
+                  className="bg-white rounded-2xl shadow-sm border border-[#e3e8f0] w-full sm:w-[340px] p-0 flex flex-col gap-4 relative cursor-pointer transition hover:shadow-lg"
                   style={{
                     fontFamily: "'Poppins', 'Segoe UI', 'Arial', sans-serif",
                     maxWidth: 340,
                     flex: "1 1 300px",
                   }}
+                  onClick={handleCardClick}
+                  tabIndex={0}
+                  role="button"
+                  onKeyDown={e => {
+                    if (e.key === "Enter" || e.key === " ") {
+                      handleCardClick();
+                    }
+                  }}
                 >
                   {/* Dots menu */}
-                  <button className="absolute top-5 right-5 text-[#BDBDBD] hover:text-[#4f8cff] z-20">
+                  <button
+                    className="absolute top-5 right-5 text-[#BDBDBD] hover:text-[#4f8cff] z-20"
+                    onClick={e => e.stopPropagation()}
+                  >
                     <svg width="22" height="22" fill="none" viewBox="0 0 24 24">
                       <circle cx="5" cy="12" r="1.5" fill="currentColor" />
                       <circle cx="12" cy="12" r="1.5" fill="currentColor" />

@@ -1,6 +1,5 @@
 "use client";
 import React, { useEffect, useState } from "react";
-import CardRekomendasi from "./cardRekomendasi/page";
 import { Line, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -14,8 +13,11 @@ import {
   Title,
   Filler,
 } from "chart.js";
-import { getTokenFromSessionStorage } from "../../sessiontoken"; // pakai sessiontoken.js, bukan tokenkadaluarsa
 
+// Import sessiontoken untuk mengambil token dari session storage
+import { getTokenFromSessionStorage } from "../../sessiontoken";
+
+// Register Chart.js components
 ChartJS.register(
   ArcElement,
   Tooltip,
@@ -29,8 +31,32 @@ ChartJS.register(
 );
 
 const MONTH_LABELS = [
-  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+  "Jan", "Feb", "Mar", "Apr", "Mei", "Jun", "Jul", "Agu", "Sep", "Okt", "Nov", "Des",
 ];
+
+// Inline SVG Icons to avoid external dependencies
+const LuUsers = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+    <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/>
+  </svg>
+);
+const LuFolderCheck = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+    <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/><path d="m9 12 2 2 4-4"/>
+  </svg>
+);
+const LuBarChart2 = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+    <line x1="18" y1="20" x2="18" y2="10"></line>
+    <line x1="12" y1="20" x2="12" y2="4"></line>
+    <line x1="6" y1="20" x2="6" y2="14"></line>
+  </svg>
+);
+const LuClock = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6">
+    <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+  </svg>
+);
 
 // Komponen animasi fade-in
 function FadeIn({ children, duration = 900, delay = 0, className = "" }) {
@@ -54,9 +80,24 @@ function FadeIn({ children, duration = 900, delay = 0, className = "" }) {
   );
 }
 
+// Placeholder untuk Card Rekomendasi
+const CardRekomendasi = () => {
+  return (
+    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
+      <h3 className="text-lg font-semibold text-gray-800 mb-4">Rekomendasi</h3>
+      <div className="flex flex-col gap-4 text-gray-600">
+        <p>Tidak ada rekomendasi saat ini. Data ini akan muncul di sini saat tersedia.</p>
+        <ul className="list-disc list-inside space-y-1">
+          <li>Optimalkan deskripsi lowongan kerja Anda.</li>
+          <li>Gunakan kata kunci yang relevan.</li>
+        </ul>
+      </div>
+    </div>
+  );
+};
+
 // Komponen Dashboard Perusahaan
-export default function PerusahaanDashboardPage() {
-  // State untuk jumlah pelamar (dinamis)
+export default function App() {
   const [jumlahPelamar, setJumlahPelamar] = useState({
     jumlah: null,
     pertumbuhan: null,
@@ -64,7 +105,7 @@ export default function PerusahaanDashboardPage() {
     error: null,
   });
 
-  // State untuk traffic lowongan (dinamis)
+  // Ubah: trafficLowongan akan diisi dari endpoint API GET /lowongan/6887ae184587ec05bb5fac4a/traffic
   const [trafficLowongan, setTrafficLowongan] = useState({
     total_kemarin: null,
     total_sebelumnya: null,
@@ -74,7 +115,7 @@ export default function PerusahaanDashboardPage() {
     error: null,
   });
 
-  // State untuk jumlah lowongan aktif (dinamis)
+  // Ubah: lowonganAktif akan diisi dari endpoint API GET /lowongan/me/count/active
   const [lowonganAktif, setLowonganAktif] = useState({
     jumlah: null,
     sejakMingguLalu: null,
@@ -82,35 +123,14 @@ export default function PerusahaanDashboardPage() {
     error: null,
   });
 
-  // State untuk jumlah lowongan pending (dinamis)
+  // Ubah: lowonganPending akan diisi dari endpoint API GET /lowongan/me/count/pending
   const [lowonganPending, setLowonganPending] = useState({
     jumlah: null,
-    change: null,
     loading: true,
     error: null,
   });
 
-  // State untuk kartu statistik lain (hanya untuk lowongan pending sekarang)
-  const [otherStats, setOtherStats] = useState([
-    {
-      label: "Lowongan Belum Diverifikasi",
-      value: "...",
-      change: "...",
-      changeLabel: "Sejak minggu lalu",
-      icon: (
-        <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-          <circle cx="12" cy="12" r="12" fill="#f3f6fd" />
-          <path d="M12 7v5l3 3" stroke="#00c897" strokeWidth="2" fill="none" />
-        </svg>
-      ),
-      color: "text-[#00c897]",
-      bg: "bg-white",
-      changeColor: "text-green-500",
-      isTrafficYesterday: false,
-    },
-  ]);
-
-  // State untuk data rasio pelamar diterima/ditolak (dinamis)
+  // Ubah: applicantRatio akan diisi dari endpoint API GET /pelamar/count/diterima-ditolak
   const [applicantRatio, setApplicantRatio] = useState({
     diterima: null,
     ditolak: null,
@@ -118,371 +138,260 @@ export default function PerusahaanDashboardPage() {
     error: null,
   });
 
-  // State untuk grafik pelamar per bulan per tahun
+  // Grafik pelamar per bulan per tahun
   const [grafikPelamar, setGrafikPelamar] = useState({
     data: [],
     loading: true,
     error: null,
   });
+
   const [tahunList, setTahunList] = useState([]);
   const [tahunDipilih, setTahunDipilih] = useState(null);
 
-  // Fetch jumlah pelamar
-  useEffect(() => {
-    let ignore = false;
-    async function fetchJumlahPelamar() {
-      setJumlahPelamar((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const token = getTokenFromSessionStorage();
-        if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/pelamar/count", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Gagal mengambil data jumlah pelamar");
-        const data = await res.json();
-        if (!ignore) {
-          setJumlahPelamar({
-            jumlah: data.jumlah_pelamar,
-            pertumbuhan: data.pertumbuhan,
-            loading: false,
-            error: null,
-          });
-        }
-      } catch (err) {
-        if (!ignore) {
-          setJumlahPelamar({
-            jumlah: null,
-            pertumbuhan: null,
-            loading: false,
-            error: err.message || "Terjadi kesalahan",
-          });
-        }
-      }
-    }
-    fetchJumlahPelamar();
-    return () => { ignore = true; };
-  }, []);
+  // Fungsi fetchData untuk API call dengan token dari sessiontoken.js
+  const fetchData = async (url, setState, fieldName) => {
+    setState((prev) => ({ ...prev, loading: true, error: null }));
+    try {
+      const token = getTokenFromSessionStorage();
+      if (!token) throw new Error("Token tidak ditemukan");
 
-  // Fetch traffic lowongan
-  useEffect(() => {
-    let ignore = false;
-    async function fetchTrafficLowongan() {
-      setTrafficLowongan((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const token = getTokenFromSessionStorage();
-        if (!token) throw new Error("Token tidak ditemukan");
-        // Ganti ID lowongan sesuai kebutuhan, di sini hardcode sesuai instruksi
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/6887ae184587ec05bb5fac4a/traffic", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Gagal mengambil data traffic lowongan");
-        const data = await res.json();
-        if (!ignore) {
-          setTrafficLowongan({
-            total_kemarin: data.total_traffic_kemarin,
-            total_sebelumnya: data.total_traffic_sebelumnya,
-            pertambahan: data.pertambahan_traffic_kemarin,
-            persentase: data.persentase_pertambahan_kemarin,
-            loading: false,
-            error: null,
-          });
-        }
-      } catch (err) {
-        if (!ignore) {
-          setTrafficLowongan({
-            total_kemarin: null,
-            total_sebelumnya: null,
-            pertambahan: null,
-            persentase: null,
-            loading: false,
-            error: err.message || "Terjadi kesalahan",
-          });
-        }
-      }
-    }
-    fetchTrafficLowongan();
-    return () => { ignore = true; };
-  }, []);
-
-  // Fetch jumlah lowongan aktif milik perusahaan
-  useEffect(() => {
-    let ignore = false;
-    async function fetchLowonganAktif() {
-      setLowonganAktif((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const token = getTokenFromSessionStorage();
-        if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/active", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Gagal mengambil data jumlah lowongan aktif");
-        const data = await res.json();
-        if (!ignore) {
-          setLowonganAktif({
-            jumlah: data.jumlah_lowongan_aktif,
-            sejakMingguLalu: data.jumlah_lowongan_aktif_sejak_minggu_lalu,
-            loading: false,
-            error: null,
-          });
-        }
-      } catch (err) {
-        if (!ignore) {
-          setLowonganAktif({
-            jumlah: null,
-            sejakMingguLalu: null,
-            loading: false,
-            error: err.message || "Terjadi kesalahan",
-          });
-        }
-      }
-    }
-    fetchLowonganAktif();
-    return () => { ignore = true; };
-  }, []);
-
-  // Fetch jumlah lowongan pending milik perusahaan
-  useEffect(() => {
-    let ignore = false;
-    async function fetchLowonganPending() {
-      setLowonganPending((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const token = getTokenFromSessionStorage();
-        if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/pending", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        if (!res.ok) throw new Error("Gagal mengambil data lowongan pending");
-        const data = await res.json();
-        if (!ignore) {
-          setLowonganPending({
-            jumlah: data.jumlah_pending,
-            change: data.perubahan_sejak_minggu_lalu, // jika ada, jika tidak bisa null
-            loading: false,
-            error: null,
-          });
-          setOtherStats([
-            {
-              label: "Lowongan Belum Diverifikasi",
-              value: (data.jumlah_pending ?? "-").toLocaleString("id-ID"),
-              change:
-                typeof data.perubahan_sejak_minggu_lalu === "number"
-                  ? (data.perubahan_sejak_minggu_lalu > 0
-                      ? `+${data.perubahan_sejak_minggu_lalu}`
-                      : data.perubahan_sejak_minggu_lalu)
-                  : "-",
-              changeLabel: "Sejak minggu lalu",
-              icon: (
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="12" fill="#f3f6fd" />
-                  <path d="M12 7v5l3 3" stroke="#00c897" strokeWidth="2" fill="none" />
-                </svg>
-              ),
-              color: "text-[#00c897]",
-              bg: "bg-white",
-              changeColor:
-                typeof data.perubahan_sejak_minggu_lalu === "number"
-                  ? data.perubahan_sejak_minggu_lalu > 0
-                    ? "text-green-500"
-                    : data.perubahan_sejak_minggu_lalu < 0
-                    ? "text-red-500"
-                    : "text-gray-400"
-                  : "text-gray-400",
-              isTrafficYesterday: false,
+      let response, data;
+      if (fieldName === "jumlah pelamar") {
+        response = await fetch(
+          "https://tugasakhir-production-6c6c.up.railway.app/lowongan/pelamar/count",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-          ]);
-        }
-      } catch (err) {
-        if (!ignore) {
-          setLowonganPending({
-            jumlah: null,
-            change: null,
-            loading: false,
-            error: err.message || "Terjadi kesalahan",
-          });
-          setOtherStats([
-            {
-              label: "Lowongan Belum Diverifikasi",
-              value: "-",
-              change: "-",
-              changeLabel: "Sejak minggu lalu",
-              icon: (
-                <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="12" fill="#f3f6fd" />
-                  <path d="M12 7v5l3 3" stroke="#00c897" strokeWidth="2" fill="none" />
-                </svg>
-              ),
-              color: "text-[#00c897]",
-              bg: "bg-white",
-              changeColor: "text-gray-400",
-              isTrafficYesterday: false,
+          }
+        );
+        if (!response.ok) throw new Error("Gagal mengambil data jumlah pelamar");
+        data = await response.json();
+        setState({
+          jumlah: data.jumlah_pelamar,
+          pertumbuhan: data.pertumbuhan,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      // Ubah: Untuk traffic lowongan, gunakan endpoint API GET /lowongan/6887ae184587ec05bb5fac4a/traffic
+      if (fieldName === "traffic lowongan") {
+        response = await fetch(
+          "https://tugasakhir-production-6c6c.up.railway.app/lowongan/6887ae184587ec05bb5fac4a/traffic",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
             },
-          ]);
-        }
-      }
-    }
-    fetchLowonganPending();
-    return () => { ignore = true; };
-  }, []);
-
-  // Fetch rasio pelamar diterima/ditolak (untuk diagram donat)
-  useEffect(() => {
-    let ignore = false;
-    async function fetchApplicantRatio() {
-      setApplicantRatio((prev) => ({ ...prev, loading: true, error: null }));
-      try {
-        const token = getTokenFromSessionStorage();
-        if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar/count/diterima-ditolak", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          }
+        );
+        if (!response.ok) throw new Error("Gagal mengambil data traffic lowongan");
+        data = await response.json();
+        // Data API: { total_traffic_hari_ini, total_traffic_kemarin, pertambahan_traffic, persentase_pertambahan }
+        setState({
+          total_kemarin: data.total_traffic_kemarin,
+          total_sebelumnya: data.total_traffic_hari_ini, // hari ini sebagai pembanding jika ingin, tapi tetap pakai kemarin untuk value utama
+          pertambahan: data.pertambahan_traffic,
+          persentase: data.persentase_pertambahan,
+          loading: false,
+          error: null,
         });
-        if (!res.ok) throw new Error("Gagal mengambil data rasio pelamar diterima/ditolak");
-        const data = await res.json();
-        if (!ignore) {
-          setApplicantRatio({
-            diterima: typeof data.jumlah_pelamar_diterima === "number" ? data.jumlah_pelamar_diterima : 0,
-            ditolak: typeof data.jumlah_pelamar_ditolak === "number" ? data.jumlah_pelamar_ditolak : 0,
-            loading: false,
-            error: null,
-          });
-        }
-      } catch (err) {
-        if (!ignore) {
-          setApplicantRatio({
-            diterima: null,
-            ditolak: null,
-            loading: false,
-            error: err.message || "Terjadi kesalahan",
-          });
-        }
+        return;
       }
-    }
-    fetchApplicantRatio();
-    return () => { ignore = true; };
-  }, []);
 
-  // Fetch grafik pelamar per bulan per tahun
-  useEffect(() => {
-    let ignore = false;
-    async function fetchGrafikPelamar() {
-      setGrafikPelamar({ data: [], loading: true, error: null });
-      try {
-        const token = getTokenFromSessionStorage();
-        if (!token) throw new Error("Token tidak ditemukan");
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pelamar/grafik/per-bulan-tahun", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+      // Ubah: Untuk lowongan aktif, gunakan endpoint API GET /lowongan/me/count/active
+      if (fieldName === "lowongan aktif") {
+        response = await fetch(
+          "https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/active",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Gagal mengambil data lowongan aktif");
+        data = await response.json();
+        // Data API: { jumlah_lowongan_aktif: number, jumlah_lowongan_aktif_sejak_minggu_lalu: number }
+        setState({
+          jumlah: data.jumlah_lowongan_aktif,
+          sejakMingguLalu: data.jumlah_lowongan_aktif_sejak_minggu_lalu,
+          loading: false,
+          error: null,
         });
-        if (!res.ok) throw new Error("Gagal mengambil data grafik pelamar per bulan per tahun");
-        const result = await res.json();
-        if (!ignore) {
-          // Ambil semua tahun unik dari data
-          const tahunSet = new Set((result.data || []).map((d) => d.tahun));
-          const tahunArr = Array.from(tahunSet).sort((a, b) => b - a); // descending
-          setTahunList(tahunArr);
-          // Default tahun: terbaru
-          setTahunDipilih((prev) => prev ?? tahunArr[0]);
-          setGrafikPelamar({
-            data: result.data || [],
-            loading: false,
-            error: null,
-          });
-        }
-      } catch (err) {
-        if (!ignore) {
-          setGrafikPelamar({
-            data: [],
-            loading: false,
-            error: err.message || "Terjadi kesalahan",
-          });
-        }
+        return;
       }
-    }
-    fetchGrafikPelamar();
-    return () => { ignore = true; };
-  }, []);
 
-  // Data untuk Doughnut Chart (Rasio Pelamar Diterima vs Ditolak) - dinamis
-  const doughnutData = {
-    labels: ["Diterima", "Ditolak"],
-    datasets: [
-      {
-        data: [
-          applicantRatio.loading || applicantRatio.diterima == null ? 0 : applicantRatio.diterima,
-          applicantRatio.loading || applicantRatio.ditolak == null ? 0 : applicantRatio.ditolak,
-        ],
-        backgroundColor: ["#00C897", "#F44336"],
-        borderWidth: 0,
-      },
-    ],
+      // Ubah: Untuk lowongan pending, gunakan endpoint API GET /lowongan/me/count/pending
+      if (fieldName === "lowongan pending") {
+        response = await fetch(
+          "https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/pending",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Gagal mengambil data lowongan pending");
+        data = await response.json();
+        // Data API: { jumlah_pending: number }
+        setState({
+          jumlah: data.jumlah_pending,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      // Ubah: Untuk rasio pelamar, gunakan endpoint API GET /pelamar/count/diterima-ditolak
+      if (fieldName === "rasio pelamar") {
+        response = await fetch(
+          "https://tugasakhir-production-6c6c.up.railway.app/pelamar/count/diterima-ditolak",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Gagal mengambil data rasio pelamar");
+        data = await response.json();
+        // Data API: { jumlah_pelamar_diterima: number, jumlah_pelamar_ditolak: number }
+        setState({
+          diterima: data.jumlah_pelamar_diterima,
+          ditolak: data.jumlah_pelamar_ditolak,
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      // Untuk grafik pelamar per bulan per tahun, gunakan endpoint API GET /pelamar/grafik/per-bulan-tahun
+      if (fieldName === "grafik pelamar") {
+        // Gunakan endpoint dan token sesuai instruksi
+        response = await fetch(
+          "https://tugasakhir-production-6c6c.up.railway.app/pelamar/grafik/per-bulan-tahun",
+          {
+            method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              // Gunakan token dari session storage (bukan hardcoded)
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!response.ok) throw new Error("Gagal mengambil data grafik pelamar");
+        data = await response.json();
+        setState({
+          data: Array.isArray(data.data) ? data.data : [],
+          loading: false,
+          error: null,
+        });
+        return;
+      }
+
+      // Untuk field lain, tetap gunakan mock (atau bisa diubah ke API asli jika sudah tersedia)
+      // Simulasi delay
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      setState({ loading: false, error: null });
+    } catch (err) {
+      setState((prev) => ({ ...prev, loading: false, error: err.message || "Terjadi kesalahan" }));
+    }
   };
 
-  // Kartu statistik pertama: Jumlah Pelamar (dinamis)
-  const statJumlahPelamar = {
-    label: "Jumlah Pelamar",
-    value:
-      jumlahPelamar.loading
+  useEffect(() => {
+    // Panggil fetchData untuk jumlah pelamar (API asli)
+    fetchData(
+      "https://tugasakhir-production-6c6c.up.railway.app/lowongan/pelamar/count",
+      setJumlahPelamar,
+      "jumlah pelamar"
+    );
+    // Ubah: fetchData untuk traffic lowongan (API asli)
+    fetchData(
+      "https://tugasakhir-production-6c6c.up.railway.app/lowongan/6887ae184587ec05bb5fac4a/traffic",
+      setTrafficLowongan,
+      "traffic lowongan"
+    );
+    // Ubah: fetchData untuk lowongan aktif (API asli)
+    fetchData(
+      "https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/active",
+      setLowonganAktif,
+      "lowongan aktif"
+    );
+    // Ubah: fetchData untuk lowongan pending (API asli)
+    fetchData(
+      "https://tugasakhir-production-6c6c.up.railway.app/lowongan/me/count/pending",
+      setLowonganPending,
+      "lowongan pending"
+    );
+    // Ubah: fetchData untuk rasio pelamar (diterima/ditolak) dari endpoint API
+    fetchData(
+      "https://tugasakhir-production-6c6c.up.railway.app/pelamar/count/diterima-ditolak",
+      setApplicantRatio,
+      "rasio pelamar"
+    );
+    // GUNAKAN ENDPOINT GRAFIK PELAMAR YANG BENAR
+    fetchData(
+      "https://tugasakhir-production-6c6c.up.railway.app/pelamar/grafik/per-bulan-tahun",
+      setGrafikPelamar,
+      "grafik pelamar"
+    );
+  }, []);
+
+  useEffect(() => {
+    if (!grafikPelamar.loading && !grafikPelamar.error) {
+      const tahunSet = new Set((grafikPelamar.data || []).map((d) => d.tahun));
+      const tahunArr = Array.from(tahunSet).sort((a, b) => b - a);
+      setTahunList(tahunArr);
+      setTahunDipilih((prev) => prev ?? tahunArr[0]);
+    }
+  }, [grafikPelamar]);
+
+  const stats = [
+    {
+      label: "Jumlah Pelamar",
+      value: jumlahPelamar.loading
         ? "..."
         : jumlahPelamar.error
         ? "-"
         : (jumlahPelamar.jumlah ?? "-").toLocaleString("id-ID"),
-    change:
-      jumlahPelamar.loading
+      change: jumlahPelamar.loading
         ? "..."
         : jumlahPelamar.error
         ? "-"
-        : jumlahPelamar.pertumbuhan && typeof jumlahPelamar.pertumbuhan.jumlah === "number"
+        : typeof jumlahPelamar.pertumbuhan?.jumlah === "number"
         ? (jumlahPelamar.pertumbuhan.jumlah > 0
             ? `+${jumlahPelamar.pertumbuhan.jumlah}`
             : jumlahPelamar.pertumbuhan.jumlah)
         : "-",
-    changeLabel:
-      jumlahPelamar.loading || jumlahPelamar.error
-        ? ""
-        : jumlahPelamar.pertumbuhan && jumlahPelamar.pertumbuhan.keterangan
-        ? jumlahPelamar.pertumbuhan.keterangan
-        : "Periode sebelumnya",
-    icon: (
-      <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="12" fill="#f3f6fd" />
-        <path d="M12 14c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#ff7c6b"/>
-      </svg>
-    ),
-    color: "text-[#ff7c6b]",
-    bg: "bg-white",
-    changeColor:
-      jumlahPelamar.loading || jumlahPelamar.error
-        ? "text-gray-400"
-        : jumlahPelamar.pertumbuhan && typeof jumlahPelamar.pertumbuhan.jumlah === "number"
-        ? jumlahPelamar.pertumbuhan.jumlah > 0
+      changeLabel: jumlahPelamar.pertumbuhan?.keterangan || "Periode sebelumnya",
+      icon: <LuUsers />,
+      color: "text-red-500",
+      changeColor:
+        jumlahPelamar.pertumbuhan?.jumlah > 0
           ? "text-green-500"
-          : jumlahPelamar.pertumbuhan.jumlah < 0
+          : jumlahPelamar.pertumbuhan?.jumlah < 0
           ? "text-red-500"
-          : "text-gray-400"
-        : "text-gray-400",
-  };
-
-  // Kartu statistik jumlah lowongan aktif (dinamis)
-  const statLowonganAktif = {
-    label: "Jumlah Lowongan Aktif",
-    value:
-      lowonganAktif.loading
+          : "text-gray-400",
+      error: jumlahPelamar.error,
+    },
+    {
+      label: "Jumlah Lowongan Aktif",
+      value: lowonganAktif.loading
         ? "..."
         : lowonganAktif.error
         ? "-"
         : (lowonganAktif.jumlah ?? "-").toLocaleString("id-ID"),
-    change:
-      lowonganAktif.loading
+      change: lowonganAktif.loading
         ? "..."
         : lowonganAktif.error
         ? "-"
@@ -491,42 +400,25 @@ export default function PerusahaanDashboardPage() {
             ? `+${lowonganAktif.sejakMingguLalu}`
             : lowonganAktif.sejakMingguLalu)
         : "-",
-    changeLabel:
-      lowonganAktif.loading || lowonganAktif.error
-        ? ""
-        : "Sejak minggu lalu",
-    icon: (
-      <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="12" fill="#f3f6fd" />
-        <path d="M7 13l3 3 7-7" stroke="#4f8cff" strokeWidth="2" fill="none" />
-      </svg>
-    ),
-    color: "text-[#4f8cff]",
-    bg: "bg-white",
-    changeColor:
-      lowonganAktif.loading || lowonganAktif.error
-        ? "text-gray-400"
-        : typeof lowonganAktif.sejakMingguLalu === "number"
-        ? lowonganAktif.sejakMingguLalu > 0
+      changeLabel: "Sejak minggu lalu",
+      icon: <LuFolderCheck />,
+      color: "text-blue-500",
+      changeColor:
+        lowonganAktif.sejakMingguLalu > 0
           ? "text-green-500"
           : lowonganAktif.sejakMingguLalu < 0
           ? "text-red-500"
-          : "text-gray-400"
-        : "text-gray-400",
-    error: lowonganAktif.error,
-  };
-
-  // Kartu statistik traffic lowongan (hanya kemarin)
-  const statTrafficLowonganKemarin = {
-    label: "Traffic ke Halaman Lowongan",
-    value:
-      trafficLowongan.loading
+          : "text-gray-400",
+      error: lowonganAktif.error,
+    },
+    {
+      label: "Traffic ke Halaman Lowongan",
+      value: trafficLowongan.loading
         ? "..."
         : trafficLowongan.error
         ? "-"
         : (trafficLowongan.total_kemarin ?? "-").toLocaleString("id-ID"),
-    change:
-      trafficLowongan.loading
+      change: trafficLowongan.loading
         ? "..."
         : trafficLowongan.error
         ? "-"
@@ -535,31 +427,53 @@ export default function PerusahaanDashboardPage() {
             ? `+${trafficLowongan.pertambahan}`
             : trafficLowongan.pertambahan)
         : "-",
-    changeLabel:
-      trafficLowongan.loading || trafficLowongan.error
-        ? ""
-        : "Dibanding hari sebelumnya",
-    icon: (
-      <svg width="28" height="28" fill="none" viewBox="0 0 24 24">
-        <circle cx="12" cy="12" r="12" fill="#f3f6fd" />
-        <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41 0.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" fill="#a259ff"/>
-      </svg>
-    ),
-    color: "text-[#a259ff]",
-    bg: "bg-white",
-    changeColor:
-      trafficLowongan.loading || trafficLowongan.error
-        ? "text-gray-400"
-        : typeof trafficLowongan.pertambahan === "number"
-        ? trafficLowongan.pertambahan > 0
+      changeLabel: "Dibanding hari sebelumnya",
+      icon: <LuBarChart2 />,
+      color: "text-purple-500",
+      changeColor:
+        trafficLowongan.pertambahan > 0
           ? "text-green-500"
           : trafficLowongan.pertambahan < 0
           ? "text-red-500"
-          : "text-gray-400"
-        : "text-gray-400",
+          : "text-gray-400",
+      error: trafficLowongan.error,
+    },
+    {
+      label: "Lowongan Belum Diverifikasi",
+      value: lowonganPending.loading
+        ? "..."
+        : lowonganPending.error
+        ? "-"
+        : (lowonganPending.jumlah ?? "-").toLocaleString("id-ID"),
+      change: "-",
+      changeLabel: "",
+      icon: <LuClock />,
+      color: "text-green-500",
+      changeColor: "text-gray-400",
+      error: lowonganPending.error,
+    },
+  ];
+
+  // Data donut chart diisi dari applicantRatio (API GET /pelamar/count/diterima-ditolak)
+  const doughnutData = {
+    labels: ["Diterima", "Ditolak"],
+    datasets: [
+      {
+        data: [
+          applicantRatio.loading || applicantRatio.diterima == null
+            ? 0
+            : applicantRatio.diterima,
+          applicantRatio.loading || applicantRatio.ditolak == null
+            ? 0
+            : applicantRatio.ditolak,
+        ],
+        backgroundColor: ["#00C897", "#F44336"],
+        borderWidth: 0,
+      },
+    ],
   };
 
-  // Data grafik pelamar per bulan per tahun (untuk Line/Area Chart)
+  // Grafik pelamar per bulan per tahun
   let lineDataPelamar = {
     labels: MONTH_LABELS,
     datasets: [
@@ -567,8 +481,8 @@ export default function PerusahaanDashboardPage() {
         label: "Jumlah Pelamar",
         data: Array(12).fill(0),
         fill: true,
-        backgroundColor: "rgba(76, 175, 80, 0.15)", // hijau muda transparan
-        borderColor: "#4caf50", // hijau lembut
+        backgroundColor: "rgba(76, 175, 80, 0.15)",
+        borderColor: "#4caf50",
         pointBackgroundColor: "#4caf50",
         pointBorderColor: "#fff",
         tension: 0.35,
@@ -579,9 +493,9 @@ export default function PerusahaanDashboardPage() {
   };
 
   if (!grafikPelamar.loading && !grafikPelamar.error && tahunDipilih) {
-    // Filter data untuk tahun yang dipilih
-    const dataTahun = grafikPelamar.data.filter((d) => d.tahun === tahunDipilih);
-    // Buat array 12 bulan, isi dengan jumlah dari data, default 0
+    const dataTahun = (grafikPelamar.data || []).filter(
+      (d) => d.tahun === tahunDipilih
+    );
     const dataBulan = Array(12).fill(0);
     dataTahun.forEach((d) => {
       if (d.bulan >= 1 && d.bulan <= 12) {
@@ -595,8 +509,8 @@ export default function PerusahaanDashboardPage() {
           label: "Jumlah Pelamar",
           data: dataBulan,
           fill: true,
-          backgroundColor: "rgba(76, 175, 80, 0.15)", // hijau muda transparan
-          borderColor: "#4caf50", // hijau lembut
+          backgroundColor: "rgba(76, 175, 80, 0.15)",
+          borderColor: "#4caf50",
           pointBackgroundColor: "#4caf50",
           pointBorderColor: "#fff",
           tension: 0.35,
@@ -608,250 +522,188 @@ export default function PerusahaanDashboardPage() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 py-7 px-4 w-full overflow-y-hidden">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-gray-100 py-7 px-4 w-full overflow-y-hidden font-sans">
+      <div className="max-w-7xl mx-auto">
+        {/* Header */}
         <FadeIn duration={1000} delay={100}>
           <h1
-            className="mb-2 text-3xl md:text-4xl font-extrabold tracking-tight"
-            style={{
-              fontFamily: `'Poppins', 'Segoe UI', 'Arial', sans-serif`,
-              background: "linear-gradient(90deg, #4f8cff 0%, #a259ff 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-              backgroundClip: "text",
-              textFillColor: "transparent",
-              letterSpacing: "0.01em",
-              lineHeight: 1.15,
-              textShadow: "0 2px 16px #a259ff22",
-            }}
+            className="mb-2 text-3xl md:text-4xl font-extrabold tracking-tight text-gray-800"
+            style={{ fontFamily: `'Inter', sans-serif` }}
           >
-            Selamat Datang di Portal Perusahaan!
+            Dashboard Perusahaan
           </h1>
         </FadeIn>
         <FadeIn duration={1100} delay={350}>
           <p
-            className="mb-8 text-base md:text-lg font-medium"
-            style={{
-              color: "#4f4f4f",
-              fontFamily: `'Poppins', 'Segoe UI', 'Arial', sans-serif`,
-              maxWidth: 520,
-            }}
+            className="mb-10 text-base md:text-lg font-medium text-gray-500"
+            style={{ fontFamily: `'Inter', sans-serif`, maxWidth: 600 }}
           >
-            Temukan insight menarik, pantau performa, dan kelola aktivitas perusahaan Anda dengan mudah. Semangat berinovasi dan berkembang bersama kami!
+            Temukan insight menarik, pantau performa, dan kelola aktivitas perusahaan Anda dengan mudah.
           </p>
         </FadeIn>
-        {/* Kartu Statistik */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 mb-10">
-          {/* Kartu Jumlah Pelamar (dinamis) */}
-          <div
-            className={`rounded-xl shadow-sm p-5 flex flex-col gap-2 ${statJumlahPelamar.bg} border border-gray-100`}
-          >
-            <div className="flex items-center gap-3">
-              <div>{statJumlahPelamar.icon}</div>
-              <div className="text-xs font-semibold text-gray-500">{statJumlahPelamar.label}</div>
-            </div>
-            <div className="text-2xl font-bold mt-2 mb-1 flex items-end gap-2">
-              <span className={statJumlahPelamar.color}>{statJumlahPelamar.value}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className={statJumlahPelamar.changeColor}>{statJumlahPelamar.change}</span>
-              <span className="text-gray-400">{statJumlahPelamar.changeLabel}</span>
-            </div>
-            {jumlahPelamar.error && (
-              <div className="text-xs text-red-500 mt-1">{jumlahPelamar.error}</div>
-            )}
-          </div>
-          {/* Kartu Jumlah Lowongan Aktif (dinamis) */}
-          <div
-            className={`rounded-xl shadow-sm p-5 flex flex-col gap-2 ${statLowonganAktif.bg} border border-gray-100`}
-          >
-            <div className="flex items-center gap-3">
-              <div>{statLowonganAktif.icon}</div>
-              <div className="text-xs font-semibold text-gray-500">{statLowonganAktif.label}</div>
-            </div>
-            <div className="text-2xl font-bold mt-2 mb-1 flex items-end gap-2">
-              <span className={statLowonganAktif.color}>{statLowonganAktif.value}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className={statLowonganAktif.changeColor}>{statLowonganAktif.change}</span>
-              <span className="text-gray-400">{statLowonganAktif.changeLabel}</span>
-            </div>
-            {statLowonganAktif.error && (
-              <div className="text-xs text-red-500 mt-1">{statLowonganAktif.error}</div>
-            )}
-          </div>
-          {/* Kartu Traffic ke Halaman Lowongan (Kemarin) */}
-          <div
-            className={`rounded-xl shadow-sm p-5 flex flex-col gap-2 ${statTrafficLowonganKemarin.bg} border border-gray-100`}
-          >
-            <div className="flex items-center gap-3">
-              <div>{statTrafficLowonganKemarin.icon}</div>
-              <div className="text-xs font-semibold text-gray-500">{statTrafficLowonganKemarin.label}</div>
-            </div>
-            <div className="text-2xl font-bold mt-2 mb-1 flex items-end gap-2">
-              <span className={statTrafficLowonganKemarin.color}>{statTrafficLowonganKemarin.value}</span>
-            </div>
-            <div className="flex items-center gap-2 text-xs">
-              <span className={statTrafficLowonganKemarin.changeColor}>
-                {statTrafficLowonganKemarin.change}
-                {typeof trafficLowongan.persentase === "number" && !trafficLowongan.loading && !trafficLowongan.error
-                  ? ` (${trafficLowongan.persentase > 0 ? "+" : ""}${trafficLowongan.persentase}%)`
-                  : ""}
-              </span>
-              <span className="text-gray-400">{statTrafficLowonganKemarin.changeLabel}</span>
-            </div>
-            {trafficLowongan.error && (
-              <div className="text-xs text-red-500 mt-1">{trafficLowongan.error}</div>
-            )}
-          </div>
-          {/* Kartu statistik lain (Lowongan Belum Diverifikasi) */}
-          {otherStats.map((stat) => (
-            <div
-              key={stat.label}
-              className={`rounded-xl shadow-sm p-5 flex flex-col gap-2 ${stat.bg} border border-gray-100`}
-            >
-              <div className="flex items-center gap-3">
-                <div>{stat.icon}</div>
-                <div className="text-xs font-semibold text-gray-500">{stat.label}</div>
-              </div>
-              <div className="text-2xl font-bold mt-2 mb-1 flex items-end gap-2">
-                <span className={stat.color}>{stat.value}</span>
-              </div>
-              <div className="flex items-center gap-2 text-xs">
-                <span className={stat.changeColor}>{stat.change}</span>
-                <span className="text-gray-400">{stat.changeLabel}</span>
-              </div>
-              {lowonganPending.error && (
-                <div className="text-xs text-red-500 mt-1">{lowonganPending.error}</div>
-              )}
-            </div>
-          ))}
-        </div>
-        {/* Chart Section */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-          {/* Rasio Pelamar Diterima vs Ditolak */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 flex flex-col md:flex-row items-center gap-6">
-            <div className="flex-1 w-full">
-              <div className="font-semibold text-gray-800 mb-4 text-sm">Rasio Pelamar Diterima vs Ditolak</div>
-              <div className="flex flex-col gap-2">
-                {["Diterima", "Ditolak"].map((label, idx) => {
-                  const value = applicantRatio.loading
-                    ? "..."
-                    : applicantRatio.error
-                    ? "-"
-                    : idx === 0
-                    ? (applicantRatio.diterima ?? 0)
-                    : (applicantRatio.ditolak ?? 0);
-                  const color = idx === 0 ? "#00C897" : "#F44336";
-                  return (
-                    <div key={label} className="flex items-center gap-2 text-xs">
-                      <span
-                        className="inline-block w-3 h-3 rounded-full"
-                        style={{ background: color }}
-                      ></span>
-                      <span className="text-gray-700">{label}</span>
-                      <span className="ml-auto font-semibold text-gray-700">
-                        {applicantRatio.loading
-                          ? "..."
-                          : applicantRatio.error
-                          ? "-"
-                          : value}
-                      </span>
-                    </div>
-                  );
-                })}
-                {applicantRatio.error && (
-                  <div className="text-xs text-red-500 mt-1">{applicantRatio.error}</div>
+
+        {/* Statistik Cards */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
+          {stats.map((stat, index) => (
+            <FadeIn key={index} duration={900} delay={300 + index * 100}>
+              <div
+                className="bg-white rounded-2xl shadow-lg p-6 flex flex-col gap-4 border border-gray-100 transition-transform duration-300 hover:scale-105"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="text-gray-500 text-sm font-semibold">
+                    {stat.label}
+                  </span>
+                  <div
+                    className={`p-2 rounded-full ${
+                      stat.color.replace("text-", "bg-") + " bg-opacity-10"
+                    }`}
+                  >
+                    {stat.icon}
+                  </div>
+                </div>
+                <div className="text-4xl font-extrabold text-gray-900">
+                  {stat.value}
+                </div>
+                <div className="flex items-center gap-2 text-xs font-semibold">
+                  <span className={stat.changeColor}>{stat.change}</span>
+                  <span className="text-gray-400">{stat.changeLabel}</span>
+                </div>
+                {stat.error && (
+                  <div className="text-xs text-red-500 mt-1">{stat.error}</div>
                 )}
               </div>
-            </div>
-            <div className="flex-1 flex justify-center items-center w-full">
-              <div className="w-32 h-32">
-                <Doughnut
-                  data={doughnutData}
+            </FadeIn>
+          ))}
+        </div>
+
+        {/* Chart Section */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          {/* Grafik Pelamar per Bulan */}
+          <FadeIn duration={900} delay={600} className="lg:col-span-2">
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex flex-col h-full">
+              <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
+                <h3 className="text-lg font-semibold text-gray-800">
+                  Grafik Pelamar per Bulan
+                </h3>
+                {grafikPelamar.loading ? (
+                  <span className="text-sm text-gray-400">Memuat...</span>
+                ) : grafikPelamar.error ? (
+                  <span className="text-sm text-red-500">
+                    {grafikPelamar.error}
+                  </span>
+                ) : (
+                  <select
+                    className="border border-gray-300 rounded-md px-3 py-1 text-sm text-gray-700 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    value={tahunDipilih || ""}
+                    onChange={(e) => setTahunDipilih(Number(e.target.value))}
+                    disabled={grafikPelamar.loading || tahunList.length === 0}
+                  >
+                    {tahunList.map((tahun) => (
+                      <option key={tahun} value={tahun}>
+                        {tahun}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </div>
+              <div className="flex-grow min-h-[300px]">
+                <Line
+                  data={lineDataPelamar}
                   options={{
-                    cutout: "70%",
+                    maintainAspectRatio: false,
+                    responsive: true,
                     plugins: {
                       legend: { display: false },
-                      tooltip: { enabled: true },
+                      tooltip: {
+                        callbacks: {
+                          label: function (context) {
+                            return `${
+                              context.dataset.label
+                            }: ${context.parsed.y.toLocaleString("id-ID")}`;
+                          },
+                        },
+                      },
+                    },
+                    scales: {
+                      x: { grid: { display: false } },
+                      y: {
+                        grid: { color: "#E5E7EB" },
+                        ticks: { color: "#6B7280" },
+                        beginAtZero: true,
+                      },
                     },
                   }}
                 />
               </div>
             </div>
-          </div>
-          {/* Grafik Pelamar per Bulan (pindah ke sini, ganti Statistik Profil Perusahaan) */}
-          <div className="bg-white rounded-xl p-6 shadow-sm border border-gray-100 mx-auto w-full" style={{ maxWidth: 480 }}>
-            <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4 gap-2">
-              <div className="font-semibold text-gray-800 text-sm text-center w-full md:w-auto">Grafik Pelamar per Bulan</div>
-              <div className="flex justify-center w-full md:w-auto">
-                {grafikPelamar.loading ? (
-                  <span className="text-xs text-black">Memuat tahun...</span>
-                ) : grafikPelamar.error ? (
-                  <span className="text-xs text-red-500">{grafikPelamar.error}</span>
-                ) : (
-                  <select
-                    className="border border-gray-300 rounded px-2 py-1 text-sm focus:outline-none text-black"
-                    value={tahunDipilih || ""}
-                    onChange={e => setTahunDipilih(Number(e.target.value))}
-                    disabled={grafikPelamar.loading || tahunList.length === 0}
-                    style={{ minWidth: 80 }}
-                  >
-                    {tahunList.map((tahun) => (
-                      <option key={tahun} value={tahun}>{tahun}</option>
-                    ))}
-                  </select>
-                )}
+          </FadeIn>
+
+          {/* Rasio Pelamar Diterima vs Ditolak */}
+          <FadeIn duration={900} delay={700}>
+            <div className="bg-white rounded-2xl p-6 shadow-lg border border-gray-100 flex flex-col h-full">
+              <h3 className="text-lg font-semibold text-gray-800 mb-6">
+                Rasio Pelamar Diterima vs Ditolak
+              </h3>
+              <div className="flex-grow flex flex-col justify-center items-center gap-6">
+                <div className="w-40 h-40 flex-shrink-0">
+                  <Doughnut
+                    data={doughnutData}
+                    options={{
+                      cutout: "70%",
+                      plugins: {
+                        legend: { display: false },
+                        tooltip: { enabled: true },
+                      },
+                    }}
+                  />
+                </div>
+                <div className="w-full space-y-3">
+                  {["Diterima", "Ditolak"].map((label, idx) => {
+                    const value = applicantRatio.loading
+                      ? "..."
+                      : applicantRatio.error
+                      ? "-"
+                      : idx === 0
+                      ? (applicantRatio.diterima ?? 0)
+                      : (applicantRatio.ditolak ?? 0);
+                    const color = idx === 0 ? "#00C897" : "#F44336";
+                    return (
+                      <div
+                        key={label}
+                        className="flex items-center justify-between text-sm"
+                      >
+                        <div className="flex items-center gap-2">
+                          <span
+                            className="inline-block w-3 h-3 rounded-full"
+                            style={{ background: color }}
+                          ></span>
+                          <span className="text-gray-700 font-medium">
+                            {label}
+                          </span>
+                        </div>
+                        <span className="font-bold text-gray-800">
+                          {value}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {applicantRatio.error && (
+                    <div className="text-xs text-red-500 mt-1">
+                      {applicantRatio.error}
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-            <div className="w-full h-64">
-              <Line
-                data={lineDataPelamar}
-                options={{
-                  responsive: true,
-                  plugins: {
-                    legend: { display: false },
-                    title: { display: false },
-                    tooltip: {
-                      enabled: true,
-                      callbacks: {
-                        label: function (context) {
-                          return `${context.dataset.label}: ${context.parsed.y.toLocaleString("id-ID")}`;
-                        },
-                      },
-                    },
-                  },
-                  scales: {
-                    x: {
-                      grid: { display: false },
-                      ticks: { color: "#8A92A6", font: { size: 12 } },
-                    },
-                    y: {
-                      grid: { color: "#F1F1F1" },
-                      ticks: { color: "#8A92A6", font: { size: 12 } },
-                      beginAtZero: true,
-                      // max: 300, // optionally, you can set max dynamically
-                    },
-                  },
-                  elements: {
-                    line: {
-                      borderWidth: 3,
-                    },
-                    point: {
-                      borderWidth: 2,
-                    },
-                  },
-                }}
-              />
-            </div>
-          </div>
+          </FadeIn>
         </div>
-        {/* Bagian Kartu Rekomendasi */}
-        <div className="mt-10 w-full flex justify-start">
-          <div className="w-full max-w-full px-0">
+
+        {/* Bagian Rekomendasi */}
+        <FadeIn duration={900} delay={800}>
+          <div className="mt-10">
             <CardRekomendasi />
           </div>
-        </div>
+        </FadeIn>
       </div>
     </div>
   );

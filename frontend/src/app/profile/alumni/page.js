@@ -13,6 +13,7 @@ export default function AlumniProfilePage() {
       <div className="w-full">
         <ProfilDanSampul />
       </div>
+
       {/* AboutCard di atas PersonalInfo, PersonalInfo full lebar */}
       <div className="w-full">
         <div className="w-full flex flex-col items-start relative left-8">
@@ -20,21 +21,30 @@ export default function AlumniProfilePage() {
             <AboutCard />
           </div>
         </div>
+        
         {/* PersonalInfo full lebar hingga pojok kanan dan kiri */}
         <div className="w-full px-8 mt-0">
           <PersonalInfo />
         </div>
-        {/* Bagi 1/2 1/2 antara Pengalaman dan UploadCV */}
-        <div className="w-full flex justify-center items-start mt-8">
-          <div className="w-full max-w-[1200px] flex gap-8">
-            <div className="w-1/2">
+        
+        {/*
+          PERBAIKAN DIMULAI DI SINI:
+          Bagian ini sekarang menggunakan flexbox untuk membagi dua container secara rata.
+          Border hitam saya hapus untuk tampilan yang lebih bersih.
+        */}
+        <div className="w-full max-w-[1450px] mx-auto flex justify-center mt-8 px-4 md:px-8 lg:px-16 ">
+          <div className="flex w-full gap-8">
+            {/* Container untuk PengalamanCard */}
+            <div className="w-full md:w-full h-auto">
               <PengalamanCard />
             </div>
-            <div className="w-1/2">
+            {/* Container untuk UploadCV */}
+            <div className="w-full md:w-full h-auto">
               <UploadCV />
             </div>
           </div>
         </div>
+
       </div>
     </>
   );

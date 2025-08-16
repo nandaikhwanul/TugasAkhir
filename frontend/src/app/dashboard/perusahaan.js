@@ -1,18 +1,7 @@
 import { useState, useEffect } from "react";
 import PerusahaanStepper from "../stepperRegister/perusahaanStepper/page";
 import PerusahaanDashboard from "./perusahaan/page";
-
-// Helper: Ambil token dari cookie (client-side)
-function getTokenFromCookie() {
-  if (typeof document === "undefined") return null;
-  const cookies = document.cookie.split(";").map((c) => c.trim());
-  for (const c of cookies) {
-    if (c.startsWith("token=")) {
-      return decodeURIComponent(c.substring("token=".length));
-    }
-  }
-  return null;
-}
+import { getTokenFromSessionStorage } from "../sessiontoken"; // Ambil token dari sessiontoken.js
 
 export default function DashboardPerusahaan() {
   const [showModal, setShowModal] = useState(true);
@@ -20,7 +9,7 @@ export default function DashboardPerusahaan() {
 
   useEffect(() => {
     async function fetchPerusahaan() {
-      const token = getTokenFromCookie();
+      const token = getTokenFromSessionStorage();
       if (!token) {
         setShowModal(true);
         setLoading(false);
@@ -38,8 +27,10 @@ export default function DashboardPerusahaan() {
           return;
         }
         const data = await res.json();
-        // Cek field yang diminta
+
+        // Field yang WAJIB dicek (dari instruksi)
         const requiredFields = [
+          "email_perusahaan",
           "alamat",
           "bidang_perusahaan",
           "deskripsi_perusahaan",
@@ -48,24 +39,11 @@ export default function DashboardPerusahaan() {
           "nomor_telp",
           "website",
         ];
-        // Field yang bertipe number
-        const numberFields = ["jumlah_karyawan"];
-        // Jika SEMUA ADA (tidak null/undefined/empty string untuk string, dan !== undefined/null untuk number), modal tidak tampil
-        const allFilled = requiredFields.every((field) => {
-          if (numberFields.includes(field)) {
-            // Untuk number, cukup cek !== undefined && !== null
-            return data[field] !== undefined && data[field] !== null;
-          } else {
-            // Untuk string, cek !== undefined && !== null && .trim() !== ""
-            return (
-              data[field] !== undefined &&
-              data[field] !== null &&
-              typeof data[field] === "string" &&
-              data[field].trim() !== ""
-            );
-          }
-        });
-        setShowModal(!allFilled);
+
+        // Cek: jika ADA field di atas yang null atau undefined, tampilkan modal. Jika SEMUA field sudah terisi, JANGAN tampilkan modal.
+        const adaYangNullOrUndef = requiredFields.some((field) => data[field] === null || data[field] === undefined);
+
+        setShowModal(adaYangNullOrUndef);
       } catch (e) {
         setShowModal(true);
       } finally {

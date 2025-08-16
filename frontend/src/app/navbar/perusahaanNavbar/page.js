@@ -299,7 +299,7 @@ export default function PerusahaanNavbar() {
               </li>
               {/* Tambahkan button Forum */}
               <li>
-                <Link href="/forumAlumni" className="text-black text-sm hover:text-blue-600">
+                <Link href="/forum" className="text-black text-sm hover:text-blue-600">
                   Forum
                 </Link>
               </li>

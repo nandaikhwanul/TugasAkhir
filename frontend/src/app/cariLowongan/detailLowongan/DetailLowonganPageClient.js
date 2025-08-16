@@ -4,6 +4,9 @@ import { useSearchParams } from "next/navigation";
 import Navbar from "../../navbar/page";
 import { getTokenFromSessionStorage } from "../../sessiontoken";
 
+// Import ikon dari React Icons
+import { FaBriefcase, FaDollarSign, FaCalendarAlt, FaUsers } from "react-icons/fa";
+
 // Helper: format tanggal ke "Apr 14, 2024" (en-US)
 function formatDate(dateStr) {
   if (!dateStr) return "-";
@@ -26,6 +29,13 @@ function formatGaji(gaji) {
   return "-";
 }
 
+// Helper: render fallback logo
+const FallbackLogo = () => (
+  <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-gray-200">
+    <FaBriefcase className="w-8 h-8 text-gray-500" />
+  </div>
+);
+
 export default function DetailLowonganPageClient() {
   const [job, setJob] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -35,7 +45,6 @@ export default function DetailLowonganPageClient() {
   const [applyError, setApplyError] = useState("");
   const searchParams = useSearchParams();
 
-  // State untuk batas_pelamar, jumlah_pelamar, createdAt
   const [batasPelamar, setBatasPelamar] = useState(null);
   const [jumlahPelamar, setJumlahPelamar] = useState(null);
   const [createdAt, setCreatedAt] = useState(null);
@@ -60,22 +69,9 @@ export default function DetailLowonganPageClient() {
         if (!data.preview) throw new Error("Data preview tidak ditemukan");
         setJob(data.preview);
 
-        // Ambil batas_pelamar, jumlah_pelamar, createdAt jika ada
-        setBatasPelamar(
-          typeof data.preview.batas_pelamar !== "undefined"
-            ? data.preview.batas_pelamar
-            : null
-        );
-        setJumlahPelamar(
-          typeof data.preview.jumlah_pelamar !== "undefined"
-            ? data.preview.jumlah_pelamar
-            : null
-        );
-        setCreatedAt(
-          typeof data.preview.createdAt !== "undefined"
-            ? data.preview.createdAt
-            : null
-        );
+        setBatasPelamar(data.preview.batas_pelamar ?? null);
+        setJumlahPelamar(data.preview.jumlah_pelamar ?? null);
+        setCreatedAt(data.preview.createdAt ?? null);
       } catch (e) {
         setErr(e.message || "Gagal mengambil data");
         setJob(null);
@@ -90,12 +86,10 @@ export default function DetailLowonganPageClient() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchParams]);
 
-  // Helper: parsing kualifikasi ke array
   function parseKualifikasi(kualifikasi) {
     if (!kualifikasi) return [];
     if (Array.isArray(kualifikasi)) return kualifikasi;
     if (typeof kualifikasi === "string") {
-      // Pisahkan berdasarkan baris atau bullet
       return kualifikasi
         .split(/\n|•/g)
         .map((s) => s.trim())
@@ -104,7 +98,6 @@ export default function DetailLowonganPageClient() {
     return [];
   }
 
-  // Handler untuk tombol lamar
   async function handleApply() {
     setApplyLoading(true);
     setApplySuccess("");
@@ -141,7 +134,7 @@ export default function DetailLowonganPageClient() {
     return (
       <>
         <Navbar />
-        <div className="max-w-full mx-auto py-16 px-6 text-center text-black font-semibold bg-gray-100 ">
+        <div className="max-w-full mx-auto py-16 px-6 text-center text-gray-700 font-semibold bg-gray-50">
           Memuat detail lowongan...
         </div>
       </>
@@ -185,11 +178,9 @@ export default function DetailLowonganPageClient() {
   const bidangPerusahaan = perusahaan.bidang_perusahaan || "-";
   const logoPerusahaan = perusahaan.logo_perusahaan || "";
 
-  // Tombol apply: disabled jika status !== "open"
   const isOpen = job.status === "open";
 
-  // Logo Perusahaan: fallback jika tidak ada logo
-  function renderLogo() {
+  const renderLogo = () => {
     if (logoPerusahaan) {
       const src = logoPerusahaan.startsWith("http")
         ? logoPerusahaan
@@ -198,116 +189,130 @@ export default function DetailLowonganPageClient() {
         <img
           src={src}
           alt={namaPerusahaan}
-          className="w-16 h-16 object-cover rounded-xl bg-[#eaf7e6] border border-[#e5e7eb]"
+          className="w-20 h-20 object-contain rounded-2xl bg-white border border-gray-200 p-2 shadow-sm"
         />
       );
     }
-    // fallback SVG
-    return (
-      <div className="w-16 h-16 flex items-center justify-center rounded-xl bg-[#eaf7e6] border border-[#e5e7eb]">
-        <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
-          <rect width="32" height="32" rx="8" fill="#eaf7e6" />
-          <g>
-            <path d="M16 10c-2.5 0-4.5 2-4.5 4.5S13.5 19 16 19s4.5-2 4.5-4.5S18.5 10 16 10zm0 7c-1.38 0-2.5-1.12-2.5-2.5S14.62 12 16 12s2.5 1.12 2.5 2.5S17.38 17 16 17z" fill="#6fcf97"/>
-            <circle cx="16" cy="16" r="15" stroke="#6fcf97" strokeWidth="2"/>
-          </g>
-        </svg>
-      </div>
-    );
-  }
+    return <FallbackLogo />;
+  };
 
   return (
     <>
       <Navbar />
-      <div className="bg-gray-100 min-h-screen">
-        {/* Perusahaan Info */}
-        <div className="max-w-4xl mx-auto flex flex-row items-center gap-5 mt-16 mb-6 px-6 relative g-gray-100">
-          <div>{renderLogo()}</div>
-          <div>
-            <div className="text-[18px] font-bold text-[#222] mb-1">{namaPerusahaan}</div>
-            <div className="text-[14px] text-[#6c757d] font-medium">{bidangPerusahaan}</div>
-            {/* Tanggal dibuat */}
-            {createdAt && (
-              <div className="text-[12px] text-[#888] font-normal mt-1">
+      <div className="bg-gray-50 min-h-screen py-8 md:py-12">
+        <div className="max-w-5xl mx-auto px-4 md:px-6">
+          {/* Header Lowongan */}
+          <div className="flex flex-col md:flex-row items-start md:items-center gap-6 p-6 md:p-8 bg-white rounded-2xl shadow-sm border border-gray-200">
+            {renderLogo()}
+            <div className="flex-1">
+              <h1 className="text-2xl md:text-3xl font-bold text-gray-900 leading-tight">
+                {judul}
+              </h1>
+              <div className="mt-1 flex items-center gap-2 text-sm text-gray-500">
+                <p className="font-medium">{namaPerusahaan}</p>
+                <span className="h-1 w-1 bg-gray-300 rounded-full"></span>
+                <p>{bidangPerusahaan}</p>
+              </div>
+              <div className="mt-2 text-sm text-gray-400">
                 Posted: {formatDate(createdAt)}
               </div>
-            )}
-          </div>
-        </div>
-        <div className="w-full h-auto mx-auto flex flex-row gap-0 max-w-4xl bg-gray-100 p-10 rounded-xl">
-          {/* Sidebar kiri */}
-          <div className="w-[240px] min-w-[200px] max-w-[260px] bg-white border border-[#e5e7eb] rounded-lg px-6 py-7 mr-8 shadow-none" style={{height: "fit-content"}}>
-            <div className="mb-6">
-              <div className="text-[12px] text-[#888] font-semibold mb-1" style={{letterSpacing: "0.01em"}}>Location</div>
-              <div className="text-[14px] text-[#222] font-normal">{lokasi}</div>
             </div>
-            <div className="mb-6">
-              <div className="text-[12px] text-[#888] font-semibold mb-1" style={{letterSpacing: "0.01em"}}>Salary Range</div>
-              <div className="text-[14px] text-[#222] font-normal">{gaji}</div>
-            </div>
-            <div className="mb-6">
-              <div className="text-[12px] text-[#888] font-semibold mb-1" style={{letterSpacing: "0.01em"}}>Application Deadline</div>
-              <div className="text-[14px] text-[#222] font-normal">{batasLamaran}</div>
-            </div>
-            <div className="mb-6">
-              <div className="text-[12px] text-[#888] font-semibold mb-1" style={{letterSpacing: "0.01em"}}>Applicants</div>
-              <div className="text-[14px] text-[#222] font-normal">
-                {jumlahPelamar !== null ? jumlahPelamar : "-"}
-                {batasPelamar !== null && (
-                  <span>
-                    {" "}
-                    / {batasPelamar}
-                  </span>
-                )}
-              </div>
-            </div>
-          </div>
-          {/* Konten utama */}
-          <div className="flex-1 bg-white border border-[#e5e7eb] rounded-lg shadow-none px-10 py-10 relative">
-            {/* Judul */}
-            <h1 className="text-[20px] font-bold text-[#222] mb-1" style={{lineHeight: "1.2"}}>{judul}</h1>
-            {/* Full-Time */}
-            <div className="text-[13px] text-[#888] font-normal mb-5" style={{marginTop: "-2px"}}>{tipeKerja}</div>
-            {/* Requirements */}
-            <div className="mb-6">
-              <div className="font-bold text-[15px] text-[#222] mb-1">Requirements</div>
-              <ul className="list-disc pl-5 text-[15px] text-[#222] leading-[1.6]">
-                {kualifikasiList.length > 0 ? (
-                  kualifikasiList.map((req, idx) => (
-                    <li key={idx}>{req}</li>
-                  ))
-                ) : (
-                  <li>-</li>
-                )}
-              </ul>
-            </div>
-            {/* Description */}
-            <div className="mb-6">
-              <div className="font-bold text-[15px] text-[#222] mb-1">Description</div>
-              <div className="text-[15px] text-[#222] leading-[1.6]">
-                {deskripsi}
-              </div>
-            </div>
-            {/* Tombol apply */}
-            <div className="flex flex-col items-end mt-10">
+            <div className="flex-shrink-0 mt-4 md:mt-0">
+              <button
+                onClick={isOpen ? handleApply : undefined}
+                disabled={!isOpen || applyLoading}
+                className={`w-full md:w-auto px-8 py-3 rounded-lg font-semibold text-sm transition-colors duration-200 ${
+                  isOpen
+                    ? "bg-green-600 hover:bg-green-700 text-white shadow-md"
+                    : "bg-gray-300 text-gray-600 cursor-not-allowed"
+                }`}
+              >
+                {applyLoading ? "Melamar..." : isOpen ? "Lamar Sekarang" : "Tutup"}
+              </button>
               {applySuccess && (
-                <div className="mb-2 text-green-600 text-sm font-semibold">{applySuccess}</div>
+                <p className="mt-2 text-green-600 text-sm text-right">{applySuccess}</p>
               )}
               {applyError && (
-                <div className="mb-2 text-red-600 text-sm font-semibold">{applyError}</div>
+                <p className="mt-2 text-red-600 text-sm text-right">{applyError}</p>
               )}
-              <button
-                className="bg-[#181f2b] hover:bg-[#232b3a] text-white text-[13px] font-semibold rounded-[6px] px-6 py-2 min-w-[140px] transition-all duration-150 shadow-none"
-                style={{boxShadow: "none"}}
-                disabled={!isOpen || applyLoading}
-                onClick={isOpen ? handleApply : undefined}
-              >
-                {applyLoading
-                  ? "Melamar..."
-                  : isOpen
-                  ? "Apply Now"
-                  : "Closed"}
-              </button>
+            </div>
+          </div>
+
+          {/* Konten & Sidebar */}
+          <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Main Content */}
+            <div className="md:col-span-2 space-y-8">
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
+                  Deskripsi Pekerjaan
+                </h2>
+                <div className="text-gray-600 leading-relaxed space-y-4">
+                  <p>{deskripsi}</p>
+                </div>
+              </div>
+
+              <div className="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200">
+                <h2 className="text-xl md:text-2xl font-bold text-gray-800 mb-4">
+                  Kualifikasi
+                </h2>
+                {kualifikasiList.length > 0 ? (
+                  <ul className="list-disc list-inside space-y-2 text-gray-600">
+                    {kualifikasiList.map((req, idx) => (
+                      <li key={idx}>{req}</li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500">- Tidak ada kualifikasi yang dicantumkan -</p>
+                )}
+              </div>
+            </div>
+
+            {/* Sidebar */}
+            <div className="md:col-span-1">
+              <div className="sticky top-28 bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-gray-200 space-y-6">
+                <div className="flex items-center space-x-4">
+                  <div className="bg-blue-50 p-3 rounded-xl">
+                    <FaBriefcase className="w-6 h-6 text-blue-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Tipe Kerja</p>
+                    <p className="font-semibold text-gray-800">{tipeKerja}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="bg-green-50 p-3 rounded-xl">
+                    <FaDollarSign className="w-6 h-6 text-green-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Gaji</p>
+                    <p className="font-semibold text-gray-800">{gaji}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="bg-purple-50 p-3 rounded-xl">
+                    <FaCalendarAlt className="w-6 h-6 text-purple-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Batas Lamaran</p>
+                    <p className="font-semibold text-gray-800">{batasLamaran}</p>
+                  </div>
+                </div>
+
+                <div className="flex items-center space-x-4">
+                  <div className="bg-yellow-50 p-3 rounded-xl">
+                    <FaUsers className="w-6 h-6 text-yellow-500" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-medium text-gray-500">Pelamar</p>
+                    <p className="font-semibold text-gray-800">
+                      {jumlahPelamar !== null ? jumlahPelamar : "-"}
+                      {batasPelamar !== null && <span> / {batasPelamar}</span>}
+                    </p>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>

@@ -1,5 +1,6 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper untuk format tanggal ke format lokal Indonesia
@@ -57,72 +58,20 @@ function getKualifikasiSingkat(item) {
 
 /**
  * Komponen ListLowonganPage menerima prop:
- * - filteredLowongan: array hasil filter dari parent (jika ada)
+ * - lowongan: array hasil filter dari parent (WAJIB, tidak fetch sendiri)
  * - search: string pencarian (optional, untuk tampilan judul)
- * 
- * Jika filteredLowongan tidak diberikan, maka komponen akan fetch data sendiri (backward compatible).
+ * - lokasi, tipeKerja, dsb: filter tambahan (optional, untuk tampilan filter aktif)
  */
-export default function ListLowonganPageTampilanSaja({ filteredLowongan: filteredLowonganProp, search: searchProp }) {
-  const [data, setData] = useState([]);
-  const [loading, setLoading] = useState(filteredLowonganProp ? false : true);
-  const [error, setError] = useState(null);
+export default function ListLowonganPage({
+  lowongan = [],
+  search = "",
+  lokasi,
+  tipeKerja,
+  ...props
+}) {
   const [saving, setSaving] = useState({}); // { [lowonganId]: boolean }
-
-  // Jika tidak ada prop filteredLowongan, fetch data sendiri (backward compatible)
-  useEffect(() => {
-    if (filteredLowonganProp) {
-      setLoading(false);
-      setError(null);
-      setData([]); // Data internal tidak dipakai
-      return;
-    }
-
-    const token = getTokenFromSessionStorage();
-
-    if (!token) {
-      setError("Token tidak ditemukan. Silakan login kembali.");
-      setLoading(false);
-      return;
-    }
-
-    setLoading(true);
-    setError(null);
-
-    fetch("https://tugasakhir-production-6c6c.up.railway.app/lowongan", {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-      cache: "no-store",
-    })
-      .then((res) => {
-        if (res.status === 403) {
-          throw new Error("Akses ditolak. Hanya alumni yang dapat melihat lowongan.");
-        }
-        if (!res.ok) {
-          throw new Error("Gagal mengambil data lowongan.");
-        }
-        return res.json();
-      })
-      .then((result) => {
-        if (Array.isArray(result)) {
-          setData(result);
-        } else {
-          setData(result.data || []);
-        }
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error("Fetch error:", err);
-        setError(err.message || "Terjadi kesalahan saat mengambil data.");
-        setLoading(false);
-      });
-  }, [filteredLowonganProp]);
-
-  // Gunakan prop filteredLowongan jika ada, jika tidak pakai data internal
-  const filteredLowongan = filteredLowonganProp ?? data;
-  const search = searchProp ?? "";
-  const totalUnSaved = filteredLowongan.length;
+  const [error, setError] = useState(null);
+  const router = useRouter();
 
   // Handler untuk tombol save
   const handleSave = async (lowonganId) => {
@@ -155,11 +104,8 @@ export default function ListLowonganPageTampilanSaja({ filteredLowongan: filtere
         );
       }
 
-      // Jika data internal, hapus dari list internal
-      if (!filteredLowonganProp) {
-        setData((prev) => prev.filter((item) => String(item._id) !== String(lowonganId)));
-      }
-      // Jika filteredLowongan dari parent, parent yang harus update list (tidak dihapus di sini)
+      // Parent harus update list lowongan jika ingin menghapus dari tampilan
+      // (tidak dihapus di sini)
     } catch (err) {
       setError(err.message || "Terjadi kesalahan saat menyimpan lowongan.");
     } finally {
@@ -167,13 +113,25 @@ export default function ListLowonganPageTampilanSaja({ filteredLowongan: filtere
     }
   };
 
-  if (loading) {
-    return <div className="text-center text-gray-500 py-8">Memuat lowongan...</div>;
-  }
+  // Handler untuk tombol "Lihat"
+  const handleLihat = (lowonganId) => {
+    router.push(`/cariLowongan/detailLowongan?id=${encodeURIComponent(lowonganId)}`);
+  };
+
+  // Untuk tampilan filter aktif (jika ada)
+  const renderActiveFilters = () => {
+    const filters = [];
+    if (lokasi) filters.push(<span key="lokasi" className="bg-[#eaf7e6] text-[#27ae60] px-2 py-1 rounded text-xs mr-2">Lokasi: {lokasi}</span>);
+    if (tipeKerja) filters.push(<span key="tipeKerja" className="bg-[#eaf7e6] text-[#27ae60] px-2 py-1 rounded text-xs mr-2">Tipe: {tipeKerja}</span>);
+    // Tambah filter lain sesuai kebutuhan
+    return filters.length > 0 ? <div className="px-6 mb-2">{filters}</div> : null;
+  };
 
   if (error) {
     return <div className="text-center text-red-500 py-8">{error}</div>;
   }
+
+  const totalUnSaved = lowongan.length;
 
   return (
     <div className="min-h-screen h-screen w-full flex flex-col">
@@ -184,7 +142,7 @@ export default function ListLowonganPageTampilanSaja({ filteredLowongan: filtere
               <>
                 Hasil pencarian untuk <span className="font-bold">"{search}"</span>{" "}
                 <span className="text-[#6c757d] font-normal">
-                  ({filteredLowongan.length} dari {totalUnSaved})
+                  ({lowongan.length} hasil)
                 </span>
               </>
             ) : (
@@ -196,6 +154,7 @@ export default function ListLowonganPageTampilanSaja({ filteredLowongan: filtere
               </>
             )}
           </div>
+          {renderActiveFilters()}
           <div
             className="w-full flex-1 overflow-y-auto pb-4 px-0 mb-52"
             style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
@@ -205,14 +164,14 @@ export default function ListLowonganPageTampilanSaja({ filteredLowongan: filtere
                 display: none;
               }
             `}</style>
-            {filteredLowongan.length === 0 && (
+            {lowongan.length === 0 && (
               <div className="text-[#6c757d] text-[16px] px-6">
                 {search && search.trim() !== ""
                   ? "Tidak ada lowongan yang cocok dengan pencarian."
                   : "Semua lowongan sudah disimpan atau belum ada lowongan tersedia."}
               </div>
             )}
-            {filteredLowongan.map((item) => {
+            {lowongan.map((item) => {
               const isSaved = false; // Untuk tampilan saja
               return (
                 <div
@@ -481,6 +440,7 @@ export default function ListLowonganPageTampilanSaja({ filteredLowongan: filtere
                             ? "Lamar pekerjaan ini"
                             : "Lowongan sudah ditutup"
                         }
+                        onClick={() => handleLihat(item._id)}
                       >
                         Lihat
                         <svg

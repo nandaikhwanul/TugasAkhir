@@ -454,7 +454,7 @@ export default function PersonalInfoCard() {
 
   return (
     <div className="h-full p-0 flex items-start justify-center w-full">
-      <div className="w-full max-w-none bg-white rounded-b-lg shadow-lg p-8 relative border border-gray-100">
+      <div className="w-full max-w-none bg-white rounded-b-lg shadow-lg p-8 relative">
         <div className="absolute top-5 right-5 z-10">
           {!editMode && (
             <button

@@ -4,7 +4,8 @@ import React, { useEffect, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
-// Format date to "MMM YYYY"
+// ... (kode formatMonthYear, state, dan handler tidak diubah) ...
+
 function formatMonthYear(dateStr) {
   if (!dateStr) return "-";
   const date = new Date(dateStr);
@@ -15,7 +16,6 @@ function formatMonthYear(dateStr) {
 }
 
 export default function PengalamanCard() {
-  // Pengalaman (Experience) state
   const [pengalaman, setPengalaman] = useState([]);
   const [loadingPengalaman, setLoadingPengalaman] = useState(true);
   const [showAddPengalaman, setShowAddPengalaman] = useState(false);
@@ -32,7 +32,6 @@ export default function PengalamanCard() {
   const [pengalamanError, setPengalamanError] = useState("");
   const [pengalamanSaving, setPengalamanSaving] = useState(false);
 
-  // Fetch pengalaman (experience) from API
   useEffect(() => {
     async function fetchPengalaman() {
       setLoadingPengalaman(true);
@@ -44,9 +43,7 @@ export default function PengalamanCard() {
       }
       try {
         const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
+          headers: { Authorization: `Bearer ${token}` },
         });
         if (!res.ok) throw new Error("Gagal mengambil pengalaman");
         const data = await res.json();
@@ -59,54 +56,37 @@ export default function PengalamanCard() {
     fetchPengalaman();
   }, []);
 
-  // Handle pengalaman form change
   const handlePengalamanFormChange = (e) => {
     const { name, value, type, checked } = e.target;
     setPengalamanForm((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
     }));
-    // If masih_berjalan checked, clear tanggal_selesai
     if (name === "masih_berjalan" && checked) {
-      setPengalamanForm((prev) => ({
-        ...prev,
-        tanggal_selesai: "",
-      }));
+      setPengalamanForm((prev) => ({ ...prev, tanggal_selesai: "" }));
     }
   };
 
-  // Handle add pengalaman submit
   const handlePengalamanSubmit = async (e) => {
     e.preventDefault();
     setPengalamanError("");
     setPengalamanSaving(true);
-
-    // Validation
-    if (
-      !pengalamanForm.jenis ||
-      !pengalamanForm.nama ||
-      !pengalamanForm.posisi ||
-      !pengalamanForm.lokasi ||
-      !pengalamanForm.tanggal_mulai
-    ) {
+    if (!pengalamanForm.jenis || !pengalamanForm.nama || !pengalamanForm.posisi || !pengalamanForm.lokasi || !pengalamanForm.tanggal_mulai) {
       setPengalamanError("Semua field wajib diisi (kecuali tanggal selesai jika masih berjalan).");
       setPengalamanSaving(false);
       return;
     }
-    if (!pengalamanForm.masuk_berjalan && !pengalamanForm.tanggal_selesai && !pengalamanForm.masih_berjalan) {
-      // tanggal_selesai boleh kosong jika masih_berjalan true
+    if (!pengalamanForm.masih_berjalan && !pengalamanForm.tanggal_selesai) {
       setPengalamanError("Tanggal selesai wajib diisi jika tidak masih berjalan.");
       setPengalamanSaving(false);
       return;
     }
-
     const token = getTokenFromSessionStorage();
     if (!token) {
       setPengalamanError("Token tidak ditemukan.");
       setPengalamanSaving(false);
       return;
     }
-
     try {
       const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman", {
         method: "POST",
@@ -114,15 +94,12 @@ export default function PengalamanCard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({
-          ...pengalamanForm,
-        }),
+        body: JSON.stringify({ ...pengalamanForm }),
       });
       if (!res.ok) {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Gagal menambah pengalaman.");
       }
-      // Success, refetch pengalaman
       setShowAddPengalaman(false);
       setPengalamanForm({
         jenis: "kerja",
@@ -134,12 +111,9 @@ export default function PengalamanCard() {
         tanggal_selesai: "",
         masih_berjalan: false,
       });
-      // Refetch pengalaman
       setLoadingPengalaman(true);
       const pengalamanRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { Authorization: `Bearer ${token}` },
       });
       if (pengalamanRes.ok) {
         const data = await pengalamanRes.json();
@@ -151,22 +125,15 @@ export default function PengalamanCard() {
       setPengalamanSaving(false);
     }
   };
-
-  // Helper: break word utility for long text
+  
   const breakWordClass = "break-words whitespace-pre-line";
 
   return (
-    <div
-      className="flex-1 bg-white rounded-lg shadow-xl mt-4 p-8 group relative"
-      onMouseEnter={() => {}}
-      onMouseLeave={() => {}}
-    >
+    <div className="bg-white rounded-lg shadow-md p-8 group relative h-full"> {/* Perbaikan di sini */}
       <div className="absolute top-6 right-6 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-2">
-        {/* Add pengalaman button */}
         <button
           className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 border border-blue-700 text-white hover:text-white transition"
           title="Tambah Pengalaman"
-          tabIndex={-1}
           type="button"
           onClick={() => setShowAddPengalaman((v) => !v)}
           disabled={pengalamanSaving}
@@ -175,7 +142,7 @@ export default function PengalamanCard() {
         </button>
       </div>
       <h4 className="text-xl text-black font-bold">Pengalaman</h4>
-      {/* Add pengalaman form */}
+      {/* ... (kode form) ... */}
       {showAddPengalaman && (
         <form className="mt-4 mb-4 text-black space-y-3" onSubmit={handlePengalamanSubmit} autoComplete="off">
           <div className="flex flex-col md:flex-row md:items-center gap-2">
@@ -309,7 +276,6 @@ export default function PengalamanCard() {
       )}
       <div className="relative px-4 mt-4">
         <div className="absolute h-full border border-dashed border-opacity-20 border-secondary"></div>
-        {/* Pengalaman items */}
         {loadingPengalaman ? (
           <div className="text-gray-500">Memuat pengalaman...</div>
         ) : pengalaman.length === 0 ? (
@@ -329,16 +295,10 @@ export default function PengalamanCard() {
                     <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">{item.jenis}</span>
                   )}
                 </div>
-                <div className="text-black text-sm">
-                  {item.lokasi}
-                </div>
+                <div className="text-black text-sm">{item.lokasi}</div>
                 <div className="text-black text-sm">
                   {formatMonthYear(item.tanggal_mulai)} -{" "}
-                  {item.masih_berjalan
-                    ? "Sekarang"
-                    : item.tanggal_selesai
-                    ? formatMonthYear(item.tanggal_selesai)
-                    : "-"}
+                  {item.masih_berjalan ? "Sekarang" : item.tanggal_selesai ? formatMonthYear(item.tanggal_selesai) : "-"}
                 </div>
                 {item.deskripsi && (
                   <div className={`text-black text-sm mt-1 ${breakWordClass}`}>{item.deskripsi}</div>

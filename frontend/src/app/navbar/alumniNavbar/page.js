@@ -177,7 +177,7 @@ export default function AlumniNavbar() {
   // Handler khusus untuk navigasi ke /forumAlumni dengan router.push
   const handleForumAlumniClick = (e) => {
     e.preventDefault();
-    router.push("/forumAlumni");
+    router.push("/forum");
     setMobileMenuOpen(false);
   };
 

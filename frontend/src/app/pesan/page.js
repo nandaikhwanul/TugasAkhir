@@ -74,40 +74,97 @@ export default function SidebarPesan() {
   return (
     <div className="flex h-screen">
       {/* Sidebar */}
-      <section className="flex flex-col w-2/12 bg-white rounded-l-3xl fixed h-[700px] left-24 shadow-lg">
-        <div className="w-16 mx-auto mt-12 mb-20 p-4 bg-indigo-600 rounded-2xl text-white">
-          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"
-              d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76" />
+      <section
+        className="
+          flex flex-col
+          w-2/12 min-w-[70px] max-w-xs
+          bg-white rounded-l-3xl
+          fixed h-[700px] left-0 md:left-24
+          shadow-lg
+          z-20
+          transition-all
+          sm:w-1/5
+          xs:w-2/5
+        "
+        style={{ minWidth: "70px" }}
+      >
+        <div className="w-12 sm:w-16 mx-auto mt-8 sm:mt-12 mb-10 sm:mb-20 p-3 sm:p-4 bg-indigo-600 rounded-2xl text-white flex items-center justify-center">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+            className="w-8 h-8 sm:w-10 sm:h-10"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth="1"
+              d="M3 19v-8.93a2 2 0 01.89-1.664l7-4.666a2 2 0 012.22 0l7 4.666A2 2 0 0121 10.07V19M3 19a2 2 0 002 2h14a2 2 0 002-2M3 19l6.75-4.5M21 19l-6.75-4.5M3 10l6.75 4.5M21 10l-6.75 4.5m0 0l-1.14.76a2 2 0 01-2.22 0l-1.14-.76"
+            />
           </svg>
         </div>
-        <nav className="relative flex flex-col py-4 items-center">
+        <nav className="relative flex flex-col py-2 sm:py-4 items-center">
           <button
             type="button"
             onClick={() => setActiveSidebar("inbox")}
-            className={`relative w-16 p-4 rounded-2xl mb-4 transition ${
-              activeSidebar === "inbox"
-                ? "bg-purple-100 text-purple-900"
-                : "bg-gray-100 text-gray-400 hover:bg-purple-50"
-            }`}
+            className={`
+              relative
+              w-12 h-12 sm:w-16 sm:h-16
+              p-2 sm:p-4
+              rounded-2xl mb-3 sm:mb-4
+              flex items-center justify-center
+              transition
+              ${
+                activeSidebar === "inbox"
+                  ? "bg-purple-100 text-purple-900"
+                  : "bg-gray-100 text-gray-400 hover:bg-purple-50"
+              }
+            `}
+            style={{ minWidth: "48px", minHeight: "48px" }}
           >
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="1"
-                d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20" />
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              className="w-6 h-6 sm:w-8 sm:h-8"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="1"
+                d="M8 4H6a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-2m-4-1v8m0 0l3-3m-3 3L9 8m-5 5h2.586a1 1 0 01.707.293l2.414 2.414a1 1 0 00.707.293h3.172a1 1 0 00.707-.293l2.414-2.414a1 1 0 01.707-.293H20"
+              />
             </svg>
             {renderUnreadBadge()}
           </button>
           <button
             type="button"
             onClick={() => setActiveSidebar("telegram")}
-            className={`relative w-16 p-4 rounded-2xl mb-4 transition ${
-              activeSidebar === "telegram"
-                ? "bg-purple-100 text-purple-900"
-                : "bg-gray-100 text-gray-400 hover:bg-purple-50"
-            }`}
+            className={`
+              relative
+              w-12 h-12 sm:w-16 sm:h-16
+              p-2 sm:p-4
+              rounded-2xl mb-3 sm:mb-4
+              flex items-center justify-center
+              transition
+              ${
+                activeSidebar === "telegram"
+                  ? "bg-purple-100 text-purple-900"
+                  : "bg-gray-100 text-gray-400 hover:bg-purple-50"
+              }
+            `}
+            style={{ minWidth: "48px", minHeight: "48px" }}
           >
             {/* Telegram paper plane icon */}
-            <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 24 24" className="w-8 h-8 mx-auto" style={{ color: "#229ED9" }}>
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              fill="currentColor"
+              viewBox="0 0 24 24"
+              className="w-6 h-6 sm:w-8 sm:h-8 mx-auto"
+              style={{ color: "#229ED9" }}
+            >
               <path d="M21.426 2.594a1.5 1.5 0 0 0-1.59-.217L3.36 9.36a1.5 1.5 0 0 0 .13 2.8l4.77 1.67 2.02 6.13a1.5 1.5 0 0 0 2.7.23l2.13-3.44 4.13 3.04a1.5 1.5 0 0 0 2.36-1.01l1.5-14a1.5 1.5 0 0 0-.574-1.19zm-1.13 1.47l-1.5 14-4.13-3.04a1.5 1.5 0 0 0-2.09.41l-2.13 3.44-2.02-6.13a1.5 1.5 0 0 0-.97-.97l-4.77-1.67 16.41-6.08z"/>
             </svg>
             {/* Tidak perlu badge unread di telegram */}
@@ -115,7 +172,7 @@ export default function SidebarPesan() {
         </nav>
       </section>
       {/* Konten dinamis */}
-      <main className="flex-1 ">
+      <main className="flex-1 ml-[70px] md:ml-[12.5vw]">
         {renderContent()}
       </main>
     </div>

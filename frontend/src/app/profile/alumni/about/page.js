@@ -147,7 +147,7 @@ export default function AboutCard() {
     <div className="flex flex-col w-full h-full">
       {/* About Card with hover pencil */}
       <div
-        className="flex-1 bg-gradient-to-br from-blue-50 to-white rounded-t-lg shadow-lg p-8 group relative w-full border border-blue-100"
+        className="flex-1 bg-gradient-to-br from-blue-50 to-white rounded-t-lg p-8 group relative w-full "
         onMouseEnter={() => setHoveredSection("about")}
         onMouseLeave={() => setHoveredSection(null)}
       >

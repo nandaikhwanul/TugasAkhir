@@ -7,7 +7,15 @@ import { getTokenFromSessionStorage } from "../sessiontoken";
 // Helper: get userId and role from token (assume JWT, decode base64 payload)
 function getUserFromToken() {
   const token = getTokenFromSessionStorage();
-  if (!token) return { id: null, role: null, name: null, avatar: null, username: null };
+  if (!token)
+    return {
+      id: null,
+      role: null,
+      name: null,
+      avatar: null,
+      username: null,
+      email: null,
+    };
   try {
     const payload = JSON.parse(atob(token.split(".")[1]));
     return {
@@ -16,9 +24,17 @@ function getUserFromToken() {
       name: payload.name || payload.nama || null,
       avatar: payload.avatar || null,
       username: payload.username || null,
+      email: payload.email || null,
     };
   } catch (e) {
-    return { id: null, role: null, name: null, avatar: null, username: null };
+    return {
+      id: null,
+      role: null,
+      name: null,
+      avatar: null,
+      username: null,
+      email: null,
+    };
   }
 }
 function getUserIdFromToken() {
@@ -26,6 +42,35 @@ function getUserIdFromToken() {
 }
 function getUserRoleFromToken() {
   return getUserFromToken().role;
+}
+
+// Helper: resolve logo url
+function getLogoUrl(logo_perusahaan) {
+  if (!logo_perusahaan) return "";
+  if (/^https?:\/\//.test(logo_perusahaan)) return logo_perusahaan;
+  if (logo_perusahaan.startsWith("/uploads/")) {
+    return `https://tugasakhir-production-6c6c.up.railway.app${logo_perusahaan}`;
+  }
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/perusahaan/${logo_perusahaan}`;
+}
+
+// Helper untuk resolve URL foto_profil alumni
+function getFotoProfilUrl(foto_profil) {
+  if (foto_profil === undefined || foto_profil === null) return null;
+  if (!foto_profil) return "";
+  if (/^https?:\/\//.test(foto_profil)) return foto_profil;
+  if (foto_profil.startsWith("/uploads/")) {
+    return `https://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
+  }
+  return `https://tugasakhir-production-6c6c.up.railway.app/uploads/alumni/${foto_profil}`;
+}
+
+// Helper: get initials from name
+function getInitials(name) {
+  if (!name) return "";
+  const parts = name.trim().split(" ");
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() || "";
+  return (parts[0][0] + (parts[1]?.[0] || "")).toUpperCase();
 }
 
 // Badge color by role
@@ -272,8 +317,10 @@ async function unhighlightForumPost(postId) {
 
 // API helper: create forum comment
 async function createForumComment({ postId, content }) {
+  // Mengambil token dari session storage
   const token = getTokenFromSessionStorage();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
+  // Panggil endpoint sesuai instruksi
   const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/forum/comments", {
     method: "POST",
     headers: {
@@ -293,7 +340,7 @@ async function createForumComment({ postId, content }) {
 }
 
 // API helper: get comments by postId (new endpoint)
-// Only return: _id, alumni, content, parent, createdAt, updatedAt, replies (if any)
+// Now returns: _id, post, perusahaan, content, parent, createdAt, updatedAt, __v
 async function getCommentsByPostId(postId) {
   const token = getTokenFromSessionStorage();
   if (!token) throw new Error("Token tidak ditemukan. Silakan login ulang.");
@@ -306,27 +353,88 @@ async function getCommentsByPostId(postId) {
     const data = await res.json().catch(() => ({}));
     throw new Error(data?.message || "Gagal mengambil komentar");
   }
-  // Only return the required fields for each comment
   const data = await res.json();
+  // Map to expected structure for display
+  // If perusahaan is present, show as perusahaan, else as alumni
   function mapCommentFields(comment) {
-    return {
-      _id: comment._id,
-      alumni: comment.alumni,
-      content: comment.content,
-      parent: comment.parent,
-      createdAt: comment.createdAt,
-      updatedAt: comment.updatedAt,
-      replies: Array.isArray(comment.replies)
-        ? comment.replies.map(mapCommentFields)
-        : [],
-    };
+    let perusahaanObj = null;
+    if (typeof comment.perusahaan === "object" && comment.perusahaan !== null) {
+      perusahaanObj = comment.perusahaan;
+    }
+    // If perusahaan, use perusahaan info, else alumni info
+    if (perusahaanObj) {
+      return {
+        _id: comment._id,
+        alumni: {
+          name: perusahaanObj.name || "Perusahaan",
+          avatar: getLogoUrl(perusahaanObj.logo_perusahaan) || "/company.png",
+          role: "perusahaan",
+          username: perusahaanObj.username || "",
+          email: perusahaanObj.email_perusahaan || perusahaanObj.email || "",
+        },
+        content: comment.content,
+        parent: comment.parent,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        replies: [],
+      };
+    } else if (comment.alumni && typeof comment.alumni === "object") {
+      // alumni info
+      return {
+        _id: comment._id,
+        alumni: {
+          name: comment.alumni.name || comment.alumni.nama || "Alumni",
+          avatar: getFotoProfilUrl(comment.alumni.foto_profil) || "/avatar1.png",
+          role: "alumni",
+          username: comment.alumni.username || "",
+          email: comment.alumni.email || "",
+        },
+        content: comment.content,
+        parent: comment.parent,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        replies: [],
+      };
+    } else if (comment.admin && typeof comment.admin === "object") {
+      // admin info
+      return {
+        _id: comment._id,
+        alumni: {
+          name: comment.admin.name || "Admin",
+          avatar: null, // will use initials
+          role: "admin",
+          username: comment.admin.username || "",
+          email: comment.admin.email || "",
+        },
+        content: comment.content,
+        parent: comment.parent,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        replies: [],
+      };
+    } else {
+      // fallback perusahaan
+      return {
+        _id: comment._id,
+        alumni: {
+          name: "Perusahaan",
+          avatar: "/company.png",
+          role: "perusahaan",
+          username: "",
+          email: "",
+        },
+        content: comment.content,
+        parent: comment.parent,
+        createdAt: comment.createdAt,
+        updatedAt: comment.updatedAt,
+        replies: [],
+      };
+    }
   }
-  return {
-    ...data,
-    data: Array.isArray(data.data)
-      ? data.data.map(mapCommentFields)
-      : [],
-  };
+  // The backend returns an array directly, not { data: [...] }
+  return Array.isArray(data)
+    ? data.map(mapCommentFields)
+    : [];
 }
 
 // PostCard with like button (update like without refresh)
@@ -342,25 +450,31 @@ function PostCard({ post, onClick, onLikeToggle, likeLoading, onPinToggle, pinLo
   const [localPinLoading, setLocalPinLoading] = useState(false);
   const isPinLoading = typeof pinLoading === "boolean" ? pinLoading : localPinLoading;
 
-  const handleLikeClick = async (e) => {
-    e.stopPropagation();
-    if (isLikeLoading) return;
-    setLocalLikeLoading(true);
-    if (onLikeToggle) {
-      await onLikeToggle(post._id || post.id, post.liked);
-    }
-    setLocalLikeLoading(false);
-  };
-
-  const handlePinClick = async (e) => {
-    e.stopPropagation();
-    if (isPinLoading) return;
-    setLocalPinLoading(true);
-    if (onPinToggle) {
-      await onPinToggle(post._id || post.id, post.pinned);
-    }
-    setLocalPinLoading(false);
-  };
+  // Determine avatar or initials for admin/alumni/perusahaan
+  let avatarNode = null;
+  if (author.role === "admin") {
+    avatarNode = (
+      <div className="w-10 h-10 rounded-full bg-red-200 flex items-center justify-center text-red-700 font-bold text-lg mr-3">
+        {getInitials(author.name || "Admin")}
+      </div>
+    );
+  } else if (author.role === "perusahaan") {
+    avatarNode = (
+      <img
+        src={getLogoUrl(author.avatar) || "/company.png"}
+        alt={author.name || "Perusahaan"}
+        className="w-10 h-10 rounded-full mr-3"
+      />
+    );
+  } else {
+    avatarNode = (
+      <img
+        src={getFotoProfilUrl(author.avatar) || "/avatar1.png"}
+        alt={author.name || "Alumni"}
+        className="w-10 h-10 rounded-full mr-3"
+      />
+    );
+  }
 
   return (
     <div
@@ -380,7 +494,15 @@ function PostCard({ post, onClick, onLikeToggle, likeLoading, onPinToggle, pinLo
       {userRole === "admin" && (
         <button
           className={`absolute top-3 right-20 flex items-center gap-1 text-xs px-2 py-1 rounded border border-yellow-400 bg-yellow-50 text-yellow-700 font-semibold z-20 ${isPinLoading ? "opacity-60 cursor-not-allowed" : "hover:bg-yellow-100"}`}
-          onClick={handlePinClick}
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (isPinLoading) return;
+            setLocalPinLoading(true);
+            if (onPinToggle) {
+              await onPinToggle(post._id || post.id, post.pinned);
+            }
+            setLocalPinLoading(false);
+          }}
           disabled={isPinLoading}
           style={{ minWidth: 60 }}
         >
@@ -388,7 +510,7 @@ function PostCard({ post, onClick, onLikeToggle, likeLoading, onPinToggle, pinLo
         </button>
       )}
       <div className="flex items-center mb-2">
-        <img src={author.avatar || "/avatar1.png"} alt={author.name || "Alumni"} className="w-10 h-10 rounded-full mr-3" />
+        {avatarNode}
         <div>
           <div className="flex items-center gap-2">
             <span className="font-semibold">{author.name || "Alumni"}</span>
@@ -396,7 +518,11 @@ function PostCard({ post, onClick, onLikeToggle, likeLoading, onPinToggle, pinLo
               {badge.label}
             </span>
           </div>
-          <span className="text-xs text-black">@{author.username || ""}</span>
+          <span className="text-xs text-black">{author.username || ""}</span>
+          {/* Show email/email_perusahaan if available */}
+          {author.email && (
+            <div className="text-xs text-gray-500">{author.email}</div>
+          )}
         </div>
       </div>
       <div className="font-bold text-lg mb-1 text-black">{post.title}</div>
@@ -410,7 +536,15 @@ function PostCard({ post, onClick, onLikeToggle, likeLoading, onPinToggle, pinLo
         <span>💬 {post.comments} komentar</span>
         <button
           className={`flex items-center gap-1 text-xs ${post.liked ? "text-blue-600 font-bold" : "text-black"} ${isLikeLoading ? "opacity-60 cursor-not-allowed" : ""}`}
-          onClick={handleLikeClick}
+          onClick={async (e) => {
+            e.stopPropagation();
+            if (isLikeLoading) return;
+            setLocalLikeLoading(true);
+            if (onLikeToggle) {
+              await onLikeToggle(post._id || post.id, post.liked);
+            }
+            setLocalLikeLoading(false);
+          }}
           disabled={isLikeLoading}
           style={{ background: "none", border: "none", padding: 0, margin: 0 }}
         >
@@ -456,8 +590,10 @@ function PostDetail({
   // Get user info for posting comment
   const user = getUserFromToken();
 
-  // Fetch comments for this post (NEW: use /forum/comments/post/:id)
+  // DEBUG: Log post id and when comments are fetched
   useEffect(() => {
+    // eslint-disable-next-line no-console
+    console.log("DEBUG: Fetching comments for post", post._id || post.id);
     let ignore = false;
     async function fetchComments() {
       setCommentsLoading(true);
@@ -466,10 +602,16 @@ function PostDetail({
         const postId = post._id || post.id;
         const res = await getCommentsByPostId(postId);
         if (!ignore) {
-          setComments(Array.isArray(res.data) ? res.data : []);
+          // eslint-disable-next-line no-console
+          console.log("DEBUG: Comments fetched", res);
+          setComments(Array.isArray(res) ? res : []);
         }
       } catch (err) {
-        if (!ignore) setCommentsError(err.message || "Gagal mengambil komentar");
+        if (!ignore) {
+          // eslint-disable-next-line no-console
+          console.error("DEBUG: Error fetching comments", err);
+          setCommentsError(err.message || "Gagal mengambil komentar");
+        }
       } finally {
         if (!ignore) setCommentsLoading(false);
       }
@@ -530,20 +672,28 @@ function PostDetail({
     setCommentSending(true);
     setCommentSendError(null);
     try {
+      // Panggil endpoint createForumComment yang sudah sesuai instruksi
       const res = await createForumComment({
         postId: post._id || post.id,
         content: commentInput.trim(),
       });
       if (res && res.data) {
+        // Komentar baru dari perusahaan
         setComments((prev) => [
           {
             _id: res.data._id,
-            alumni: res.data.alumni,
+            alumni: {
+              name: "Perusahaan",
+              avatar: "/company.png",
+              role: "perusahaan",
+              username: "",
+              email: res.data.email_perusahaan || res.data.email || "",
+            },
             content: res.data.content,
             parent: res.data.parent,
             createdAt: res.data.createdAt || new Date(),
             updatedAt: res.data.updatedAt || res.data.createdAt || new Date(),
-            replies: res.data.replies || [],
+            replies: [],
           },
           ...prev,
         ]);
@@ -558,11 +708,37 @@ function PostDetail({
     }
   };
 
+  // Determine avatar or initials for admin/alumni/perusahaan
+  let avatarNode = null;
+  if (author.role === "admin") {
+    avatarNode = (
+      <div className="w-12 h-12 rounded-full bg-red-200 flex items-center justify-center text-red-700 font-bold text-xl mr-4">
+        {getInitials(author.name || "Admin")}
+      </div>
+    );
+  } else if (author.role === "perusahaan") {
+    avatarNode = (
+      <img
+        src={getLogoUrl(author.avatar) || "/company.png"}
+        alt={author.name || "Perusahaan"}
+        className="w-12 h-12 rounded-full mr-4"
+      />
+    );
+  } else {
+    avatarNode = (
+      <img
+        src={getFotoProfilUrl(author.avatar) || "/avatar1.png"}
+        alt={author.name || "Alumni"}
+        className="w-12 h-12 rounded-full mr-4"
+      />
+    );
+  }
+
   return (
     <div className="bg-white rounded-xl shadow p-6 mb-6">
       <button onClick={onBack} className="mb-4 text-blue-600 hover:underline text-sm">&larr; Kembali ke daftar topik</button>
       <div className="flex items-center mb-3">
-        <img src={author.avatar || "/avatar1.png"} alt={author.name || "Alumni"} className="w-12 h-12 rounded-full mr-4" />
+        {avatarNode}
         <div>
           <div className="flex items-center gap-2">
             <a href={author.profileUrl || "#"} className="font-semibold hover:underline">{author.name || "Alumni"}</a>
@@ -571,6 +747,10 @@ function PostDetail({
             </span>
           </div>
           <span className="text-xs text-black">@{author.username || ""}</span>
+          {/* Show email/email_perusahaan if available */}
+          {author.email && (
+            <div className="text-xs text-gray-500">{author.email}</div>
+          )}
         </div>
       </div>
       <div className="font-bold text-2xl mb-2 text-black">{post.title}</div>
@@ -691,24 +871,50 @@ function PostDetail({
 function CommentList({ comments }) {
   return (
     <div>
-      {comments.map((c) => (
-        <div key={c._id || c.id} className="mb-3">
-          <div className="flex items-center gap-2 mb-1">
-            <img src={c.alumni?.avatar || "/avatar1.png"} alt={c.alumni?.name || "User"} className="w-7 h-7 rounded-full" />
-            <span className="font-semibold text-sm text-black">{c.alumni?.name || "User"}</span>
-            <span className={`border px-2 py-0.5 rounded text-xs font-medium ${ROLE_BADGE[c.alumni?.role]?.color || ""}`}>
-              {ROLE_BADGE[c.alumni?.role]?.label}
-            </span>
-            <span className="text-xs text-black">{timeAgo(c.createdAt)}</span>
-          </div>
-          <div className="ml-9 text-sm text-black">{c.content}</div>
-          {c.replies && c.replies.length > 0 && (
-            <div className="ml-9 mt-2 border-l-2 border-gray-100 pl-3">
-              <CommentList comments={c.replies} />
+      {comments.map((c) => {
+        let avatarNode = null;
+        if (c.alumni?.role === "admin") {
+          avatarNode = (
+            <div className="w-7 h-7 rounded-full bg-red-200 flex items-center justify-center text-red-700 font-bold text-base">
+              {getInitials(c.alumni?.name || "Admin")}
             </div>
-          )}
-        </div>
-      ))}
+          );
+        } else if (c.alumni?.role === "perusahaan") {
+          avatarNode = (
+            <img
+              src={getLogoUrl(c.alumni?.avatar) || "/company.png"}
+              alt={c.alumni?.name || "Perusahaan"}
+              className="w-7 h-7 rounded-full"
+            />
+          );
+        } else {
+          avatarNode = (
+            <img
+              src={getFotoProfilUrl(c.alumni?.avatar) || "/avatar1.png"}
+              alt={c.alumni?.name || "Alumni"}
+              className="w-7 h-7 rounded-full"
+            />
+          );
+        }
+        return (
+          <div key={c._id || c.id} className="mb-3">
+            <div className="flex items-center gap-2 mb-1">
+              {avatarNode}
+              <span className="font-semibold text-sm text-black">{c.alumni?.name || "Perusahaan"}</span>
+              <span className={`border px-2 py-0.5 rounded text-xs font-medium ${ROLE_BADGE[c.alumni?.role]?.color || ""}`}>
+                {ROLE_BADGE[c.alumni?.role]?.label}
+              </span>
+              <span className="text-xs text-black">{timeAgo(c.createdAt)}</span>
+              {/* Show email/email_perusahaan if available */}
+              {c.alumni?.email && (
+                <span className="text-xs text-gray-500 ml-2">{c.alumni.email}</span>
+              )}
+            </div>
+            <div className="ml-9 text-sm text-black">{c.content}</div>
+            {/* No replies, as API does not return nested replies */}
+          </div>
+        );
+      })}
     </div>
   );
 }
@@ -765,8 +971,44 @@ function ForumMain() {
               const likedByArr = Array.isArray(p.likedBy) ? p.likedBy : [];
               const liked = userId ? likedByArr.includes(userId) : false;
               const savedByArr = Array.isArray(p.savedBy) ? p.savedBy : [];
+              // Determine alumni/perusahaan/admin info for post
+              let alumniObj = null;
+              if (p.perusahaan && typeof p.perusahaan === "object") {
+                alumniObj = {
+                  name: p.perusahaan.name || "Perusahaan",
+                  avatar: getLogoUrl(p.perusahaan.logo_perusahaan) || "/company.png",
+                  role: "perusahaan",
+                  username: p.perusahaan.username || "",
+                  email: p.perusahaan.email_perusahaan || p.perusahaan.email || "",
+                };
+              } else if (p.alumni && typeof p.alumni === "object") {
+                alumniObj = {
+                  name: p.alumni.name || p.alumni.nama || "Alumni",
+                  avatar: getFotoProfilUrl(p.alumni.foto_profil) || "/avatar1.png",
+                  role: "alumni",
+                  username: p.alumni.username || "",
+                  email: p.alumni.email || "",
+                };
+              } else if (p.admin && typeof p.admin === "object") {
+                alumniObj = {
+                  name: p.admin.name || "Admin",
+                  avatar: null, // will use initials
+                  role: "admin",
+                  username: p.admin.username || "",
+                  email: p.admin.email || "",
+                };
+              } else {
+                alumniObj = {
+                  name: "Alumni",
+                  avatar: "/avatar1.png",
+                  role: "alumni",
+                  username: "",
+                  email: "",
+                };
+              }
               return {
                 ...p,
+                alumni: alumniObj,
                 liked,
                 likeError: null,
                 likedBy: likedByArr,
@@ -805,7 +1047,7 @@ function ForumMain() {
   }, [posts, sort]);
 
   const handleCreatePost = () => {
-    router.push("/forumAlumni/buatPost");
+    router.push("/forum/buatPost");
   };
 
   const handleLikeToggle = useCallback(
