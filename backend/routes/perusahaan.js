@@ -5,7 +5,8 @@ import {
     checkOldPassword,
     updatePerusahaan,
     getAllAlumniForPerusahaan,
-    registerPerusahaanValidation
+    registerPerusahaanValidation,
+    updatePerusahaanProfile
 } from "../controllers/Perusahaan.js";
 import { verifyUser, perusahaanOnly } from "../middleware/AuthUser.js";
 import { detailPelamar } from "../controllers/Pelamar.js";
@@ -45,6 +46,9 @@ router.post('/perusahaan', registerPerusahaanValidation, asyncHandler(registerPe
 
 // Route untuk update perusahaan (PATCH, dengan upload logo, hanya perusahaan/admin)
 router.patch('/perusahaan/:id', verifyUser, asyncHandler(updatePerusahaan));
+
+// Route untuk update data perusahaan sendiri (hanya perusahaan, PATCH /perusahaan-profile)
+router.patch('/perusahaan-profile', verifyUser, perusahaanOnly, asyncHandler(updatePerusahaanProfile));
 
 // Route untuk cek password lama perusahaan (menggunakan /me sesuai best practice)
 router.post('/perusahaan/me/checkoldpassword', verifyUser, perusahaanOnly, asyncHandler(checkOldPassword));

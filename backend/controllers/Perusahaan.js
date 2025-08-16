@@ -421,3 +421,73 @@ export const getAllAlumniForPerusahaan = async (req, res) => {
         res.status(500).json({ msg: error.message });
     }
 };
+
+// Endpoint baru: PATCH /perusahaan-profile
+export const updatePerusahaanProfile = async (req, res) => {
+    try {
+        // Hanya perusahaan yang boleh update profil sendiri
+        if (!req.userId || req.role !== "perusahaan") {
+            return res.status(403).json({ msg: "Hanya perusahaan yang dapat mengupdate data ini!" });
+        }
+
+        const perusahaanModel = await import("../models/Perusahaan.js").then(m => m.default);
+
+        // Cari perusahaan berdasarkan userId (hanya update dirinya sendiri)
+        const perusahaan = await perusahaanModel.findById(req.userId);
+        if (!perusahaan) {
+            return res.status(404).json({ msg: "Perusahaan tidak ditemukan!" });
+        }
+
+        // Field yang boleh diupdate
+        const allowedFields = [
+            "name",
+            "alamat",
+            "email",
+            "nohp",
+            "deskripsi",
+            "website",
+            "foto_profil",
+            "foto_sampul",
+            "media_sosial",
+            "logo_perusahaan",
+            "foto_cover"
+        ];
+
+        allowedFields.forEach(field => {
+            if (req.body[field] !== undefined) {
+                // Khusus media_sosial, jika dikirim array, convert ke object/map
+                if (field === "media_sosial" && Array.isArray(req.body[field])) {
+                    // Ubah array of {platform, url} menjadi object {platform: url}
+                    const arr = req.body[field];
+                    const obj = {};
+                    arr.forEach(item => {
+                        if (item.platform && item.url) {
+                            obj[item.platform] = item.url;
+                        }
+                    });
+                    perusahaan[field] = obj;
+                } else {
+                    perusahaan[field] = req.body[field];
+                }
+            }
+        });
+
+        await perusahaan.save();
+
+        res.status(200).json({ msg: "Profil perusahaan berhasil diupdate!", perusahaan });
+    } catch (error) {
+        // Tangkap error validasi cast media_sosial
+        if (
+            error &&
+            error.name === "ValidationError" &&
+            error.errors &&
+            error.errors.media_sosial &&
+            error.errors.media_sosial.kind === "Object"
+        ) {
+            return res.status(400).json({
+                msg: "Format media_sosial tidak valid. Gunakan object/map, contoh: { \"Instagram\": \"url\", \"LinkedIn\": \"url\" }"
+            });
+        }
+        res.status(500).json({ msg: error.message });
+    }
+};

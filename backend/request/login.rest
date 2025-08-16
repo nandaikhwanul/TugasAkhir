@@ -8,7 +8,7 @@ Content-Type: application/json
 }
 
 ### Login Perusahaan
-POST https://tugasakhir-production-6c6c.up.railway.app/login
+POST http://localhost:5000/login
 Content-Type: application/json
 
 {

@@ -1,26 +1,15 @@
 ### Update Perusahaan
 PATCH https://tugasakhir-production-6c6c.up.railway.app/perusahaan/689a3242f6766aef706ded0e
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWEzMjQyZjY3NjZhZWY3MDZkZWQwZSIsIm5hbWFfcGVydXNhaGFhbiI6IkNWIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NTM4NDU0NCwiZXhwIjoxNzU1Mzg2MzQ0fQ.tablVwYmuVjMfZ0P2jxMG4PqdCoFBGBgP2WlLV_VjT2Rms6JLNxcr89Gudk3AJrGE6GMMXgdGyNPo9YIbKsyxkqwJdJXbmkRy0T-gPjmFvGyo2t1oLz_slwrxfP0ZLyuvC5sM2Zu5pipIypBrXK32Dudi0jipDA5suulOtpMycgKZ98C2j3FzXqefKUNj92lOJBKHSutGrlw62Sm-b4p7mP1I0ini1Cu4x8i4BA3egkcohGd9ReN6eXSNqfkU4RzL_u-woM7b2FVFe1JekuaotI3G3vY0FbzTUhmfawis7VP-a9NJNwVq31XL9CoQSexa7nHepifJ5aTiMPAA2ZhSA
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWEzMjQyZjY3NjZhZWY3MDZkZWQwZSIsIm5hbWFfcGVydXNhaGFhbiI6IkNWIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NTM4NTk5NiwiZXhwIjoxNzU1Mzg3Nzk2fQ.Sb3UPu7BLCLRg98fg0EKkNq-RKL2DaHvkXrpjmjaLJ4hui7W7hTHwYEdHHEHg-z5V_xrhLSb2-a8x7lEtdT_BqXAd3WRfBV0lQ-8fHGzUhgYQVpv3txPVCIIds5ah_aeRNPPJYepos4uAfFKvW8kQG_0A80eJeTizThLuEdxzoRCsUbM_ab4QpruiptoncHl_hiBQ8y82V6xFcTs92qumLQ_CRgOPyyMPTJCkubPPSvg7HAWEXJrvtLZa-KOdYWJcPA4bLyfOzqy-nJrbFpSQYuhQizvcHpH7APVUTvp4eVU7c4KHMStEO5YPzqfWJhIZ8QZGQqJf__h5ycOmJVOpw
 Content-Length: 370
 
 {
-    "nama_perusahaan": "PT Maju Jaya 2",
-    "email_perusahaan": "hrd@majujayaupdate.com",
-    "alamat": "Jl. Industri No. 3",
-    "bidang_perusahaan": "Teknologi dan Inovasi",
-    "nomor_telp": "0217654321",
-    "deskripsi_perusahaan": "Perusahaan teknologi dan inovasi terkemuka di Indonesia.",
-    "logo_perusahaan": "https://example.com/logo_baru.png",
-    "foto": ["https://example.com/foto_perusahaan_baru.jpg"],
-    "website": "https://majujaya2.com",
     "media_sosial": {
         "instagram": "https://instagram.com/majujaya2",
         "linkedin": "https://linkedin.com/company/majujaya2",
         "facebook": "https://facebook.com/majujaya2"
-    },
-    "password": "123456",
-    "confPassword": "123456"
+    }
 }
 
 
@@ -102,6 +91,34 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODI2NDAwZ
 
 {
     "oldPassword": "securepass123"
+}
+
+### Update Data Perusahaan Sendiri (Endpoint PATCH /perusahaan/me)
+PATCH http://localhost:5000/perusahaan-profile
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWEzMjQyZjY3NjZhZWY3MDZkZWQwZSIsIm5hbWFfcGVydXNhaGFhbiI6IkNWIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NTM4NzgyNSwiZXhwIjoxNzU1Mzg5NjI1fQ.gt9k8TztV7eKONCmn95Gv6bKzsVWmywv27OsJCFK59Wb0ExKVKiXq4Wnn9JAMqXrfZWsxx6hLbuEi6qhK--8lkaKk4YMotQN3vQcoZEhCLxYl8I0FVpIavNI3x8yRc71YIwdWLIjls0jfqaHmq6jsDN9muMD1n84b0h9l-KmfcqSI3YyjCdPJjygEx9RflE96ZNfcL2grm8s0ayo3LWJnQe_ScdvRenZc9sJwoSrz6_85W7YAdG1kJ4P8PpKrZb1kllgYGqTdVhb4ITz5Zui9TgJahLWc67_5MH_pwfXAPPvlybJ_9zoyR9Fx-hBXCp-px3mqcZHXpTRPLanCfk1MA
+
+{
+    "name": "PT Maju Jaya Update",
+    "alamat": "Jl. Baru No. 123, Jakarta",
+    "email": "hrd@majujayaupdate.com",
+    "nohp": "081234567890",
+    "deskripsi": "Perusahaan berkembang di bidang teknologi.",
+    "website": "https://majujayaupdate.com",
+    "foto_profil": "/uploads/perusahaan/foto_profil_baru.jpg",
+    "foto_sampul": "/uploads/perusahaan/foto_sampul_baru.jpg",
+    "media_sosial": [
+        {
+            "platform": "LinkedIn",
+            "url": "https://linkedin.com/company/majujayaupdate"
+        },
+        {
+            "platform": "Instagram",
+            "url": "https://instagram.com/majujayaupdate"
+        }
+    ],
+    "logo_perusahaan": "/uploads/perusahaan/logo_baru.png",
+    "foto_cover": "/uploads/perusahaan/cover_baru.jpg"
 }
 
 
