@@ -26,7 +26,7 @@ export const checkOldPassword = async (req, res) => {
     }
 };
 
-// Konfigurasi multer untuk upload logo perusahaan
+// Konfigurasi multer untuk upload logo perusahaan dan foto_cover
 const storageLogo = multer.diskStorage({
     destination: function (req, file, cb) {
         const dir = path.resolve("uploads/perusahaan");
@@ -43,7 +43,8 @@ const storageLogo = multer.diskStorage({
         try {
             if (req.userId) {
                 const perusahaan = await Perusahaan.findById(req.userId);
-                if (perusahaan && perusahaan.logo_perusahaan) {
+                // Hapus logo lama jika upload logo_perusahaan
+                if (file.fieldname === "logo_perusahaan" && perusahaan && perusahaan.logo_perusahaan) {
                     const oldLogo = perusahaan.logo_perusahaan;
                     if (
                         typeof oldLogo === "string" &&
@@ -60,13 +61,37 @@ const storageLogo = multer.diskStorage({
                         }
                     }
                 }
+                // Hapus foto_cover lama jika upload foto_cover
+                if (file.fieldname === "foto_cover" && perusahaan && perusahaan.foto_cover) {
+                    const oldCover = perusahaan.foto_cover;
+                    if (
+                        typeof oldCover === "string" &&
+                        !oldCover.startsWith("http")
+                    ) {
+                        const absPath = path.resolve(oldCover);
+                        if (fs.existsSync(absPath)) {
+                            fs.unlinkSync(absPath);
+                        } else {
+                            const localPath = path.resolve("uploads/perusahaan", oldCover);
+                            if (fs.existsSync(localPath)) {
+                                fs.unlinkSync(localPath);
+                            }
+                        }
+                    }
+                }
             }
         } catch (err) {
-            console.error("Gagal menghapus logo perusahaan lama:", err.message);
+            console.error("Gagal menghapus file lama perusahaan:", err.message);
         }
         const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
         const ext = path.extname(file.originalname);
-        cb(null, 'logo-' + uniqueSuffix + ext);
+        if (file.fieldname === "logo_perusahaan") {
+            cb(null, 'logo-' + uniqueSuffix + ext);
+        } else if (file.fieldname === "foto_cover") {
+            cb(null, 'cover-' + uniqueSuffix + ext);
+        } else {
+            cb(null, file.fieldname + '-' + uniqueSuffix + ext);
+        }
     }
 });
 const uploadLogoPerusahaan = multer({
@@ -78,7 +103,10 @@ const uploadLogoPerusahaan = multer({
         }
         cb(null, true);
     }
-}).single('logo_perusahaan');
+}).fields([
+    { name: 'logo_perusahaan', maxCount: 1 },
+    { name: 'foto_cover', maxCount: 1 }
+]);
 
 // Express-validator rules untuk registerPerusahaan
 export const registerPerusahaanValidation = [
@@ -124,6 +152,7 @@ export const getPerusahaanById = async (req, res) => {
             'bidang_perusahaan',
             'nomor_telp',
             'logo_perusahaan',
+            'foto_cover',
             'deskripsi_perusahaan',
             'website',
             'media_sosial',
@@ -189,7 +218,7 @@ export const registerPerusahaan = async (req, res) => {
     }
 };
 
-// Update perusahaan (menggunakan JWT, bukan session, dan bisa update logo_perusahaan)
+// Update perusahaan (menggunakan JWT, bukan session, dan bisa update logo_perusahaan dan foto_cover)
 export const updatePerusahaan = (req, res) => {
     uploadLogoPerusahaan(req, res, async function (err) {
         if (err instanceof multer.MulterError) {
@@ -200,8 +229,11 @@ export const updatePerusahaan = (req, res) => {
 
         // Izinkan admin atau perusahaan
         if (!req.userId || (req.role !== "perusahaan" && req.role !== "admin")) {
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            if (req.files && req.files.logo_perusahaan) {
+                fs.unlinkSync(req.files.logo_perusahaan[0].path);
+            }
+            if (req.files && req.files.foto_cover) {
+                fs.unlinkSync(req.files.foto_cover[0].path);
             }
             return res.status(401).json({ msg: "Akses terlarang, hanya perusahaan atau admin yang dapat mengakses." });
         }
@@ -210,22 +242,31 @@ export const updatePerusahaan = (req, res) => {
         try {
             perusahaan = await Perusahaan.findById(req.params.id);
         } catch (error) {
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            if (req.files && req.files.logo_perusahaan) {
+                fs.unlinkSync(req.files.logo_perusahaan[0].path);
+            }
+            if (req.files && req.files.foto_cover) {
+                fs.unlinkSync(req.files.foto_cover[0].path);
             }
             return res.status(404).json({ msg: "Perusahaan tidak ditemukan" });
         }
         if (!perusahaan) {
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            if (req.files && req.files.logo_perusahaan) {
+                fs.unlinkSync(req.files.logo_perusahaan[0].path);
+            }
+            if (req.files && req.files.foto_cover) {
+                fs.unlinkSync(req.files.foto_cover[0].path);
             }
             return res.status(404).json({ msg: "Perusahaan tidak ditemukan" });
         }
 
         // Hanya perusahaan itu sendiri atau admin yang boleh update
         if (req.role !== "admin" && perusahaan._id.toString() !== req.userId) {
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            if (req.files && req.files.logo_perusahaan) {
+                fs.unlinkSync(req.files.logo_perusahaan[0].path);
+            }
+            if (req.files && req.files.foto_cover) {
+                fs.unlinkSync(req.files.foto_cover[0].path);
             }
             return res.status(403).json({ msg: "Akses terlarang, hanya perusahaan terkait atau admin yang dapat mengakses." });
         }
@@ -250,22 +291,27 @@ export const updatePerusahaan = (req, res) => {
         if (nama_perusahaan && nama_perusahaan !== perusahaan.nama_perusahaan) {
             const cekNama = await Perusahaan.findOne({ nama_perusahaan });
             if (cekNama) {
-                if (req.file) fs.unlinkSync(req.file.path);
+                if (req.files && req.files.logo_perusahaan) fs.unlinkSync(req.files.logo_perusahaan[0].path);
+                if (req.files && req.files.foto_cover) fs.unlinkSync(req.files.foto_cover[0].path);
                 return res.status(400).json({ errors: { nama_perusahaan: "Nama perusahaan sudah terdaftar" } });
             }
         }
         if (email_perusahaan && email_perusahaan !== perusahaan.email_perusahaan) {
             const cekEmail = await Perusahaan.findOne({ email_perusahaan });
             if (cekEmail) {
-                if (req.file) fs.unlinkSync(req.file.path);
+                if (req.files && req.files.logo_perusahaan) fs.unlinkSync(req.files.logo_perusahaan[0].path);
+                if (req.files && req.files.foto_cover) fs.unlinkSync(req.files.foto_cover[0].path);
                 return res.status(400).json({ errors: { email_perusahaan: "Email perusahaan sudah terdaftar" } });
             }
         }
 
         if (password && password !== "") {
             if (password !== confPassword) {
-                if (req.file) {
-                    fs.unlinkSync(req.file.path);
+                if (req.files && req.files.logo_perusahaan) {
+                    fs.unlinkSync(req.files.logo_perusahaan[0].path);
+                }
+                if (req.files && req.files.foto_cover) {
+                    fs.unlinkSync(req.files.foto_cover[0].path);
                 }
                 return res.status(400).json({ errors: { confPassword: "Password dan Confirm Password tidak cocok" } });
             }
@@ -273,14 +319,25 @@ export const updatePerusahaan = (req, res) => {
         }
 
         let logo_perusahaan = perusahaan.logo_perusahaan;
-        if (req.file) {
+        if (req.files && req.files.logo_perusahaan) {
             if (logo_perusahaan && logo_perusahaan.startsWith("/uploads/perusahaan/")) {
                 const oldPath = path.resolve("." + logo_perusahaan);
                 if (fs.existsSync(oldPath)) {
                     fs.unlinkSync(oldPath);
                 }
             }
-            logo_perusahaan = `/uploads/perusahaan/${req.file.filename}`;
+            logo_perusahaan = `/uploads/perusahaan/${req.files.logo_perusahaan[0].filename}`;
+        }
+
+        let foto_cover = perusahaan.foto_cover;
+        if (req.files && req.files.foto_cover) {
+            if (foto_cover && foto_cover.startsWith("/uploads/perusahaan/")) {
+                const oldPath = path.resolve("." + foto_cover);
+                if (fs.existsSync(oldPath)) {
+                    fs.unlinkSync(oldPath);
+                }
+            }
+            foto_cover = `/uploads/perusahaan/${req.files.foto_cover[0].filename}`;
         }
 
         // Parse media_sosial if sent as JSON string (from form-data)
@@ -298,8 +355,11 @@ export const updatePerusahaan = (req, res) => {
                         mediaSosialObj = media_sosial;
                     }
                 } catch (e) {
-                    if (req.file) {
-                        fs.unlinkSync(req.file.path);
+                    if (req.files && req.files.logo_perusahaan) {
+                        fs.unlinkSync(req.files.logo_perusahaan[0].path);
+                    }
+                    if (req.files && req.files.foto_cover) {
+                        fs.unlinkSync(req.files.foto_cover[0].path);
                     }
                     return res.status(400).json({ msg: "Format media_sosial tidak valid (harus JSON)" });
                 }
@@ -316,6 +376,7 @@ export const updatePerusahaan = (req, res) => {
             bidang_perusahaan: typeof bidang_perusahaan !== "undefined" ? bidang_perusahaan : perusahaan.bidang_perusahaan,
             nomor_telp: typeof nomor_telp !== "undefined" ? nomor_telp : perusahaan.nomor_telp,
             logo_perusahaan: logo_perusahaan,
+            foto_cover: foto_cover,
             deskripsi_perusahaan: typeof deskripsi_perusahaan !== "undefined" ? deskripsi_perusahaan : perusahaan.deskripsi_perusahaan,
             website: typeof website !== "undefined" ? website : perusahaan.website,
             password: hashPassword,
@@ -345,6 +406,7 @@ export const updatePerusahaan = (req, res) => {
                 bidang_perusahaan: updatedPerusahaan.bidang_perusahaan ?? "",
                 nomor_telp: updatedPerusahaan.nomor_telp ?? "",
                 logo_perusahaan: updatedPerusahaan.logo_perusahaan ?? "",
+                foto_cover: updatedPerusahaan.foto_cover ?? "",
                 deskripsi_perusahaan: updatedPerusahaan.deskripsi_perusahaan ?? "",
                 website: updatedPerusahaan.website ?? "",
                 media_sosial: typeof updatedPerusahaan.media_sosial !== "undefined" ? updatedPerusahaan.media_sosial : null,
@@ -356,8 +418,11 @@ export const updatePerusahaan = (req, res) => {
                 perusahaan: responsePerusahaan
             });
         } catch (error) {
-            if (req.file) {
-                fs.unlinkSync(req.file.path);
+            if (req.files && req.files.logo_perusahaan) {
+                fs.unlinkSync(req.files.logo_perusahaan[0].path);
+            }
+            if (req.files && req.files.foto_cover) {
+                fs.unlinkSync(req.files.foto_cover[0].path);
             }
             res.status(400).json({ msg: error.message });
         }

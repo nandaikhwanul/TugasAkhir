@@ -48,6 +48,11 @@ const PerusahaanSchema = new mongoose.Schema({
         type: String,
         trim: true
     }],
+    // Tambahan field foto_cover (opsional)
+    foto_cover: {
+        type: String,
+        trim: true
+    },
     // Tambahan field media sosial dan website
     website: {
         type: String,
