@@ -99,24 +99,7 @@ Content-Type: application/json
 Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWEzMjQyZjY3NjZhZWY3MDZkZWQwZSIsIm5hbWFfcGVydXNhaGFhbiI6IkNWIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NTM4NzgyNSwiZXhwIjoxNzU1Mzg5NjI1fQ.gt9k8TztV7eKONCmn95Gv6bKzsVWmywv27OsJCFK59Wb0ExKVKiXq4Wnn9JAMqXrfZWsxx6hLbuEi6qhK--8lkaKk4YMotQN3vQcoZEhCLxYl8I0FVpIavNI3x8yRc71YIwdWLIjls0jfqaHmq6jsDN9muMD1n84b0h9l-KmfcqSI3YyjCdPJjygEx9RflE96ZNfcL2grm8s0ayo3LWJnQe_ScdvRenZc9sJwoSrz6_85W7YAdG1kJ4P8PpKrZb1kllgYGqTdVhb4ITz5Zui9TgJahLWc67_5MH_pwfXAPPvlybJ_9zoyR9Fx-hBXCp-px3mqcZHXpTRPLanCfk1MA
 
 {
-    "name": "PT Maju Jaya Update",
-    "alamat": "Jl. Baru No. 123, Jakarta",
-    "email": "hrd@majujayaupdate.com",
-    "nohp": "081234567890",
-    "deskripsi": "Perusahaan berkembang di bidang teknologi.",
-    "website": "https://majujayaupdate.com",
-    "foto_profil": "/uploads/perusahaan/foto_profil_baru.jpg",
-    "foto_sampul": "/uploads/perusahaan/foto_sampul_baru.jpg",
-    "media_sosial": [
-        {
-            "platform": "LinkedIn",
-            "url": "https://linkedin.com/company/majujayaupdate"
-        },
-        {
-            "platform": "Instagram",
-            "url": "https://instagram.com/majujayaupdate"
-        }
-    ],
+
     "logo_perusahaan": "/uploads/perusahaan/logo_baru.png",
     "foto_cover": "/uploads/perusahaan/cover_baru.jpg"
 }

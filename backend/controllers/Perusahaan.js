@@ -218,7 +218,7 @@ export const registerPerusahaan = async (req, res) => {
     }
 };
 
-// Update perusahaan (khusus update media sosial, tanpa validasi email/nama_perusahaan)
+// Update perusahaan (menggunakan JWT, bukan session, dan bisa update logo_perusahaan dan foto_cover)
 export const updatePerusahaan = (req, res) => {
     uploadLogoPerusahaan(req, res, async function (err) {
         if (err instanceof multer.MulterError) {
@@ -271,10 +271,52 @@ export const updatePerusahaan = (req, res) => {
             return res.status(403).json({ msg: "Akses terlarang, hanya perusahaan terkait atau admin yang dapat mengakses." });
         }
 
-        // Ambil hanya media_sosial dan file upload
         const {
-            media_sosial
+            nama_perusahaan,
+            nama_brand,
+            jumlah_karyawan,
+            email_perusahaan,
+            alamat,
+            bidang_perusahaan,
+            nomor_telp,
+            deskripsi_perusahaan,
+            website,
+            media_sosial,
+            password,
+            confPassword
         } = req.body;
+        let hashPassword = perusahaan.password;
+
+        // Validasi duplikasi jika field diubah
+        if (nama_perusahaan && nama_perusahaan !== perusahaan.nama_perusahaan) {
+            const cekNama = await Perusahaan.findOne({ nama_perusahaan });
+            if (cekNama) {
+                if (req.files && req.files.logo_perusahaan) fs.unlinkSync(req.files.logo_perusahaan[0].path);
+                if (req.files && req.files.foto_cover) fs.unlinkSync(req.files.foto_cover[0].path);
+                return res.status(400).json({ errors: { nama_perusahaan: "Nama perusahaan sudah terdaftar" } });
+            }
+        }
+        if (email_perusahaan && email_perusahaan !== perusahaan.email_perusahaan) {
+            const cekEmail = await Perusahaan.findOne({ email_perusahaan });
+            if (cekEmail) {
+                if (req.files && req.files.logo_perusahaan) fs.unlinkSync(req.files.logo_perusahaan[0].path);
+                if (req.files && req.files.foto_cover) fs.unlinkSync(req.files.foto_cover[0].path);
+                return res.status(400).json({ errors: { email_perusahaan: "Email perusahaan sudah terdaftar" } });
+            }
+        }
+
+        if (password && password !== "") {
+            if (password !== confPassword) {
+                if (req.files && req.files.logo_perusahaan) {
+                    fs.unlinkSync(req.files.logo_perusahaan[0].path);
+                }
+                if (req.files && req.files.foto_cover) {
+                    fs.unlinkSync(req.files.foto_cover[0].path);
+                }
+                return res.status(400).json({ errors: { confPassword: "Password dan Confirm Password tidak cocok" } });
+            }
+            hashPassword = await argon2.hash(password);
+        }
 
         let logo_perusahaan = perusahaan.logo_perusahaan;
         if (req.files && req.files.logo_perusahaan) {
@@ -324,14 +366,28 @@ export const updatePerusahaan = (req, res) => {
             }
         }
 
-        // Build updateFields: hanya update media_sosial, logo_perusahaan, foto_cover
+        // Build updateFields to avoid sending undefined
         const updateFields = {
+            nama_perusahaan: typeof nama_perusahaan !== "undefined" ? nama_perusahaan : perusahaan.nama_perusahaan,
+            nama_brand: typeof nama_brand !== "undefined" ? nama_brand : perusahaan.nama_brand,
+            jumlah_karyawan: typeof jumlah_karyawan !== "undefined" ? jumlah_karyawan : perusahaan.jumlah_karyawan,
+            email_perusahaan: typeof email_perusahaan !== "undefined" ? email_perusahaan : perusahaan.email_perusahaan,
+            alamat: typeof alamat !== "undefined" ? alamat : perusahaan.alamat,
+            bidang_perusahaan: typeof bidang_perusahaan !== "undefined" ? bidang_perusahaan : perusahaan.bidang_perusahaan,
+            nomor_telp: typeof nomor_telp !== "undefined" ? nomor_telp : perusahaan.nomor_telp,
             logo_perusahaan: logo_perusahaan,
-            foto_cover: foto_cover
+            foto_cover: foto_cover,
+            deskripsi_perusahaan: typeof deskripsi_perusahaan !== "undefined" ? deskripsi_perusahaan : perusahaan.deskripsi_perusahaan,
+            website: typeof website !== "undefined" ? website : perusahaan.website,
+            password: hashPassword,
+            role: perusahaan.role
         };
 
+        // Only set media_sosial if it should be updated, otherwise keep as is
         if (mediaSosialShouldUpdate) {
             updateFields.media_sosial = mediaSosialObj;
+        } else {
+            updateFields.media_sosial = perusahaan.media_sosial;
         }
 
         try {
@@ -418,76 +474,6 @@ export const getAllAlumniForPerusahaan = async (req, res) => {
 
         res.status(200).json(alumniList);
     } catch (error) {
-        res.status(500).json({ msg: error.message });
-    }
-};
-
-// Endpoint baru: PATCH /perusahaan-profile
-export const updatePerusahaanProfile = async (req, res) => {
-    try {
-        // Hanya perusahaan yang boleh update profil sendiri
-        if (!req.userId || req.role !== "perusahaan") {
-            return res.status(403).json({ msg: "Hanya perusahaan yang dapat mengupdate data ini!" });
-        }
-
-        const perusahaanModel = await import("../models/Perusahaan.js").then(m => m.default);
-
-        // Cari perusahaan berdasarkan userId (hanya update dirinya sendiri)
-        const perusahaan = await perusahaanModel.findById(req.userId);
-        if (!perusahaan) {
-            return res.status(404).json({ msg: "Perusahaan tidak ditemukan!" });
-        }
-
-        // Field yang boleh diupdate
-        const allowedFields = [
-            "name",
-            "alamat",
-            "email",
-            "nohp",
-            "deskripsi",
-            "website",
-            "foto_profil",
-            "foto_sampul",
-            "media_sosial",
-            "logo_perusahaan",
-            "foto_cover"
-        ];
-
-        allowedFields.forEach(field => {
-            if (req.body[field] !== undefined) {
-                // Khusus media_sosial, jika dikirim array, convert ke object/map
-                if (field === "media_sosial" && Array.isArray(req.body[field])) {
-                    // Ubah array of {platform, url} menjadi object {platform: url}
-                    const arr = req.body[field];
-                    const obj = {};
-                    arr.forEach(item => {
-                        if (item.platform && item.url) {
-                            obj[item.platform] = item.url;
-                        }
-                    });
-                    perusahaan[field] = obj;
-                } else {
-                    perusahaan[field] = req.body[field];
-                }
-            }
-        });
-
-        await perusahaan.save();
-
-        res.status(200).json({ msg: "Profil perusahaan berhasil diupdate!", perusahaan });
-    } catch (error) {
-        // Tangkap error validasi cast media_sosial
-        if (
-            error &&
-            error.name === "ValidationError" &&
-            error.errors &&
-            error.errors.media_sosial &&
-            error.errors.media_sosial.kind === "Object"
-        ) {
-            return res.status(400).json({
-                msg: "Format media_sosial tidak valid. Gunakan object/map, contoh: { \"Instagram\": \"url\", \"LinkedIn\": \"url\" }"
-            });
-        }
         res.status(500).json({ msg: error.message });
     }
 };
