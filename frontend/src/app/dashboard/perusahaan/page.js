@@ -80,21 +80,7 @@ function FadeIn({ children, duration = 900, delay = 0, className = "" }) {
   );
 }
 
-// Placeholder untuk Card Rekomendasi
-const CardRekomendasi = () => {
-  return (
-    <div className="bg-white rounded-2xl shadow-lg p-6 border border-gray-100">
-      <h3 className="text-lg font-semibold text-gray-800 mb-4">Rekomendasi</h3>
-      <div className="flex flex-col gap-4 text-gray-600">
-        <p>Tidak ada rekomendasi saat ini. Data ini akan muncul di sini saat tersedia.</p>
-        <ul className="list-disc list-inside space-y-1">
-          <li>Optimalkan deskripsi lowongan kerja Anda.</li>
-          <li>Gunakan kata kunci yang relevan.</li>
-        </ul>
-      </div>
-    </div>
-  );
-};
+import CardRekomendasi from "./cardRekomendasi/page";
 
 // Komponen Dashboard Perusahaan
 export default function App() {

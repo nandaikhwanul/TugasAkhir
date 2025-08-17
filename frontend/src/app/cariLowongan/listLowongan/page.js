@@ -1,3 +1,4 @@
+/* eslint-disable @next/next/no-img-element */
 "use client";
 import { useEffect, useState } from "react";
 import { getTokenFromSessionStorage } from "../../sessiontoken";
@@ -78,8 +79,7 @@ function getKualifikasiSingkat(item) {
  * - search: string pencarian (optional, untuk tampilan judul)
  * - filter: object filter (search, lokasi, tipeKerja, gajiMin, gajiMax)
  * - sort: { field: string, order: "asc"|"desc" } (opsional)
- * 
- * Jika filteredLowongan tidak diberikan, maka komponen akan fetch data sendiri (backward compatible).
+ * * Jika filteredLowongan tidak diberikan, maka komponen akan fetch data sendiri (backward compatible).
  * Filtering dan sorting dilakukan di dalam komponen hanya dengan memfilter dan mengurutkan array, tanpa memodifikasi objek di dalamnya.
  * Data SELALU di-flatten sebelum sorting/filtering agar field nama_perusahaan dan logo_perusahaan tetap ada.
  */
@@ -93,12 +93,45 @@ export default function ListLowonganPageTampilanSaja({
   const [loading, setLoading] = useState(filteredLowonganProp ? false : true);
   const [error, setError] = useState(null);
   const [saving, setSaving] = useState({}); // { [lowonganId]: boolean }
+  const [userId, setUserId] = useState(null); // user id alumni
+
   // Local sort state for dropdown
   const [localSort, setLocalSort] = useState(
     sortProp && sortProp.field === "createdAt"
       ? sortProp
       : { field: "createdAt", order: "desc" }
   );
+
+  // Ambil userId alumni (bukan savedLowonganIds)
+  useEffect(() => {
+    const token = getTokenFromSessionStorage();
+    if (!token) {
+      setUserId(null);
+      return;
+    }
+    fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+      cache: "no-store",
+    })
+      .then((res) => {
+        if (!res.ok) throw new Error("Gagal mengambil data user.");
+        return res.json();
+      })
+      .then((result) => {
+        // result._id adalah id user alumni
+        if (result && result._id) {
+          setUserId(String(result._id));
+        } else {
+          setUserId(null);
+        }
+      })
+      .catch(() => {
+        setUserId(null);
+      });
+  }, []);
 
   // Jika tidak ada prop filteredLowongan, fetch data sendiri (backward compatible)
   useEffect(() => {
@@ -159,6 +192,19 @@ export default function ListLowonganPageTampilanSaja({
   const baseLowongan = filteredLowonganProp
     ? flattenLowonganPerusahaanFields(filteredLowonganProp)
     : data;
+
+  // Exclude lowongan yang sudah di-save user (cek savedBy)
+  const baseLowonganUnSaved = baseLowongan.filter((item) => {
+    if (!userId) return true; // Jika userId belum didapat, tampilkan semua (atau bisa [] jika ingin strict)
+    // item.savedBy bisa array of string atau object (id)
+    if (!Array.isArray(item.savedBy)) return true;
+    // Cek apakah userId ada di savedBy
+    return !item.savedBy.some((saved) => {
+      if (typeof saved === "string") return saved === userId;
+      if (saved && saved._id) return String(saved._id) === userId;
+      return false;
+    });
+  });
 
   // Sorting function
   function getSortedLowongan(arr, sortObj) {
@@ -285,15 +331,16 @@ export default function ListLowonganPageTampilanSaja({
   }
 
   // 1. FLATTEN dulu (sudah dilakukan di baseLowongan)
-  // 2. FILTER
-  // 3. SORT
+  // 2. EXCLUDE yang sudah di-save (berdasarkan savedBy)
+  // 3. FILTER
+  // 4. SORT
   const filteredLowongan = getSortedLowongan(
-    applyFilter(baseLowongan, filter),
+    applyFilter(baseLowonganUnSaved, filter),
     localSort
   );
 
   const search = searchProp ?? (filter && filter.search ? filter.search : "");
-  const totalUnSaved = baseLowongan.length;
+  const totalUnSaved = baseLowonganUnSaved.length;
 
   // Handler untuk tombol save
   const handleSave = async (lowonganId) => {
@@ -322,7 +369,7 @@ export default function ListLowonganPageTampilanSaja({
         const resJson = await response.json().catch(() => ({}));
         throw new Error(
           resJson?.message ||
-            "Gagal menyimpan lowongan. Silakan coba lagi."
+          "Gagal menyimpan lowongan. Silakan coba lagi."
         );
       }
 
@@ -330,6 +377,7 @@ export default function ListLowonganPageTampilanSaja({
       if (!filteredLowonganProp) {
         setData((prev) => prev.filter((item) => String(item._id) !== String(lowonganId)));
       }
+      // Tidak perlu update savedLowonganIds, cukup rely pada savedBy di data lowongan
       // Jika filteredLowongan dari parent, parent yang harus update list (tidak dihapus di sini)
     } catch (err) {
       setError(err.message || "Terjadi kesalahan saat menyimpan lowongan.");
@@ -363,7 +411,7 @@ export default function ListLowonganPageTampilanSaja({
                 </>
               ) : (
                 <>
-                  Lowongan yang belum disimpan{" "}
+                  Semua Lowongan Yang Tersedia Untuk Anda{" "}
                   <span className="text-[#6c757d] font-normal">
                     ({totalUnSaved} total)
                   </span>
@@ -397,7 +445,7 @@ export default function ListLowonganPageTampilanSaja({
             </div>
           </div>
           <div
-            className="w-full flex-1 overflow-y-auto pb-4 px-0 mb-52"
+            className="w-full flex-1 overflow-y-auto pb-4 px-0 md:mb-52 mb-[295px]"
             style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
           >
             <style jsx global>{`
@@ -417,11 +465,11 @@ export default function ListLowonganPageTampilanSaja({
               return (
                 <div
                   key={item._id ? String(item._id) : Math.random()}
-                  className="relative bg-white rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.06)] flex px-6 py-5 mb-4 min-h-[120px] group transition hover:shadow-lg w-full"
+                  className="relative bg-white rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.06)] flex flex-col sm:flex-row px-6 py-5 mb-4 min-h-[120px] group transition hover:shadow-lg w-full"
                 >
                   {/* Bookmark Button */}
                   <button
-                    className={` absolute top-4 right-4 z-10 p-2 rounded-full transition bg-gray-100 text-gray-400 hover:bg-gray-200 ${
+                    className={`absolute top-4 right-4 z-10 p-2 rounded-full transition bg-gray-100 text-gray-400 hover:bg-gray-200 ${
                       saving[item._id] ? "opacity-60 pointer-events-none" : ""
                     }`}
                     aria-label="Save lowongan"
@@ -446,123 +494,120 @@ export default function ListLowonganPageTampilanSaja({
                       <span className="ml-2 text-xs text-gray-400">Menyimpan...</span>
                     )}
                   </button>
-                  {/* Logo */}
-                  <div className="w-16 h-16 rounded-xl bg-[#eaf7e6] flex items-center justify-center mr-6 flex-shrink-0 overflow-hidden border border-[#e0e0e0]">
-                    {item.logo_perusahaan ? (
-                      <img
-                        src={
-                          item.logo_perusahaan.startsWith("http")
-                            ? item.logo_perusahaan
-                            : `https://tugasakhir-production-6c6c.up.railway.app${item.logo_perusahaan}`
-                        }
-                        alt={item.nama_perusahaan || "Logo"}
-                        className="w-12 h-12 object-cover rounded-lg"
-                      />
-                    ) : (
-                      <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
-                        <rect width="32" height="32" rx="8" fill="#eaf7e6" />
-                        <g>
-                          <path
-                            d="M16 10c-2.5 0-4.5 2-4.5 4.5S13.5 19 16 19s4.5-2 4.5-4.5S18.5 10 16 10zm0 7c-1.38 0-2.5-1.12-2.5-2.5S14.62 12 16 12s2.5 1.12 2.5 2.5S17.38 17 16 17z"
-                            fill="#6fcf97"
-                          />
-                          <circle
-                            cx="16"
-                            cy="16"
-                            r="15"
-                            stroke="#6fcf97"
-                            strokeWidth="2"
-                          />
-                        </g>
-                      </svg>
-                    )}
-                  </div>
-                  {/* Info Utama */}
-                  <div className="flex-1 flex flex-col justify-between min-w-0">
-                    {/* Judul dan perusahaan */}
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-[18px] font-bold text-[#222] truncate">
-                          {item.nama_lowongan || "-"}
-                        </span>
-                        <span className="text-[15px] text-[#27ae60] font-semibold mt-0.5 truncate">
-                          {item.nama_perusahaan || "-"}
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-2 mt-1 sm:mt-0">
-                        <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
-                          <svg
-                            className="mr-1"
-                            width="16"
-                            height="16"
-                            fill="none"
-                            viewBox="0 0 20 20"
-                          >
+                  <div className="flex items-start mb-4 sm:mb-0 sm:mr-6 w-full sm:w-auto">
+                    {/* Logo */}
+                    <div className="w-16 h-16 rounded-xl bg-[#eaf7e6] flex items-center justify-center mr-4 flex-shrink-0 overflow-hidden border border-[#e0e0e0]">
+                      {item.logo_perusahaan ? (
+                        <img
+                          src={
+                            item.logo_perusahaan.startsWith("http")
+                              ? item.logo_perusahaan
+                              : `https://tugasakhir-production-6c6c.up.railway.app${item.logo_perusahaan}`
+                          }
+                          alt={item.nama_perusahaan || "Logo"}
+                          className="w-12 h-12 object-cover rounded-lg"
+                        />
+                      ) : (
+                        <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
+                          <rect width="32" height="32" rx="8" fill="#eaf7e6" />
+                          <g>
                             <path
-                              d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 9 7 9s7-3.75 7-9c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5.5z"
-                              fill="#6c757d"
+                              d="M16 10c-2.5 0-4.5 2-4.5 4.5S13.5 19 16 19s4.5-2 4.5-4.5S18.5 10 16 10zm0 7c-1.38 0-2.5-1.12-2.5-2.5S14.62 12 16 12s2.5 1.12 2.5 2.5S17.38 17 16 17z"
+                              fill="#6fcf97"
                             />
-                          </svg>
-                          {item.lokasi || "-"}
-                        </span>
-                        <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
-                          <svg
-                            className="mr-1"
-                            width="16"
-                            height="16"
-                            fill="none"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              d="M4 10a6 6 0 1 1 12 0A6 6 0 0 1 4 10zm6-8a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm0 3a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"
-                              fill="#6c757d"
+                            <circle
+                              cx="16"
+                              cy="16"
+                              r="15"
+                              stroke="#6fcf97"
+                              strokeWidth="2"
                             />
-                          </svg>
-                          {item.tipe_kerja || "-"}
-                        </span>
-                      </div>
+                          </g>
+                        </svg>
+                      )}
                     </div>
-                    {/* Salary, status, dan kualifikasi singkat (icon di kanan status) */}
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2">
-                      <span className="flex items-center text-[15px] text-[#4fc3f7] font-bold">
-                        <svg
-                          className="mr-1"
-                          width="16"
-                          height="16"
-                          fill="none"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M10 18c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-14a6 6 0 1 1 0 12A6 6 0 0 1 10 4zm1 3v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2H7a1 1 0 1 1 0-2h2V7a1 1 0 1 1 2 0z"
-                            fill="#4fc3f7"
-                          />
-                        </svg>
-                        {item.gaji || "-"}
+                    {/* Info Utama */}
+                    <div className="flex-1 flex flex-col justify-start min-w-0">
+                      <span className="text-[18px] font-bold text-[#222] truncate">
+                        {item.nama_lowongan || "-"}
                       </span>
-                      <span
-                        className={`flex items-center text-[15px] font-bold ${
-                          item.status === "open"
-                            ? "text-[#27ae60]"
-                            : "text-[#e74c3c]"
-                        }`}
+                      <span className="text-[15px] text-[#27ae60] font-semibold mt-0.5 truncate">
+                        {item.nama_perusahaan || "-"}
+                      </span>
+                    </div>
+                  </div>
+                  {/* Info Tambahan */}
+                  <div className="flex-1 flex flex-col justify-start gap-y-2 mt-4 sm:mt-0 sm:pl-6 sm:border-l sm:border-gray-200">
+                    <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
+                      <svg
+                        className="mr-2 flex-shrink-0"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        viewBox="0 0 20 20"
                       >
+                        <path
+                          d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 9 7 9s7-3.75 7-9c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5.5z"
+                          fill="#6c757d"
+                        />
+                      </svg>
+                      {item.lokasi || "-"}
+                    </span>
+                    <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
+                      <svg
+                        className="mr-2 flex-shrink-0"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          d="M4 10a6 6 0 1 1 12 0A6 6 0 0 1 4 10zm6-8a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm0 3a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"
+                          fill="#6c757d"
+                        />
+                      </svg>
+                      {item.tipe_kerja || "-"}
+                    </span>
+                    <span className="flex items-center text-[15px] text-[#4fc3f7] font-bold">
+                      <svg
+                        className="mr-2 flex-shrink-0"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          d="M10 18c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-14a6 6 0 1 1 0 12A6 6 0 0 1 10 4zm1 3v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2H7a1 1 0 1 1 0-2h2V7a1 1 0 1 1 2 0z"
+                          fill="#4fc3f7"
+                        />
+                      </svg>
+                      {item.gaji || "-"}
+                    </span>
+                    <span
+                      className={`flex items-center text-[15px] font-bold ${
+                        item.status === "open"
+                          ? "text-[#27ae60]"
+                          : "text-[#e74c3c]"
+                      }`}
+                    >
+                      <svg
+                        className="mr-2 flex-shrink-0"
+                        width="16"
+                        height="16"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        {item.status === "open" ? (
+                          <circle cx="10" cy="10" r="6" fill="#27ae60" />
+                        ) : (
+                          <circle cx="10" cy="10" r="6" fill="#e74c3c" />
+                        )}
+                      </svg>
+                      {item.status === "open" ? "Open" : "Closed"}
+                    </span>
+                    <span className="flex items-center text-[15px] text-[#444] font-normal mt-2">
                         <svg
-                          className="mr-1"
-                          width="16"
-                          height="16"
-                          fill="none"
-                          viewBox="0 0 20 20"
-                        >
-                          {item.status === "open" ? (
-                            <circle cx="10" cy="10" r="6" fill="#27ae60" />
-                          ) : (
-                            <circle cx="10" cy="10" r="6" fill="#e74c3c" />
-                          )}
-                        </svg>
-                        {item.status === "open" ? "Open" : "Closed"}
-                        {/* Icon kualifikasi di kanan status */}
-                        <svg
-                          className="ml-2 flex-shrink-0"
+                          className="mr-2 flex-shrink-0"
                           width="16"
                           height="16"
                           fill="none"
@@ -570,142 +615,80 @@ export default function ListLowonganPageTampilanSaja({
                         >
                           <path d="M3 3h14v2H3V3zm2 4h10v2H5V7zm-2 4h14v2H3v-2zm2 4h10v2H5v-2z" fill="#6c757d"/>
                         </svg>
-                        <span className="ml-2 text-[15px] text-[#444] font-normal">
+                        <span className="truncate">
                           {getKualifikasiSingkat(item)}
                         </span>
+                    </span>
+                    <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+                      <svg
+                        className="mr-2 flex-shrink-0"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          d="M8 2a2 2 0 0 1 4 0v1h2a2 2 0 0 1 2 2v1H4V5a2 2 0 0 1 2-2h2V2zm8 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7h12zm-2 2H6v8h8V9z"
+                          fill="#6c757d"
+                        />
+                      </svg>
+                      Batas:{" "}
+                      <span className="ml-1 font-semibold text-[#222]">
+                        {formatDate(item.batas_lamaran)}
                       </span>
-                    </div>
-                    {/* Info bawah: pelamar, batas pelamar, views, batas, waktu posting */}
-                    <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2">
-                      <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
-                        <svg
-                          className="mr-1"
-                          width="15"
-                          height="15"
-                          fill="none"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M10 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.31 0-6 2.24-6 5v1h12v-1c0-2.76-2.69-5-6-5z"
-                            fill="#6c757d"
-                          />
-                        </svg>
-                        {typeof item.jumlah_pelamar === "number"
-                          ? item.jumlah_pelamar
-                          : "-"}{" "}
-                        pelamar
-                      </span>
-                      <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
-                        <svg
-                          className="mr-1"
-                          width="15"
-                          height="15"
-                          fill="none"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M8 2a2 2 0 0 1 4 0v1h2a2 2 0 0 1 2 2v1H4V5a2 2 0 0 1 2-2h2V2zm8 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7h12zm-2 2H6v8h8V9z"
-                            fill="#6c757d"
-                          />
-                        </svg>
-                        Batas pelamar:{" "}
-                        <span className="ml-1 font-semibold text-[#222]">
-                          {typeof item.batas_pelamar === "number"
-                            ? item.batas_pelamar
-                            : "-"}
-                        </span>
-                      </span>
-                      <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
-                        <svg
-                          className="mr-1"
-                          width="15"
-                          height="15"
-                          fill="none"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M2 10a8 8 0 1 1 16 0A8 8 0 0 1 2 10zm8-6a6 6 0 1 0 0 12A6 6 0 0 0 10 4zm0 2a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"
-                            fill="#6c757d"
-                          />
-                        </svg>
-                        {typeof item.traffic === "number" ? item.traffic : 0} views
-                      </span>
-                      <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
-                        <svg
-                          className="mr-1"
-                          width="15"
-                          height="15"
-                          fill="none"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M6 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6zm0 2h8v12H6V4zm2 2v2h4V6H8z"
-                            fill="#6c757d"
-                          />
-                        </svg>
-                        Batas:{" "}
-                        <span className="ml-1 font-semibold text-[#222]">
-                          {formatDate(item.batas_lamaran)}
-                        </span>
-                      </span>
-                      <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
-                        <svg
-                          className="mr-1"
-                          width="15"
-                          height="15"
-                          fill="none"
-                          viewBox="0 0 20 20"
-                        >
-                          <path
-                            d="M10 2a8 8 0 1 1 0 16A8 8 0 0 1 10 2zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4zm0 2a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"
-                            fill="#6c757d"
-                          />
-                        </svg>
-                        {timeAgo(item.createdAt)}
-                      </span>
-                    </div>
+                    </span>
+                    <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+                      <svg
+                        className="mr-2 flex-shrink-0"
+                        width="15"
+                        height="15"
+                        fill="none"
+                        viewBox="0 0 20 20"
+                      >
+                        <path
+                          d="M10 2a8 8 0 1 1 0 16A8 8 0 0 1 10 2zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4zm0 2a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"
+                          fill="#6c757d"
+                        />
+                      </svg>
+                      {timeAgo(item.createdAt)}
+                    </span>
                   </div>
                   {/* Apply Button */}
-                  <div className="ml-6 flex flex-col items-end justify-between h-full min-w-[120px]">
-                    <div className="mt-14 w-full flex justify-end">
-                      <Link
-                        href={`/cariLowongan/detailLowongan?id=${item._id ? String(item._id) : ""}`}
+                  <div className="w-full sm:w-auto mt-6 sm:mt-0 sm:ml-6 flex items-end">
+                    <Link
+                      href={`/cariLowongan/detailLowongan?id=${item._id ? String(item._id) : ""}`}
+                      className={`w-full bg-[#4fc3f7] text-white rounded-lg px-6 py-2.5 font-semibold text-[15px] shadow-[0_2px_8px_0_rgba(79,195,247,0.12)] flex items-center justify-center transition ${
+                        item.status === "open"
+                          ? "opacity-100 cursor-pointer"
+                          : "opacity-50 pointer-events-none"
+                      } `}
+                      aria-label="Apply"
+                      title={
+                        item.status === "open"
+                          ? "Lamar pekerjaan ini"
+                          : "Lowongan sudah ditutup"
+                      }
+                      tabIndex={item.status === "open" ? 0 : -1}
+                      style={item.status !== "open" ? { pointerEvents: "none" } : {}}
+                    >
+                      Lihat
+                      <svg
+                        width="20"
+                        height="20"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        className="inline ml-2"
+                        xmlns="http://www.w3.org/2000/svg"
                       >
-                        <span
-                          className={` bg-[#4fc3f7] text-white rounded-lg px-6 py-2.5 font-semibold text-[15px] shadow-[0_2px_8px_0_rgba(79,195,247,0.12)] mb-2 flex items-center justify-center transition ${
-                            item.status === "open"
-                              ? "opacity-100 cursor-pointer"
-                              : "opacity-50 pointer-events-none"
-                          } `}
-                          aria-label="Apply"
-                          title={
-                            item.status === "open"
-                              ? "Lamar pekerjaan ini"
-                              : "Lowongan sudah ditutup"
-                          }
-                          tabIndex={item.status === "open" ? 0 : -1}
-                          style={item.status !== "open" ? { pointerEvents: "none" } : {}}
-                        >
-                          Lihat
-                          <svg
-                            width="20"
-                            height="20"
-                            viewBox="0 0 20 20"
-                            fill="none"
-                            className="inline ml-2"
-                            xmlns="http://www.w3.org/2000/svg"
-                          >
-                            <path
-                              d="M7 5l5 5-5 5"
-                              stroke="#fff"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                            />
-                          </svg>
-                        </span>
-                      </Link>
-                    </div>
+                        <path
+                          d="M7 5l5 5-5 5"
+                          stroke="#fff"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </Link>
                   </div>
                 </div>
               );

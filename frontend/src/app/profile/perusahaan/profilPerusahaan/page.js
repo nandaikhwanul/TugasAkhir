@@ -1,5 +1,5 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { FiPlus, FiTrash2 } from "react-icons/fi";
 import {
   IoLogoLinkedin,
@@ -127,6 +127,9 @@ export default function ProfilPerusahaanPage() {
   const [mediaValue, setMediaValue] = useState("");
   const [customKey, setCustomKey] = useState(""); // Untuk custom key
 
+  // Untuk memastikan PATCH dipanggil setelah perubahan media (add/remove)
+  const shouldAutoSave = useRef(false);
+
   // Fetch perusahaan profile
   useEffect(() => {
     async function fetchProfile() {
@@ -196,10 +199,11 @@ export default function ProfilPerusahaanPage() {
     }
 
     // Simpan hanya bagian yang diisi user (tanpa baseUrl) di state
-    setMedia((prev) => ({
-      ...prev,
-      [key]: mediaValue,
-    }));
+    setMedia((prev) => {
+      const updated = { ...prev, [key]: mediaValue };
+      shouldAutoSave.current = true;
+      return updated;
+    });
     setSelectedMedia("");
     setMediaValue("");
     setCustomKey("");
@@ -211,7 +215,10 @@ export default function ProfilPerusahaanPage() {
   function handleRemoveMedia(type) {
     setMedia((prev) => {
       const copy = { ...prev };
-      delete copy[type];
+      if (copy.hasOwnProperty(type)) {
+        delete copy[type];
+        shouldAutoSave.current = true;
+      }
       return copy;
     });
     toast.info("Media sosial dihapus.");
@@ -246,6 +253,25 @@ export default function ProfilPerusahaanPage() {
       });
       if (res.ok) {
         toast.success("Media sosial berhasil disimpan!");
+        // Setelah simpan, fetch ulang profile agar state sinkron
+        const refreshed = await fetch("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (refreshed.ok) {
+          const data = await refreshed.json();
+          setProfile(data);
+          // Update media state juga
+          let initialMedia = {};
+          if (data.website) {
+            initialMedia.website = data.website;
+          }
+          if (data.media_sosial && typeof data.media_sosial === "object") {
+            Object.entries(data.media_sosial).forEach(([key, value]) => {
+              if (value) initialMedia[key] = value;
+            });
+          }
+          setMedia(initialMedia);
+        }
       } else {
         toast.error("Gagal menyimpan media sosial.");
       }
@@ -253,6 +279,66 @@ export default function ProfilPerusahaanPage() {
       toast.error("Terjadi kesalahan.");
     }
   }
+
+  // PATCH otomatis ke backend setiap kali media berubah (add/remove)
+  useEffect(() => {
+    if (!shouldAutoSave.current) return;
+    shouldAutoSave.current = false;
+    // Otomatis simpan ke backend
+    (async () => {
+      const token = getTokenFromSessionStorage();
+      if (!token) {
+        toast.error("Token tidak ditemukan. Silakan login ulang.");
+        return;
+      }
+      const perusahaanId = getPerusahaanIdFromToken(token);
+      if (!perusahaanId) {
+        toast.error("Gagal mendapatkan ID perusahaan dari token.");
+        return;
+      }
+      const { website, ...mediaSosial } = media;
+      try {
+        const res = await fetch(`https://tugasakhir-production-6c6c.up.railway.app/perusahaan/${perusahaanId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            website: website || "",
+            media_sosial: mediaSosial,
+          }),
+        });
+        if (res.ok) {
+          toast.success("Perubahan media sosial berhasil disimpan.");
+          // Fetch ulang profile agar state sinkron
+          const refreshed = await fetch("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
+            headers: { Authorization: `Bearer ${token}` },
+          });
+          if (refreshed.ok) {
+            const data = await refreshed.json();
+            setProfile(data);
+            // Update media state juga
+            let initialMedia = {};
+            if (data.website) {
+              initialMedia.website = data.website;
+            }
+            if (data.media_sosial && typeof data.media_sosial === "object") {
+              Object.entries(data.media_sosial).forEach(([key, value]) => {
+                if (value) initialMedia[key] = value;
+              });
+            }
+            setMedia(initialMedia);
+          }
+        } else {
+          toast.error("Gagal menyimpan media sosial.");
+        }
+      } catch (e) {
+        toast.error("Terjadi kesalahan saat auto-save.");
+      }
+    })();
+    // eslint-disable-next-line
+  }, [media]);
 
   if (loading) {
     return (

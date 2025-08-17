@@ -746,7 +746,7 @@ function PostDetail({
               {badge.label}
             </span>
           </div>
-          <span className="text-xs text-black">@{author.username || ""}</span>
+          <span className="text-xs text-black">{author.username || ""}</span>
           {/* Show email/email_perusahaan if available */}
           {author.email && (
             <div className="text-xs text-gray-500">{author.email}</div>

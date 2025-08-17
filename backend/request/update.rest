@@ -1,15 +1,26 @@
 ### Update Perusahaan
 PATCH https://tugasakhir-production-6c6c.up.railway.app/perusahaan/689a3242f6766aef706ded0e
 Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWEzMjQyZjY3NjZhZWY3MDZkZWQwZSIsIm5hbWFfcGVydXNhaGFhbiI6IkNWIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NTM4NTk5NiwiZXhwIjoxNzU1Mzg3Nzk2fQ.Sb3UPu7BLCLRg98fg0EKkNq-RKL2DaHvkXrpjmjaLJ4hui7W7hTHwYEdHHEHg-z5V_xrhLSb2-a8x7lEtdT_BqXAd3WRfBV0lQ-8fHGzUhgYQVpv3txPVCIIds5ah_aeRNPPJYepos4uAfFKvW8kQG_0A80eJeTizThLuEdxzoRCsUbM_ab4QpruiptoncHl_hiBQ8y82V6xFcTs92qumLQ_CRgOPyyMPTJCkubPPSvg7HAWEXJrvtLZa-KOdYWJcPA4bLyfOzqy-nJrbFpSQYuhQizvcHpH7APVUTvp4eVU7c4KHMStEO5YPzqfWJhIZ8QZGQqJf__h5ycOmJVOpw
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWEzMjQyZjY3NjZhZWY3MDZkZWQwZSIsIm5hbWFfcGVydXNhaGFhbiI6IlBUIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NTM5MjU4NywiZXhwIjoxNzU1Mzk0Mzg3fQ.2qJPbdF3YcjdmhSxUkfT_LccW-FHg9elUtfYYzGjJSmxF5EKfVIxDo5RL5ZOamL7VbiwwzX2BnzIkEbXujHFqrIwaiMXE5ho5ZtvGT3S3nh-eIPKzzlwGFEIn_aIK-MKlc-rY_fs821ql8gybx6g2E9Z8ahhUzngrw5RcuUcUFfMLP5bXfZiOok8bGyvERAKOHUS4p_ZCt3E3QYN2gkosw5G5GyThJXVn5LSWxVDCqJBUhhr5LRvvLcWRFugpDkq3Zrx0IP_mcn0qeY0G-UDliXDa8nmBTcRTqoJIiy70vO1UJ1L03E7yshvovYFUBzwAU9R3qlPhmyMgzkgFGFaDA
 Content-Length: 370
 
 {
+    "nama_perusahaan": "PT Maju Jaya 2",
+    "alamat": "Jl. Industri No. 3",
+    "bidang_perusahaan": "Teknologi dan Inovasi",
+    "nomor_telp": "0217654321",
+    "deskripsi_perusahaan": "Perusahaan teknologi dan inovasi terkemuka di Indonesia.",
+    "logo_perusahaan": "https://example.com/logo_baru.png",
+    "foto": ["https://example.com/foto_perusahaan_baru.jpg"],
+    "foto_cover": "https://example.com/foto_cover_perusahaan_baru.jpg",
+    "website": "https://majujaya2.com",
     "media_sosial": {
         "instagram": "https://instagram.com/majujaya2",
         "linkedin": "https://linkedin.com/company/majujaya2",
         "facebook": "https://facebook.com/majujaya2"
-    }
+    },
+    "password": "123456",
+    "confPassword": "123456"
 }
 
 
@@ -91,17 +102,6 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4ODI2NDAwZ
 
 {
     "oldPassword": "securepass123"
-}
-
-### Update Data Perusahaan Sendiri (Endpoint PATCH /perusahaan/me)
-PATCH http://localhost:5000/perusahaan-profile
-Content-Type: application/json
-Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWEzMjQyZjY3NjZhZWY3MDZkZWQwZSIsIm5hbWFfcGVydXNhaGFhbiI6IkNWIE1hanUgSmF5YSAyIiwiZW1haWxfcGVydXNhaGFhbiI6ImhyZEBtYWp1amF5YS5jb20iLCJyb2xlIjoicGVydXNhaGFhbiIsImlhdCI6MTc1NTM4NzgyNSwiZXhwIjoxNzU1Mzg5NjI1fQ.gt9k8TztV7eKONCmn95Gv6bKzsVWmywv27OsJCFK59Wb0ExKVKiXq4Wnn9JAMqXrfZWsxx6hLbuEi6qhK--8lkaKk4YMotQN3vQcoZEhCLxYl8I0FVpIavNI3x8yRc71YIwdWLIjls0jfqaHmq6jsDN9muMD1n84b0h9l-KmfcqSI3YyjCdPJjygEx9RflE96ZNfcL2grm8s0ayo3LWJnQe_ScdvRenZc9sJwoSrz6_85W7YAdG1kJ4P8PpKrZb1kllgYGqTdVhb4ITz5Zui9TgJahLWc67_5MH_pwfXAPPvlybJ_9zoyR9Fx-hBXCp-px3mqcZHXpTRPLanCfk1MA
-
-{
-
-    "logo_perusahaan": "/uploads/perusahaan/logo_baru.png",
-    "foto_cover": "/uploads/perusahaan/cover_baru.jpg"
 }
 
 

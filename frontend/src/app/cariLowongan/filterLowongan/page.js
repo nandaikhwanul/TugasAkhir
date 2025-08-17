@@ -1,10 +1,11 @@
 // filterLowongan.jsx
 "use client";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { FiSearch, FiChevronDown } from "react-icons/fi";
+import { HiMenu } from "react-icons/hi";
 import SavedPage from "../saved/page";
 import RekomendasiPage from "../rekomendasi/page";
-import ListLowonganPage from "../listLowongan/page"; // Nama impor yang benar
+import ListLowonganPage from "../listLowongan/page";
 import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Helper for date formatting
@@ -90,14 +91,12 @@ const FILTER_KEY = "cariLowonganActiveFilter";
 function flattenLowonganPerusahaanFields(arr) {
   if (!Array.isArray(arr)) return [];
   return arr.map((item) => {
-    // If already has nama_perusahaan and logo_perusahaan, just return as is
     if (
       typeof item.nama_perusahaan !== "undefined" &&
       typeof item.logo_perusahaan !== "undefined"
     ) {
       return item;
     }
-    // If nested in perusahaan
     if (item.perusahaan && typeof item.perusahaan === "object") {
       return {
         ...item,
@@ -105,7 +104,6 @@ function flattenLowonganPerusahaanFields(arr) {
         logo_perusahaan: item.perusahaan.logo_perusahaan ?? "",
       };
     }
-    // If fields are missing, just add empty string
     return {
       ...item,
       nama_perusahaan: item.nama_perusahaan ?? "",
@@ -131,6 +129,42 @@ export default function CariLowonganPage() {
 
   const token = getTokenFromSessionStorage();
 
+  // For responsive kualifikasi dropdown
+  const [showKualifikasi, setShowKualifikasi] = useState(false);
+  const kualifikasiRef = useRef(null);
+
+  // For responsive filter modal
+  const [showMobileFilter, setShowMobileFilter] = useState(false);
+
+  // For responsive filter tab dropdown
+  const [showFilterDropdown, setShowFilterDropdown] = useState(false);
+  const filterDropdownRef = useRef(null);
+
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        kualifikasiRef.current &&
+        !kualifikasiRef.current.contains(event.target)
+      ) {
+        setShowKualifikasi(false);
+      }
+      if (
+        filterDropdownRef.current &&
+        !filterDropdownRef.current.contains(event.target)
+      ) {
+        setShowFilterDropdown(false);
+      }
+    }
+    if (showKualifikasi || showFilterDropdown) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showKualifikasi, showFilterDropdown]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       const saved = window.localStorage.getItem(FILTER_KEY);
@@ -146,14 +180,15 @@ export default function CariLowonganPage() {
     }
   }, [activeFilter]);
 
-  // Perbaiki logika handleSearch
   function handleSearch(e) {
     e.preventDefault();
     setSearch(searchInput.trim());
+    setShowMobileFilter(false); // close filter modal on mobile after search
   }
 
   function handleFilterChange(idx) {
     setActiveFilter(idx);
+    setShowFilterDropdown(false);
   }
 
   function handleGajiRangeChange(e) {
@@ -179,7 +214,6 @@ export default function CariLowonganPage() {
     }
   }
 
-  // Fetch all lowongan (unfiltered) regardless of the tab
   useEffect(() => {
     setLoading(true);
     setFetchError(null);
@@ -203,33 +237,15 @@ export default function CariLowonganPage() {
       });
   }, [token]);
 
-  return (
-    <div className="flex flex-col flex-1 w-full min-h-screen bg-[#f4f7fa]">
-      {/* Top Search Bar */}
-      <form
-        className="w-full bg-white border-b border-gray-200 py-4 px-4 md:px-12 flex flex-col md:flex-row items-stretch md:items-center gap-4"
-        onSubmit={handleSearch}
-      >
-        <div className="flex-1 flex items-center bg-[#f4f7fa] rounded-md border border-gray-200 px-3 py-2">
-          <FiSearch className="text-gray-400 text-lg mr-2" />
-          <input
-            type="text"
-            placeholder="Pekerjaan apa yang anda inginkan ?"
-            className="bg-transparent outline-none w-full text-sm text-black"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => {
-              if (e.key === "Enter") {
-                handleSearch(e);
-              }
-            }}
-          />
-        </div>
-        <div className="flex flex-wrap gap-3">
+  // Filter form content (for reuse in desktop and mobile modal)
+  function FilterFormContent({ isMobile = false, onClose }) {
+    return (
+      <>
+        <div className={isMobile ? "flex flex-col gap-4" : "flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto"}>
           {/* Lokasi */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select
-              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8"
+              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8 w-full sm:w-auto"
               value={lokasi}
               onChange={(e) => setLokasi(e.target.value)}
             >
@@ -243,9 +259,9 @@ export default function CariLowonganPage() {
             <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
           {/* Tipe Kerja */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select
-              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8"
+              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8 w-full sm:w-auto"
               value={tipeKerja}
               onChange={(e) => setTipeKerja(e.target.value)}
             >
@@ -259,9 +275,9 @@ export default function CariLowonganPage() {
             <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
           {/* Salary Range */}
-          <div className="relative">
+          <div className="relative w-full sm:w-auto">
             <select
-              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8"
+              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8 w-full sm:w-auto"
               value={
                 gajiRangeOptions.findIndex(
                   (opt) => opt.min === gajiMin && opt.max === gajiMax
@@ -278,62 +294,208 @@ export default function CariLowonganPage() {
             <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
           </div>
           {/* Kualifikasi (multi-select as checkboxes in dropdown) */}
-          <div className="relative group">
+          <div className="relative w-full sm:w-auto" ref={kualifikasiRef}>
             <button
               type="button"
-              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8 flex items-center min-w-[120px]"
+              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8 flex items-center min-w-[120px] w-full sm:w-auto"
               tabIndex={0}
+              onClick={() => setShowKualifikasi((v) => !v)}
             >
               {kualifikasi.length === 0
                 ? "Kualifikasi"
                 : kualifikasi.join(", ")}
               <FiChevronDown className="ml-2 text-gray-400 pointer-events-none" />
             </button>
-            <div className="absolute z-10 left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg hidden group-focus-within:block group-hover:block">
-              <div className="max-h-60 overflow-y-auto py-2 px-2">
-                {kualifikasiOptions.slice(1).map((opt) => (
-                  <label
-                    key={opt}
-                    className="flex items-center gap-2 px-2 py-1 cursor-pointer text-sm"
+            {/* Responsive dropdown: absolute on desktop, fixed full on mobile */}
+            <div
+              className={classNames(
+                "z-20",
+                showKualifikasi ? "" : "hidden"
+              )}
+            >
+              {/* Desktop */}
+              <div className="hidden sm:block absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
+                <div className="max-h-60 overflow-y-auto py-2 px-2">
+                  {kualifikasiOptions.slice(1).map((opt) => (
+                    <label
+                      key={opt}
+                      className="flex items-center gap-2 px-2 py-1 cursor-pointer text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        value={opt}
+                        checked={kualifikasi.includes(opt)}
+                        onChange={handleKualifikasiChange}
+                        className="accent-blue-600"
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                  <button
+                    type="button"
+                    className="text-xs text-blue-600 mt-2 ml-2"
+                    onClick={() => setKualifikasi([])}
                   >
-                    <input
-                      type="checkbox"
-                      value={opt}
-                      checked={kualifikasi.includes(opt)}
-                      onChange={handleKualifikasiChange}
-                      className="accent-blue-600"
-                    />
-                    {opt}
-                  </label>
-                ))}
-                <button
-                  type="button"
-                  className="text-xs text-blue-600 mt-2 ml-2"
-                  onClick={() => setKualifikasi([])}
-                >
-                  Reset
-                </button>
+                    Reset
+                  </button>
+                </div>
+              </div>
+              {/* Mobile */}
+              <div className="sm:hidden fixed inset-0 backdrop-blur-xs flex items-end z-30">
+                <div className="w-full bg-white rounded-t-lg shadow-lg max-h-[70vh] overflow-y-auto py-4 px-4">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="font-semibold text-base">Kualifikasi</span>
+                    <button
+                      type="button"
+                      className="text-gray-500 text-lg"
+                      onClick={() => setShowKualifikasi(false)}
+                    >
+                      &times;
+                    </button>
+                  </div>
+                  {kualifikasiOptions.slice(1).map((opt) => (
+                    <label
+                      key={opt}
+                      className="flex items-center gap-2 px-2 py-1 cursor-pointer text-sm"
+                    >
+                      <input
+                        type="checkbox"
+                        value={opt}
+                        checked={kualifikasi.includes(opt)}
+                        onChange={handleKualifikasiChange}
+                        className="accent-blue-600"
+                      />
+                      {opt}
+                    </label>
+                  ))}
+                  <div className="flex justify-between mt-4">
+                    <button
+                      type="button"
+                      className="text-xs text-blue-600"
+                      onClick={() => setKualifikasi([])}
+                    >
+                      Reset
+                    </button>
+                    <button
+                      type="button"
+                      className="text-xs text-blue-600"
+                      onClick={() => setShowKualifikasi(false)}
+                    >
+                      Selesai
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </div>
+        {isMobile && (
+          <div className="flex gap-2 mt-4">
+            <button
+              type="button"
+              className="flex-1 bg-gray-200 text-gray-700 px-4 py-2 rounded-md text-sm"
+              onClick={onClose}
+            >
+              Tutup
+            </button>
+            <button
+              type="submit"
+              className="flex-1 bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-md text-sm font-semibold shadow-sm transition"
+            >
+              Terapkan
+            </button>
+          </div>
+        )}
+      </>
+    );
+  }
+
+  // Helper to get current filter label
+  function getActiveFilterLabel() {
+    return filterMenu[activeFilter]?.label || "";
+  }
+
+  return (
+    <div className="flex flex-col flex-1 w-full min-h-screen bg-[#f4f7fa]">
+      {/* Top Search Bar */}
+      <form
+        className="w-full bg-white border-b border-gray-200 py-4 px-2 sm:px-4 md:px-8 lg:px-12 flex flex-col gap-4 md:flex-row md:items-center"
+        onSubmit={handleSearch}
+      >
+        <div className="flex-1 flex items-center bg-[#f4f7fa] rounded-md border border-gray-200 px-3 py-2 min-w-0">
+          <FiSearch className="text-gray-400 text-lg mr-2" />
+          <input
+            type="text"
+            placeholder="Pekerjaan apa yang anda inginkan ?"
+            className="bg-transparent outline-none w-full text-sm text-black"
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === "Enter") {
+                handleSearch(e);
+              }
+            }}
+          />
+        </div>
+        {/* Hamburger for mobile */}
+        <div className="flex sm:hidden w-full">
+          <button
+            type="button"
+            className="flex items-center justify-center w-full bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500"
+            onClick={() => setShowMobileFilter(true)}
+          >
+            <HiMenu className="text-xl mr-2" />
+            Filter
+          </button>
+        </div>
+        {/* Filter options for desktop */}
+        <div className="hidden sm:flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
+          <FilterFormContent />
+        </div>
         <button
           type="submit"
-          className="ml-0 md:ml-3 bg-blue-600 hover:bg-blue-700 text-white px-7 py-2 rounded-md text-sm font-semibold shadow-sm transition"
+          className="w-full md:w-auto ml-0 md:ml-3 bg-blue-600 hover:bg-blue-700 text-white px-7 py-2 rounded-md text-sm font-semibold shadow-sm transition"
         >
           Search
         </button>
       </form>
 
+      {/* Mobile Filter Modal */}
+      {showMobileFilter && (
+        <div className="fixed inset-0 z-40 flex items-end sm:hidden">
+          <div
+            className="absolute inset-0 backdrop-blur-xs"
+            onClick={() => setShowMobileFilter(false)}
+          ></div>
+          <form
+            className="relative w-full bg-white rounded-t-lg shadow-lg max-h-[90vh] overflow-y-auto py-6 px-4 z-50"
+            onSubmit={handleSearch}
+          >
+            <div className="flex justify-between items-center mb-4">
+              <span className="font-semibold text-lg">Filter Lowongan</span>
+              <button
+                type="button"
+                className="text-gray-500 text-2xl"
+                onClick={() => setShowMobileFilter(false)}
+              >
+                &times;
+              </button>
+            </div>
+            <FilterFormContent isMobile={true} onClose={() => setShowMobileFilter(false)} />
+          </form>
+        </div>
+      )}
+
       {/* Filter Tabs */}
-      <div className="w-full bg-white border-b border-gray-200 px-4 md:px-12 pt-4">
-        <div className="flex gap-2">
+      <div className="w-full bg-white border-b border-gray-200 px-2 sm:px-4 md:px-8 lg:px-12 pt-4">
+        {/* Desktop Tabs */}
+        <div className="hidden sm:flex gap-1 sm:gap-2 flex-wrap">
           {filterMenu.map((item, idx) => (
             <button
               key={item.label}
               type="button"
               className={classNames(
-                "px-4 py-2 rounded-t-md text-sm font-semibold transition",
+                "px-3 sm:px-4 py-2 rounded-t-md text-sm font-semibold transition",
                 activeFilter === idx
                   ? "bg-blue-600 text-white"
                   : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -344,17 +506,54 @@ export default function CariLowonganPage() {
             </button>
           ))}
         </div>
+        {/* Mobile Dropdown */}
+        <div className="flex sm:hidden relative w-full">
+          <button
+            type="button"
+            className={classNames(
+              "w-full flex items-center justify-between px-3 py-2 rounded-t-md text-sm font-semibold border border-gray-200 bg-gray-100 text-gray-700",
+              "focus:outline-none"
+            )}
+            onClick={() => setShowFilterDropdown((v) => !v)}
+            ref={filterDropdownRef}
+          >
+            <span>{getActiveFilterLabel()}</span>
+            <FiChevronDown className={classNames("ml-2 transition-transform", showFilterDropdown ? "rotate-180" : "")} />
+          </button>
+          {showFilterDropdown && (
+            <div
+              className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-30"
+              ref={filterDropdownRef}
+            >
+              {filterMenu.map((item, idx) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  className={classNames(
+                    "w-full text-left px-4 py-2 text-sm font-semibold transition",
+                    activeFilter === idx
+                      ? "bg-blue-600 text-white"
+                      : "bg-white text-gray-700 hover:bg-gray-100"
+                  )}
+                  onClick={() => handleFilterChange(idx)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* Main Content */}
       <div className="w-full flex-1 min-h-[60vh]">
         <div className="w-full"></div>
         {activeFilter === 0 ? (
-          <div className="max-w-6xl mx-auto py-8">
+          <div className="max-w-full md:max-w-6xl mx-auto py-4 sm:py-8 px-2 sm:px-4">
             <RekomendasiPage />
           </div>
         ) : activeFilter === 1 ? (
-          <div className="max-w-6xl mx-auto py-8">
+          <div className="max-w-full md:max-w-6xl mx-auto py-4 sm:py-8 px-2 sm:px-4">
             {loading ? (
               <div className="text-center text-gray-500 py-8">
                 Memuat lowongan...
@@ -378,7 +577,7 @@ export default function CariLowonganPage() {
             )}
           </div>
         ) : (
-          <div className="max-w-6xl mx-auto py-8">
+          <div className="max-w-full md:max-w-6xl mx-auto py-4 sm:py-8 mb-32 md:mb-96 h-10 -mt-2 px-2 sm:px-4">
             <SavedPage />
           </div>
         )}

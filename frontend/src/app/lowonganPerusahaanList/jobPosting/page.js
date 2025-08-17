@@ -250,19 +250,34 @@ function EditLowonganModal({ open, onClosed, job, onSave, saving }) {
 
   if (!open) return null;
 
+  // Responsive modal: adjust padding, width, and scrolling for all screen sizes
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-3xl w-full p-10 relative">
+      <div
+        className={`
+          bg-white rounded-2xl shadow-2xl
+          w-full max-w-3xl
+          p-4 sm:p-6 md:p-8 lg:p-10
+          relative
+          mx-2
+          overflow-y-auto
+          max-h-[95vh]
+        `}
+        style={{
+          // fallback for very small screens
+          minWidth: 0,
+        }}
+      >
         <button
-          className="absolute top-4 right-4 text-gray-400 hover:text-gray-700 text-2xl"
+          className="absolute top-3 right-3 sm:top-4 sm:right-4 text-gray-400 hover:text-gray-700 text-2xl"
           onClick={onClosed}
           type="button"
           aria-label="Tutup"
         >
           ×
         </button>
-        <h2 className="text-2xl font-bold mb-6 text-blue-900">Edit Lowongan</h2>
-        <form onSubmit={handleSubmit} className="space-y-5">
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6 text-blue-900">Edit Lowongan</h2>
+        <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-5">
           {/* Baris 1: Judul Pekerjaan & Lokasi */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -392,7 +407,7 @@ function EditLowonganModal({ open, onClosed, job, onSave, saving }) {
               />
             </div>
           </div>
-          <div className="flex justify-end gap-2 mt-6">
+          <div className="flex flex-col sm:flex-row justify-end gap-2 mt-6">
             <button
               type="button"
               className="px-5 py-2 rounded-lg border border-gray-300 text-gray-700 bg-gray-100 hover:bg-gray-200 font-semibold transition"

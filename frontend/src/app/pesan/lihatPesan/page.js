@@ -53,7 +53,6 @@ export default function LihatPesan() {
 
   // Fungsi untuk menandai pesan sudah dibaca
   const markAsRead = async (pesan) => {
-    // Jika sudah dibaca, tidak perlu patch
     if (pesan.sudah_dibaca) {
       setSelectedPesan(pesan);
       return;
@@ -63,12 +62,10 @@ export default function LihatPesan() {
       setFetchError("Token tidak ditemukan. Silakan login ulang.");
       return;
     }
-    // Ambil role dari token
     const payload = parseJwt(token);
     const role = payload && payload.role ? payload.role : null;
 
     try {
-      // Optimistically update UI
       setPesanList((prev) =>
         prev.map((p) =>
           p._id === pesan._id ? { ...p, sudah_dibaca: true } : p
@@ -87,12 +84,9 @@ export default function LihatPesan() {
       };
 
       if (role === "alumni") {
-        // Gunakan endpoint khusus alumni
         endpoint = `https://tugasakhir-production-6c6c.up.railway.app/pesan/${pesan._id}/sudah-dibaca`;
       } else {
-        // Endpoint lama untuk non-alumni
         endpoint = `https://tugasakhir-production-6c6c.up.railway.app/pesan-bebas/${pesan._id}/dibaca`;
-        // Untuk endpoint lama, PATCH tanpa body
         options = {
           method: "PATCH",
           headers: {
@@ -104,7 +98,6 @@ export default function LihatPesan() {
 
       const res = await fetch(endpoint, options);
       if (!res.ok) {
-        // Rollback UI if failed
         setPesanList((prev) =>
           prev.map((p) =>
             p._id === pesan._id ? { ...p, sudah_dibaca: false } : p
@@ -112,7 +105,6 @@ export default function LihatPesan() {
         );
         throw new Error("Gagal menandai pesan sebagai sudah dibaca");
       }
-      // Tidak perlu update lagi, sudah dioptimis di atas
     } catch (err) {
       setFetchError(err.message || "Terjadi kesalahan saat menandai pesan dibaca");
     }
@@ -122,7 +114,6 @@ export default function LihatPesan() {
   const handleDeletePesan = async (pesanId) => {
     if (!pesanId) return;
 
-    // Konfirmasi hapus dengan react-toastify
     toast.info(
       ({ closeToast }) => (
         <div>
@@ -307,7 +298,7 @@ export default function LihatPesan() {
   return (
     <>
       <ToastContainer />
-      <main className="flex h-screen py-4 px-2 md:py-8 md:px-8 bg-gray-50">
+      <main className="flex py-4 px-2 md:py-8 md:px-8 bg-white md:h-auto">
         {/* Tombol menu untuk mobile */}
         <button
           className="md:hidden fixed top-4 left-4 z-30 bg-indigo-600 text-white rounded-full p-2 shadow-lg focus:outline-none"
@@ -323,7 +314,7 @@ export default function LihatPesan() {
         <section
           className={`
             fixed z-40 top-0 left-0 h-full w-11/12 max-w-xs bg-white shadow-lg transition-transform duration-300
-            md:static md:z-0 md:w-4/12 md:max-w-none md:pr-4 md:ml-52 md:rounded-l-3xl md:h-[600px]
+            md:relative md:-left-44 md:z-0 md:w-4/12 md:max-w-none md:pr-4 md:ml-52 md:rounded-l-3xl md:h-[600px]
             flex flex-col
             ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
             md:translate-x-0
@@ -410,7 +401,7 @@ export default function LihatPesan() {
         {/* Overlay untuk sidebar di mobile */}
         {sidebarOpen && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-30 z-20 md:hidden"
+            className="fixed inset-0 backdrop-blur-xs z-20 md:hidden"
             onClick={() => setSidebarOpen(false)}
             aria-label="Tutup overlay"
           />
@@ -419,11 +410,17 @@ export default function LihatPesan() {
         <section
           className={`
             flex flex-col bg-white rounded-none md:rounded-r-3xl
-            w-full md:w-6/12 px-2 md:px-4
-            h-[calc(100vh-2rem)] md:h-[600px]
+            w-full px-2 md:px-4
+            ${/* Responsive height: auto on mobile, fixed on desktop */""}
+            ${typeof window !== "undefined" && window.innerWidth < 768
+              ? ""
+              : "md:h-[600px]"}
             overflow-y-auto
-            transition-all
+            transition-all md:absolute md:w-[650px] md:right-1
           `}
+          style={{
+            height: typeof window !== "undefined" && window.innerWidth < 768 ? "auto" : undefined,
+          }}
         >
           {selectedPesan ? (
             <>
@@ -494,7 +491,7 @@ export default function LihatPesan() {
                 </div>
               </div>
               <section>
-                <article className="mt-4 md:mt-8 text-gray-500 leading-7 tracking-wider">
+                <article className="mt-4 md:mt-8 text-gray-500 leading-7 tracking-wider md:relative">
                   <p className="break-words" style={{wordBreak: "break-word", overflowWrap: "break-word"}}>
                     {selectedPesan.isi}
                   </p>

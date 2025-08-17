@@ -181,6 +181,13 @@ export default function AlumniNavbar() {
     setMobileMenuOpen(false);
   };
 
+  // Handler untuk dashboard (khusus mobile menu)
+  const handleDashboardClick = (e) => {
+    e.preventDefault();
+    router.push("/dashboard");
+    setMobileMenuOpen(false);
+  };
+
   // Menu items (agar DRY)
   const menuItems = [
     {
@@ -193,17 +200,26 @@ export default function AlumniNavbar() {
       href: "/riwayatLamaran",
       type: "link",
     },
-    {
-      label: "Event Alumni",
-      href: "/alumni/event",
-      type: "link",
-    },
+    // {
+    //   label: "Event Alumni",
+    //   href: "/alumni/event",
+    //   type: "link",
+    // },
     {
       label: "Forum Alumni",
       onClick: handleForumAlumniClick,
       type: "button",
     },
   ];
+
+  // Helper untuk menghilangkan spasi di awal label menu
+  function trimLabel(label) {
+    return typeof label === "string" ? label.replace(/^\s+/, "") : label;
+  }
+
+  // Kelas konsisten untuk mobile menu item
+  const mobileMenuItemClass =
+    "block w-full text-left text-black font-medium text-base py-2 px-0 rounded hover:bg-blue-50 hover:text-blue-600 bg-transparent border-none outline-none cursor-pointer";
 
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
@@ -214,8 +230,8 @@ export default function AlumniNavbar() {
           {/* Logo */}
           <div className="z-10 flex items-center" style={{ minWidth: 0 }}>
             <Link href="/dashboard" className="flex items-center space-x-2">
-              
-              <span className="font-bold text-lg text-blue-700 hidden sm:inline">AlumniConnect</span>
+              {/* Logo hanya teks, tidak ada button dashboard di sini */}
+              <span className="font-bold text-lg text-blue-700 hidden sm:inline relative left-10">AlumniConnect</span>
             </Link>
           </div>
           {/* Hamburger icon (mobile only), langsung di kanan logo, jarak sedikit */}
@@ -235,26 +251,26 @@ export default function AlumniNavbar() {
         {/* Tengah: Desktop menu */}
         <div className="hidden md:flex items-center md:justify-center flex-1">
           <AnimatedEmoji />
-          <ul className="flex space-x-10 items-center ml-2">
+          <ul className="flex space-x-6 gap-3 items-center ml-2">
             {menuItems.map((item, idx) =>
               item.type === "link" ? (
-                <li key={item.label}>
+                <li key={item.label} className="m-0 p-0">
                   <Link
                     href={item.href}
-                    className="text-black font-medium text-sm hover:text-blue-600"
+                    className="text-black font-medium text-sm hover:text-blue-600 md:px-3"
                   >
-                    {item.label}
+                    {trimLabel(item.label)}
                   </Link>
                 </li>
               ) : (
-                <li key={item.label}>
+                <li key={item.label} className="m-0 p-0">
                   <button
                     type="button"
                     onClick={item.onClick}
-                    className="text-black font-medium text-sm hover:text-blue-600 bg-transparent border-none outline-none cursor-pointer"
+                    className="text-black font-medium text-sm hover:text-blue-600 bg-transparent border-none outline-none cursor-pointer md:px-3"
                     style={{ padding: 0, background: "none" }}
                   >
-                    {item.label}
+                    {trimLabel(item.label)}
                   </button>
                 </li>
               )
@@ -289,7 +305,10 @@ export default function AlumniNavbar() {
               </div>
             )}
           </div>
-          <div className="relative" ref={dropdownRef}>
+          <div
+            className="relative flex justify-end w-full md:w-auto"
+            ref={dropdownRef}
+          >
             <button
               className="flex items-center cursor-pointer"
               onClick={() => setDropdownOpen((open) => !open)}
@@ -331,16 +350,44 @@ export default function AlumniNavbar() {
             </button>
             {/* Dropdown */}
             {dropdownOpen && (
-              <div className="absolute right-0 mt-2 w-60 bg-white border border-gray-200 rounded shadow-lg z-50">
+              <div
+                className={`
+                  absolute
+                  mt-2
+                  w-60
+                  bg-white
+                  border
+                  border-gray-200
+                  rounded
+                  shadow-lg
+                  z-50
+                  right-0
+                  md:right-0
+                  left-1/2
+                  md:left-auto
+                  -translate-x-1/2
+                  md:translate-x-0
+                  flex
+                  flex-col
+                  items-center
+                  md:items-stretch
+                `}
+                style={{
+                  minWidth: "15rem",
+                  ...(typeof window !== "undefined" && window.innerWidth < 768
+                    ? { left: "50%", right: "auto", transform: "translateX(-50%)" }
+                    : {}),
+                }}
+              >
                 <Link
                   href="/profile"
-                  className="block px-4 py-2 text-gray-700 hover:bg-gray-100"
+                  className="block w-full px-4 py-2 text-gray-700 hover:bg-gray-100 text-center md:text-left"
                 >
                   <FiSettings className="inline mr-2" />
                   Pengaturan Profil
                 </Link>
                 <button
-                  className="w-full text-left px-4 py-2 text-red-600 hover:bg-gray-100 flex items-center"
+                  className="w-full text-center md:text-left px-4 py-2 text-red-600 hover:bg-gray-100 flex items-center justify-center md:justify-start"
                   onClick={handleLogout}
                 >
                   <FiLogOut className="inline mr-2" />
@@ -355,26 +402,38 @@ export default function AlumniNavbar() {
       {mobileMenuOpen && (
         <div className="md:hidden absolute top-16 left-0 w-full bg-white border-b border-gray-200 shadow z-40 animate-fadeIn">
           <ul className="flex flex-col py-2 px-4 space-y-2">
+            {/* Button Dashboard hanya muncul di mobile menu */}
+            <li className="m-0 p-0">
+              <button
+                type="button"
+                onClick={handleDashboardClick}
+                className={mobileMenuItemClass}
+                style={{ paddingLeft: 0, marginLeft: 0, background: "none" }}
+              >
+                {trimLabel("Dashboard")}
+              </button>
+            </li>
             {menuItems.map((item, idx) =>
               item.type === "link" ? (
-                <li key={item.label}>
+                <li key={item.label} className="m-0 p-0">
                   <Link
                     href={item.href}
-                    className="block w-full text-left text-black font-medium text-base py-2 px-2 rounded hover:bg-blue-50 hover:text-blue-600"
+                    className={mobileMenuItemClass}
+                    style={{ paddingLeft: 0, marginLeft: 0 }}
                     onClick={() => setMobileMenuOpen(false)}
                   >
-                    {item.label}
+                    {trimLabel(item.label)}
                   </Link>
                 </li>
               ) : (
-                <li key={item.label}>
+                <li key={item.label} className="m-0 p-0">
                   <button
                     type="button"
                     onClick={item.onClick}
-                    className="block w-full text-left text-black font-medium text-base py-2 px-2 rounded hover:bg-blue-50 hover:text-blue-600 bg-transparent border-none outline-none cursor-pointer"
-                    style={{ padding: 0, background: "none" }}
+                    className={mobileMenuItemClass}
+                    style={{ paddingLeft: 0, marginLeft: 0, background: "none" }}
                   >
-                    {item.label}
+                    {trimLabel(item.label)}
                   </button>
                 </li>
               )

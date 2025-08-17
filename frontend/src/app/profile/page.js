@@ -60,16 +60,19 @@ export default function ProfilePage() {
   }, [router]);
 
   if (role === null) {
-    // Bisa tampilkan loading spinner jika ingin
     return null;
   }
 
-  // Handler untuk navigasi dari sidebar
   const handleSidebarNavigate = (menuKey) => {
     setActiveContent(menuKey);
   };
 
-  // Untuk perusahaan: handle navigasi accountSettings, applicants, dan jobPosting
+  // Style untuk menghilangkan scroll x di seluruh halaman
+  const noScrollXStyle = {
+    overflowX: "hidden",
+    backgroundColor: "#f3f4f6", // Tailwind bg-gray-100
+  };
+
   if (role === "perusahaan") {
     let mainContent = null;
     if (activeContent === "accountSettings") {
@@ -85,18 +88,28 @@ export default function ProfilePage() {
     } else {
       mainContent = <PerusahaanPreview />;
     }
+
     return (
       <>
         <Navbar />
-        <div className="flex bg-gray-100 min-h-screen w-screen max-w-none" style={{ overflowX: "hidden" }}>
+        <div
+          className="flex min-h-screen w-screen"
+          style={noScrollXStyle}
+        >
           <SidebarProfile
             onMenuClick={handleSidebarNavigate}
             activeMenu={activeContent}
           />
-          <div className="flex-1">
+          <div className="flex-1" style={noScrollXStyle}>
             {mainContent}
           </div>
         </div>
+        <style jsx global>{`
+          html, body, #__next {
+            overflow-x: hidden !important;
+            background-color: #f3f4f6 !important; /* Tailwind bg-gray-100 */
+          }
+        `}</style>
       </>
     );
   }
@@ -104,24 +117,32 @@ export default function ProfilePage() {
   // Untuk alumni
   let mainContent = null;
   if (activeContent === "accountSettings") {
-    mainContent = <div style={{ overflowX: "hidden" }}><AccountSettings /></div>;
+    mainContent = <AccountSettings />;
   } else {
-    // Tampilkan AlumniPreview untuk "profile", "experience", "cv", dsb
-    mainContent = <div style={{ overflowX: "hidden" }}><AlumniPreview /></div>;
+    mainContent = <AlumniPreview />;
   }
 
   return (
     <>
       <Navbar />
-      <div className="flex bg-gray-100 min-h-screen w-screen max-w-none" style={{ overflowX: "hidden" }}>
+      <div
+        className="flex min-h-screen w-screen"
+        style={noScrollXStyle}
+      >
         <SidebarProfile
           onMenuClick={handleSidebarNavigate}
           activeMenu={activeContent}
         />
-        <div className="flex-1">
+        <div className="flex-1" style={noScrollXStyle}>
           {mainContent}
         </div>
       </div>
+      <style jsx global>{`
+        html, body, #__next {
+          overflow-x: hidden !important;
+          background-color: #f3f4f6 !important; /* Tailwind bg-gray-100 */
+        }
+      `}</style>
     </>
   );
 }

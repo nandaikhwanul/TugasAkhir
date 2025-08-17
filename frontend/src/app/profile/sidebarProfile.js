@@ -1,31 +1,84 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import { FaUserCircle, FaCog, FaSignOutAlt, FaBars, FaTimes } from "react-icons/fa";
+import { FaUserCircle, FaCog, FaSignOutAlt, FaBars, FaTimes, FaBuilding } from "react-icons/fa";
 import { useRouter } from "next/navigation";
-import { getProfileImageUrl, removeTokenCookie } from "../aa";
-import { getTokenFromSessionStorage } from "../sessiontoken";
+import { getTokenFromSessionStorage } from "../sessiontoken"; // Ganti ke sessiontoken
 
-// Menu links untuk alumni (tanpa href, karena tidak pakai Link)
+// Menu links untuk alumni (dengan href, dan typo diperbaiki)
 const alumniMenuLinks = [
-  { label: "Profile", key: "profile", icon: <FaUserCircle className="h-6 w-6" /> },
-  { label: "Account settings", key: "accountSettings", icon: <FaCog className="h-6 w-6" /> },
+  { label: "Profile", key: "profile", icon: <FaUserCircle className="h-6 w-6" />, href: "/profile" },
+  { label: "Account settings", key: "accountSettings", icon: <FaCog className="h-6 w-6" />, href: "/profile/account" },
 ];
 
-// Fallback fetchProfileWithRole jika tidak diekspor dari ../aa
-async function fetchProfileWithRole(token) {
-  if (!token) return { profile: null, role: null };
+// Menu links untuk perusahaan (tanpa href, hanya key, label, icon)
+const perusahaanMenuLinks = [
+  {
+    label: "INFORMASI UTAMA",
+    key: "perusahaanPreview",
+    icon: <FaBuilding className="h-6 w-6" />,
+  },
+  {
+    label: "KEAMANAN AKUN",
+    key: "accountSettings",
+    icon: <FaCog className="h-6 w-6" />,
+  },
+  {
+    label: "PROFIL PERUSAHAAN",
+    key: "profilPerusahaan",
+    icon: <FaBuilding className="h-6 w-6" />,
+  },
+];
+
+export async function fetchProfileAndRole() {
+  let profile = null;
+  let role = null;
+  let loading = true;
   try {
-    const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/profile/me", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    if (!res.ok) return { profile: null, role: null };
-    const data = await res.json();
-    // data: { profile: {...}, role: "alumni" | "perusahaan" }
-    return { profile: data.profile || null, role: data.role || null };
-  } catch (e) {
-    return { profile: null, role: null };
+    const token = getTokenFromSessionStorage();
+    if (!token) {
+      loading = false;
+      return { profile: null, role: null, loading };
+    }
+    // Cek role dari endpoint alumni/me dan perusahaan/me
+    // Cek perusahaan dulu, jika gagal baru cek alumni
+    let res, data;
+    try {
+      res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/perusahaan/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      res = { ok: false, status: 0 };
+    }
+    if (res.ok) {
+      data = await res.json();
+      profile = data;
+      role = "perusahaan";
+      loading = false;
+      return { profile, role, loading };
+    }
+    try {
+      res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/alumni/me", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+    } catch (err) {
+      res = { ok: false, status: 0 };
+    }
+    if (res.ok) {
+      data = await res.json();
+      profile = data;
+      role = "alumni";
+      loading = false;
+      return { profile, role, loading };
+    }
+    loading = false;
+    return { profile: null, role: null, loading };
+  } catch (err) {
+    loading = false;
+    return { profile: null, role: null, loading };
   }
 }
 
@@ -33,16 +86,17 @@ export default function SidebarProfile({ activeMenu, onMenuClick }) {
   const [open, setOpen] = useState(false);
   const [profile, setProfile] = useState(null);
   const [role, setRole] = useState(null);
+  const [loading, setLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
     let mounted = true;
     async function fetchProfile() {
-      const token = getTokenFromSessionStorage();
-      const { profile, role } = await fetchProfileWithRole(token);
+      const { profile, role, loading } = await fetchProfileAndRole();
       if (mounted) {
         setProfile(profile);
         setRole(role);
+        setLoading(loading);
       }
     }
     fetchProfile();
@@ -51,7 +105,6 @@ export default function SidebarProfile({ activeMenu, onMenuClick }) {
 
   // Logout handler
   const handleLogout = () => {
-    removeTokenCookie();
     if (typeof window !== "undefined") {
       sessionStorage.removeItem("token");
     }
@@ -61,7 +114,7 @@ export default function SidebarProfile({ activeMenu, onMenuClick }) {
   // Show alumni avatar if available
   const avatarUrl =
     role === "alumni" && profile && profile.foto_profil
-      ? getProfileImageUrl(profile.foto_profil)
+      ? (profile.foto_profil.startsWith("http") ? profile.foto_profil : "")
       : null;
 
   return (
@@ -105,50 +158,91 @@ export default function SidebarProfile({ activeMenu, onMenuClick }) {
             </div>
           )}
 
+          {/* Perusahaan profile button */}
+          {open && role === "perusahaan" && (
+            <div className="flex flex-col items-center mb-6">
+              <FaBuilding className="w-16 h-16 text-blue-300" />
+              <span className="mt-2 text-gray-700 font-semibold text-base text-center max-w-[180px] truncate">
+                {profile?.nama_perusahaan || "Perusahaan"}
+              </span>
+            </div>
+          )}
+
           {/* Menu Items */}
           <ul className={`flex flex-col gap-3 mb-auto transition-all duration-300 ${open ? "opacity-100" : "opacity-0"}`}>
-            {alumniMenuLinks.map((item) => {
-              const isActive = activeMenu === item.key;
-              return (
-                <li
-                  key={item.key}
-                  className={`group flex items-center p-3 rounded-lg transition-all cursor-pointer ${
-                    isActive
-                      ? "bg-blue-100 text-blue-700 font-semibold"
-                      : "hover:bg-blue-50"
-                  }`}
-                  style={{ marginLeft: open ? 0 : "-16px" }}
-                  onClick={() => {
-                    if (onMenuClick) onMenuClick(item.key);
-                  }}
-                >
-                  <span
-                    className="flex items-center w-full"
+            {role === "alumni" &&
+              alumniMenuLinks.map((item) => {
+                const isActive = activeMenu === item.key;
+                return (
+                  <li
+                    key={item.key}
+                    className={`group flex items-center p-3 rounded-lg transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-blue-100 text-blue-700 font-semibold"
+                        : "hover:bg-blue-50"
+                    }`}
+                    style={{ marginLeft: open ? 0 : "-16px" }}
+                    onClick={() => {
+                      if (onMenuClick) onMenuClick(item.key);
+                      if (item.href) router.push(item.href);
+                    }}
                   >
-                    <span
-                      className={`mr-3 transition-all ${
-                        isActive
-                          ? "text-blue-600"
-                          : "text-gray-500 group-hover:text-blue-600"
-                      }`}
-                    >
-                      {item.icon}
-                    </span>
-                    {open && (
+                    <span className="flex items-center w-full">
                       <span
-                        className={`transition-all ${
+                        className={`mr-3 transition-all ${
                           isActive
-                            ? "text-blue-700 font-semibold"
-                            : "text-gray-700 group-hover:text-blue-600 font-medium"
+                            ? "text-blue-600"
+                            : "text-gray-500 group-hover:text-blue-600"
                         }`}
                       >
-                        {item.label}
+                        {item.icon}
                       </span>
-                    )}
-                  </span>
-                </li>
-              );
-            })}
+                      {open && (
+                        <span
+                          className={`transition-all ${
+                            isActive
+                              ? "text-blue-700 font-semibold"
+                              : "text-gray-700 group-hover:text-blue-600 font-medium"
+                          }`}
+                        >
+                          {item.label}
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
+
+            {role === "perusahaan" &&
+              perusahaanMenuLinks.map((item) => {
+                const isActive = activeMenu === item.key;
+                return (
+                  <li
+                    key={item.key}
+                    className={`group flex items-center p-3 rounded-lg transition-all cursor-pointer ${
+                      isActive
+                        ? "bg-blue-100 text-blue-700 font-semibold"
+                        : "hover:bg-blue-50"
+                    }`}
+                    style={{ marginLeft: open ? 0 : "-16px" }}
+                    onClick={() => {
+                      if (onMenuClick) onMenuClick(item.key);
+                      // Tidak ada router.push, hanya trigger onMenuClick
+                    }}
+                  >
+                    <span className="flex items-center w-full">
+                      <span className="mr-3 transition-all text-blue-600">
+                        {item.icon}
+                      </span>
+                      {open && (
+                        <span className="transition-all text-blue-700 font-semibold">
+                          {item.label}
+                        </span>
+                      )}
+                    </span>
+                  </li>
+                );
+              })}
           </ul>
 
           {/* Logout at bottom */}

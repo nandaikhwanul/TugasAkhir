@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useState, useRef } from "react";
-import { FiSettings, FiLogOut } from "react-icons/fi";
+import { FiSettings, FiLogOut, FiMenu, FiX } from "react-icons/fi";
 import { IoMailOutline, IoSearchOutline } from "react-icons/io5";
 import axios from "axios";
 import Link from "next/link";
@@ -60,6 +60,12 @@ export default function PerusahaanNavbar() {
   // State untuk modal pesan perusahaan
   const [showPesanModal, setShowPesanModal] = useState(false);
 
+  // State untuk mobile menu
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  // State untuk mendeteksi apakah mode mobile (responsive)
+  const [isMobile, setIsMobile] = useState(false);
+
   // Fungsi untuk menghapus cookie token
   function removeTokenCookie() {
     if (typeof document === "undefined") return;
@@ -112,6 +118,18 @@ export default function PerusahaanNavbar() {
     fetchProfileImage();
   }, []);
 
+  // Responsive: detect mobile mode
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 640); // sm breakpoint (Tailwind)
+    }
+    if (typeof window !== "undefined") {
+      handleResize();
+      window.addEventListener("resize", handleResize);
+      return () => window.removeEventListener("resize", handleResize);
+    }
+  }, []);
+
   // Close dropdown jika klik di luar
   useEffect(() => {
     function handleClickOutside(event) {
@@ -152,6 +170,27 @@ export default function PerusahaanNavbar() {
       document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [showSearchDropdown]);
+
+  // Close mobile menu jika klik di luar
+  const mobileMenuRef = useRef(null);
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (
+        mobileMenuRef.current &&
+        !mobileMenuRef.current.contains(event.target)
+      ) {
+        setMobileMenuOpen(false);
+      }
+    }
+    if (mobileMenuOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
 
   const handleLogout = () => {
     removeTokenCookie();
@@ -272,21 +311,35 @@ export default function PerusahaanNavbar() {
     }
   };
 
+  // Responsive: search input width
+  const searchInputWidth = "w-full sm:w-[300px] md:w-[350px] lg:w-[400px]";
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white border-b border-gray-200">
-      {/* Logo */}
-      <div className="absolute z-10 left-6 top-1/2 -translate-y-1/2 flex items-center">
-        {/* Search icon di kiri logo */}
+      {/* Logo & Hamburger */}
+      <div className="absolute z-10 left-4 top-1/2 -translate-y-1/2 flex items-center">
+        {/* Hamburger menu (mobile only) */}
+        <button
+          className="sm:hidden mr-2 p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+          onClick={() => setMobileMenuOpen((open) => !open)}
+          aria-label={mobileMenuOpen ? "Tutup menu" : "Buka menu"}
+        >
+          {mobileMenuOpen ? <FiX className="text-2xl" /> : <FiMenu className="text-2xl" />}
+        </button>
         <Link href="/dashboard" className="flex items-center space-x-2">
           <span className="font-bold text-lg text-blue-700 hidden sm:inline">AlumniConnect</span>
         </Link>
       </div>
-      <div className="max-w-full px-4 relative right-20">
+      <div className="max-w-full px-2 sm:px-4 relative sm:right-20">
         <div className="flex justify-between h-16 items-center">
           {/* Navbar perusahaan khusus */}
-          <div className="flex-1 flex justify-center relative left-28">
-            <AnimatedEmoji />
-            <ul className="flex space-x-10 items-center">
+          <div className="flex-1 flex justify-center relative sm:left-28">
+            {/* Hanya tampilkan animasi emoji di desktop (sm ke atas) */}
+            <span className="hidden sm:inline">
+              <AnimatedEmoji />
+            </span>
+            {/* Desktop menu */}
+            <ul className="hidden sm:flex space-x-6 md:space-x-10 items-center">
               <li>
                 <Link href="/lowonganPerusahaanList" className="text-black font-medium text-sm hover:text-blue-600">
                   Lowongan Saya
@@ -297,7 +350,6 @@ export default function PerusahaanNavbar() {
                   Buat Lowongan
                 </Link>
               </li>
-              {/* Tambahkan button Forum */}
               <li>
                 <Link href="/forum" className="text-black text-sm hover:text-blue-600">
                   Forum
@@ -307,13 +359,13 @@ export default function PerusahaanNavbar() {
           </div>
           {/* Profile & Search */}
           <div className="flex items-center">
-            <div className="flex items-center relative right-10" ref={searchDropdownRef}>
-              <form onSubmit={handleSearchAlumni} className="relative w-[400px]">
+            {/* Search & Mail */}
+            <div className="flex items-center relative sm:right-10" ref={searchDropdownRef}>
+              <form onSubmit={handleSearchAlumni} className={`relative ${searchInputWidth}`}>
                 <input
                   type="text"
                   placeholder="Cari alumni..."
-                  className="border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all w-full"
-                  style={{ width: "400px" }}
+                  className={`border border-gray-300 rounded-full px-3 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-200 transition-all ${searchInputWidth}`}
                   value={searchQuery}
                   onChange={(e) => {
                     setSearchQuery(e.target.value);
@@ -379,7 +431,6 @@ export default function PerusahaanNavbar() {
                 )}
               </form>
               {/* Jadikan modal saja ketika icon IoMailOutline di klik */}
-
               <button
                 type="button"
                 className="cursor-pointer relative ml-2 flex items-center"
@@ -390,7 +441,7 @@ export default function PerusahaanNavbar() {
               </button>
               {showPesanModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center backdrop-blur-sm">
-                  <div className="bg-white rounded-lg shadow-lg w-[1200px] h-[700px] relative flex flex-col">
+                  <div className="bg-white rounded-lg shadow-lg w-[95vw] max-w-[1200px] h-[90vh] max-h-[700px] relative flex flex-col">
                     <button
                       className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 text-xl z-10"
                       onClick={() => setShowPesanModal(false)}
@@ -405,6 +456,7 @@ export default function PerusahaanNavbar() {
                 </div>
               )}
             </div>
+            {/* Profile dropdown */}
             <div className="relative" ref={dropdownRef}>
               <button
                 className="flex items-center cursor-pointer"
@@ -421,7 +473,7 @@ export default function PerusahaanNavbar() {
                 ) : (
                   <InitialsAvatar name={profileName} />
                 )}
-                <span className="ml-2 text-black font-semibold text-sm max-w-[120px] truncate">
+                <span className="ml-2 text-black font-semibold text-sm max-w-[120px] truncate hidden xs:inline">
                   {profileName || "Perusahaan"}
                 </span>
                 <svg
@@ -457,6 +509,106 @@ export default function PerusahaanNavbar() {
             </div>
           </div>
         </div>
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <div
+            ref={mobileMenuRef}
+            className="sm:hidden fixed inset-0 z-40 backdrop-blur-xs"
+            style={{}}
+          >
+            <div className="fixed top-0 left-0 w-4/5 max-w-xs h-full bg-white shadow-lg z-50 flex flex-col pt-6 pb-4 px-4">
+              <div className="flex items-center mb-6">
+                <Link href="/dashboard" className="flex items-center space-x-2" onClick={() => setMobileMenuOpen(false)}>
+                  <span className="font-bold text-lg text-blue-700">AlumniConnect</span>
+                </Link>
+                <button
+                  className="ml-auto p-2 rounded focus:outline-none focus:ring-2 focus:ring-blue-200"
+                  onClick={() => setMobileMenuOpen(false)}
+                  aria-label="Tutup menu"
+                >
+                  <FiX className="text-2xl" />
+                </button>
+              </div>
+              <ul className="flex flex-col space-y-4 mb-6">
+                <li>
+                  <Link
+                    href="/lowonganPerusahaanList"
+                    className="text-black font-medium text-base hover:text-blue-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Lowongan Saya
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/buatLowongan"
+                    className="text-black text-base hover:text-blue-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Buat Lowongan
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/forum"
+                    className="text-black text-base hover:text-blue-600"
+                    onClick={() => setMobileMenuOpen(false)}
+                  >
+                    Forum
+                  </Link>
+                </li>
+              </ul>
+              <div className="flex items-center mb-4">
+                <button
+                  type="button"
+                  className="cursor-pointer flex items-center"
+                  onClick={() => {
+                    setShowPesanModal(true);
+                    setMobileMenuOpen(false);
+                  }}
+                  aria-label="Pesan Perusahaan"
+                >
+                  <IoMailOutline className="text-2xl text-gray-500 mr-2" aria-label="Mail" />
+                  <span className="text-base text-gray-700">Pesan</span>
+                </button>
+              </div>
+              <div className="flex items-center border-t pt-4">
+                {profileImage ? (
+                  <img
+                    className="h-8 w-8 rounded-full object-cover"
+                    src={profileImage}
+                    alt="Profile"
+                  />
+                ) : (
+                  <InitialsAvatar name={profileName} />
+                )}
+                <span className="ml-2 text-black font-semibold text-base max-w-[120px] truncate">
+                  {profileName || "Perusahaan"}
+                </span>
+              </div>
+              <div className="flex flex-col mt-2">
+                <Link
+                  href="/profile"
+                  className="block px-0 py-2 text-gray-700 hover:bg-gray-100"
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <FiSettings className="inline mr-2" />
+                  Pengaturan Profil
+                </Link>
+                <button
+                  className="w-full text-left px-0 py-2 text-red-600 hover:bg-gray-100 flex items-center"
+                  onClick={() => {
+                    handleLogout();
+                    setMobileMenuOpen(false);
+                  }}
+                >
+                  <FiLogOut className="inline mr-2" />
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
     </nav>
   );
