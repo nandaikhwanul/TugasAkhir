@@ -1,13 +1,13 @@
 "use client";
 
 import React, { useEffect, useState, useRef, useMemo } from "react";
-import { FaPencilAlt } from "react-icons/fa";
+import { FaPencilAlt, FaCheckCircle, FaTimesCircle, FaSpinner, FaExclamationTriangle, FaGraduationCap, FaMapMarkerAlt } from "react-icons/fa";
 import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
 // Helper untuk resolve URL foto_profil alumni
 function getFotoProfilUrl(foto_profil) {
-  if (foto_profil === undefined || foto_profil === null) return null; // undefined atau null, return null
-  if (!foto_profil) return ""; // Empty string atau falsy lainnya
+  if (foto_profil === undefined || foto_profil === null) return null;
+  if (!foto_profil) return "";
   if (/^https?:\/\//.test(foto_profil)) return foto_profil;
   if (foto_profil.startsWith("/uploads/")) {
     return `https://tugasakhir-production-6c6c.up.railway.app${foto_profil}`;
@@ -27,7 +27,6 @@ function getFotoSampulUrl(foto_sampul) {
 
 // Helper untuk random background color
 function getRandomBgColor() {
-  // Pilihan warna-warna pastel yang enak dilihat
   const colors = [
     "bg-gradient-to-r from-pink-200 via-purple-200 to-indigo-200",
     "bg-gradient-to-r from-green-200 via-blue-200 to-purple-200",
@@ -40,7 +39,6 @@ function getRandomBgColor() {
     "bg-gradient-to-r from-amber-200 via-orange-200 to-red-200",
     "bg-gradient-to-r from-emerald-200 via-teal-200 to-cyan-200",
   ];
-  // Pilih random
   return colors[Math.floor(Math.random() * colors.length)];
 }
 
@@ -65,6 +63,7 @@ export default function AlumniPreview() {
   });
   const [formError, setFormError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [formSuccess, setFormSuccess] = useState("");
 
   // Refs for file inputs
   const fileInputSampulRef = useRef(null);
@@ -99,15 +98,14 @@ export default function AlumniPreview() {
           tahun_lulus: data.tahun_lulus || "",
           alamat: data.alamat || "",
         });
-        // Jika belum ada foto_sampul, set warna random sekali saja
         if (!data.foto_sampul) {
           setRandomBgClass(getRandomBgColor());
         }
-        // Jika foto_profil undefined/null (belum pernah diisi), set warna random
         if (data.foto_profil === undefined || data.foto_profil === null) {
           setRandomProfileBgClass(getRandomBgColor());
         }
       } catch (err) {
+        console.error("Fetch Error:", err);
         setAlumni(null);
       }
       setLoading(false);
@@ -136,7 +134,10 @@ export default function AlumniPreview() {
     const file = e.target.files[0];
     if (file) {
       const token = getTokenFromSessionStorage();
-      if (!token) return;
+      if (!token) {
+        setFormError("Token tidak ditemukan.");
+        return;
+      }
       const formData = new FormData();
       formData.append("foto_sampul", file);
       try {
@@ -152,8 +153,8 @@ export default function AlumniPreview() {
         if (!res.ok) throw new Error("Failed to update cover photo");
         const updated = await res.json();
         setAlumni((prev) => ({ ...prev, foto_sampul: updated.foto_sampul }));
-        // Jika berhasil upload, hapus warna random
         setRandomBgClass("");
+        setFormSuccess("Foto sampul berhasil diperbarui!");
       } catch (err) {
         setFormError("Gagal update foto sampul.");
       }
@@ -165,7 +166,10 @@ export default function AlumniPreview() {
     const file = e.target.files[0];
     if (file) {
       const token = getTokenFromSessionStorage();
-      if (!token) return;
+      if (!token) {
+        setFormError("Token tidak ditemukan.");
+        return;
+      }
       const formData = new FormData();
       formData.append("foto_profil", file);
       try {
@@ -181,8 +185,8 @@ export default function AlumniPreview() {
         if (!res.ok) throw new Error("Failed to update profile photo");
         const updated = await res.json();
         setAlumni((prev) => ({ ...prev, foto_profil: updated.foto_profil }));
-        // Jika berhasil upload, hapus warna random profil
         setRandomProfileBgClass("");
+        setFormSuccess("Foto profil berhasil diperbarui!");
       } catch (err) {
         setFormError("Gagal update foto profil.");
       }
@@ -203,13 +207,14 @@ export default function AlumniPreview() {
   const handleEdit = () => {
     setEditMode(true);
     setFormError("");
+    setFormSuccess("");
   };
 
   // Handle cancel edit
   const handleCancel = () => {
     setEditMode(false);
     setFormError("");
-    // Reset form to alumni data
+    setFormSuccess("");
     if (alumni) {
       setForm({
         name: alumni.name || "",
@@ -223,9 +228,9 @@ export default function AlumniPreview() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setFormError("");
+    setFormSuccess("");
     setSaving(true);
 
-    // Validation
     if (!form.name || !form.tahun_lulus || !form.alamat) {
       setFormError("Semua field wajib diisi.");
       setSaving(false);
@@ -239,7 +244,6 @@ export default function AlumniPreview() {
       return;
     }
 
-    // Prepare payload
     const payload = {
       name: form.name,
       tahun_lulus: form.tahun_lulus,
@@ -259,84 +263,83 @@ export default function AlumniPreview() {
         const errData = await res.json().catch(() => ({}));
         throw new Error(errData.message || "Gagal update profil.");
       }
-      // Refresh page after save
-      window.location.reload();
-      return;
+      const updatedAlumni = await res.json();
+      setAlumni(prev => ({ ...prev, ...updatedAlumni }));
+      setFormSuccess("Data profil berhasil diperbarui!");
+      setEditMode(false);
     } catch (err) {
       setFormError(err.message || "Gagal update profil.");
     }
     setSaving(false);
   };
 
+  // Memastikan data alumni ada sebelum render
   if (loading) {
     return (
-      <div className="h-full bg-gray-200 p-8 flex items-center justify-center">
-        <span className="text-gray-600">Loading...</span>
+      <div className="flex items-center justify-center p-8 bg-gray-50 min-h-[400px] rounded-2xl shadow-md">
+        <span className="text-gray-500 flex items-center gap-2 text-base sm:text-lg">
+          <FaSpinner className="animate-spin text-blue-400" />
+          Memuat...
+        </span>
       </div>
     );
   }
 
   if (!alumni) {
     return (
-      <div className="h-full bg-gray-200 p-8 flex items-center justify-center">
-        <span className="text-red-600">Failed to load alumni data.</span>
+      <div className="flex items-center justify-center p-8 bg-gray-50 min-h-[400px] rounded-2xl shadow-md">
+        <span className="text-red-500 flex items-center gap-2 text-base sm:text-lg">
+          <FaExclamationTriangle className="text-red-300" />
+          Gagal memuat data alumni.
+        </span>
       </div>
     );
   }
 
-  // Helper: break word utility for long text
-  const breakWordClass = "break-words whitespace-pre-line";
-
-  // Cek apakah ada foto sampul
   const fotoSampulUrl = getFotoSampulUrl(alumni.foto_sampul);
-
-  // Cek apakah ada foto profil
   const fotoProfilUrl = getFotoProfilUrl(alumni.foto_profil);
-
-  // Inisial untuk profil jika foto_profil === undefined atau null
-  const showInitials = alumni && (alumni.foto_profil === undefined || alumni.foto_profil === null);
+  const showInitials = !fotoProfilUrl;
   const initials = getInitials(alumni.name);
 
   return (
-    <div className="h-full bg-gray-100 p-8">
-      <div className="bg-white rounded-lg shadow-xl pb-8">
-        {/* Edit Button */}
-        <div className="absolute right-12 mt-4 rounded">
-          <button
-            className="border border-gray-400 p-2 rounded text-black hover:text-black bg-gray-100 bg-opacity-10 hover:bg-opacity-20"
-            title="Edit Profil"
-            onClick={handleEdit}
-            disabled={editMode}
-          >
-            <FaPencilAlt className="h-4 w-4" />
-          </button>
+    <div className="flex flex-col w-full px-4 sm:px-0 md:px-7">
+      <div className="relative bg-white shadow-xl border border-gray-100 pb-8 overflow-hidden">
+        {/* Tombol Edit untuk data profil */}
+        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
+          {!editMode && (
+            <button
+              className="p-3 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-400 hover:text-blue-600 transition"
+              title="Edit Profil"
+              onClick={handleEdit}
+              disabled={editMode}
+            >
+              <FaPencilAlt className="h-5 w-5" />
+            </button>
+          )}
         </div>
-        {/* Foto Sampul dengan hover icon edit */}
-        <div className="w-full h-[250px] relative group">
+        
+        {/* Bagian Foto Sampul */}
+        <div className="w-full h-[150px] sm:h-[250px] relative group">
           {fotoSampulUrl ? (
             <img
               src={fotoSampulUrl}
-              className="w-full h-full object-cover rounded-tl-lg rounded-tr-lg"
+              className="w-full h-full object-cover rounded-t-lg"
               alt="Foto Sampul"
             />
           ) : (
             <div
-              className={`w-full h-full rounded-tl-lg rounded-tr-lg flex items-center justify-center ${randomBgClass}`}
-              style={{ minHeight: 250, height: 250 }}
-            >
-              {/* Warna random jika belum ada foto sampul */}
-            </div>
+              className={`w-full h-full rounded-t-lg flex items-center justify-center ${randomBgClass}`}
+              style={{ minHeight: 150 }}
+            ></div>
           )}
           <button
             type="button"
-            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-            style={{ pointerEvents: "auto" }}
+            className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
             onClick={handleSampulClick}
-            tabIndex={-1}
             disabled={saving}
           >
             <span className="backdrop-blur-sm bg-black/30 rounded-full p-3 flex items-center justify-center hover:bg-black/50 transition-colors">
-              <FaPencilAlt className="text-white text-2xl" />
+              <FaPencilAlt className="text-white text-xl sm:text-2xl" />
             </span>
           </button>
           <input
@@ -347,110 +350,139 @@ export default function AlumniPreview() {
             onChange={handleSampulChange}
           />
         </div>
-        <div className="flex flex-col items-center -mt-20 relative">
-          {/* Foto Profil dengan hover icon edit */}
-          <div className="relative group w-40 h-40 flex items-center justify-center">
-            {showInitials ? (
-              <div
-                className={`w-40 h-40 border-4 border-white rounded-full flex items-center justify-center text-5xl font-bold text-white select-none ${randomProfileBgClass}`}
-                style={{ userSelect: "none" }}
-                aria-label="Inisial Profil"
-              >
-                {initials}
-              </div>
-            ) : (
-              <img
-                src={fotoProfilUrl}
-                className="w-40 h-40 border-4 border-white rounded-full object-cover"
-                alt="Foto Profil"
-              />
-            )}
-            <button
-              type="button"
-              className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-              style={{ pointerEvents: "auto" }}
-              onClick={handleProfilClick}
-              tabIndex={-1}
-              disabled={saving}
-            >
-              <span className="backdrop-blur-sm bg-black/30 rounded-full p-3 flex items-center justify-center hover:bg-black/50 transition-colors">
-                <FaPencilAlt className="text-white text-2xl" />
-              </span>
-            </button>
-            <input
-              type="file"
-              accept="image/*"
-              ref={fileInputProfilRef}
-              className="hidden"
-              onChange={handleProfilChange}
-            />
-          </div>
-        </div>
-        <div className="flex flex-col items-center mt-4">
-          {!editMode ? (
-            <>
-              <p className="text-2xl font-bold text-black">{alumni.name}</p>
-              <p className="text-black">{alumni.tahun_lulus}</p>
-              <p className="text-black">{alumni.alamat}</p>
-            </>
-          ) : (
-            <form className="mt-2 text-black space-y-3 w-full max-w-md" onSubmit={handleSubmit} autoComplete="off">
-              {formError && (
-                <div className="bg-red-100 text-red-700 px-3 py-2 rounded mb-2 text-sm">{formError}</div>
-              )}
-              <div className="flex flex-col gap-1">
-                <label className="font-bold" htmlFor="name">Nama:</label>
-                <input
-                  className={`border rounded px-2 py-1 ${breakWordClass} text-black`}
-                  id="name"
-                  name="name"
-                  value={form.name}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="font-bold" htmlFor="tahun_lulus">Tahun Lulus:</label>
-                <input
-                  className={`border rounded px-2 py-1 ${breakWordClass} text-black`}
-                  id="tahun_lulus"
-                  name="tahun_lulus"
-                  type="number"
-                  value={form.tahun_lulus}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="flex flex-col gap-1">
-                <label className="font-bold" htmlFor="alamat">Alamat:</label>
-                <input
-                  className={`border rounded px-2 py-1 ${breakWordClass} text-black`}
-                  id="alamat"
-                  name="alamat"
-                  value={form.alamat}
-                  onChange={handleInputChange}
-                  required
-                />
-              </div>
-              <div className="flex items-center space-x-2 mt-2">
-                <button
-                  type="submit"
-                  className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
-                  disabled={saving}
+
+        {/* Info Profil */}
+        <div className="flex flex-col sm:flex-row items-center sm:items-start sm:justify-start -mt-16 sm:-mt-20 relative px-4 sm:px-8">
+            <div className="relative group w-32 h-32 sm:w-40 sm:h-40 flex items-center justify-center flex-shrink-0">
+                {showInitials ? (
+                <div
+                    className={`w-32 h-32 sm:w-40 sm:h-40 border-4 border-white rounded-full flex items-center justify-center text-4xl sm:text-5xl font-bold text-white select-none shadow-md ${randomProfileBgClass}`}
+                    aria-label="Inisial Profil"
                 >
-                  {saving ? "Saving..." : "Save"}
-                </button>
+                    {initials}
+                </div>
+                ) : (
+                <img
+                    src={fotoProfilUrl}
+                    className="w-32 h-32 sm:w-40 sm:h-40 border-4 border-white rounded-full object-cover shadow-md"
+                    alt="Foto Profil"
+                />
+                )}
                 <button
-                  type="button"
-                  className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm"
-                  onClick={handleCancel}
-                  disabled={saving}
+                    type="button"
+                    className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200 cursor-pointer"
+                    onClick={handleProfilClick}
+                    disabled={saving}
                 >
-                  Cancel
+                    <span className="backdrop-blur-sm bg-black/30 rounded-full p-3 flex items-center justify-center hover:bg-black/50 transition-colors">
+                    <FaPencilAlt className="text-white text-xl sm:text-2xl" />
+                    </span>
                 </button>
-              </div>
-            </form>
-          )}
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputProfilRef}
+                    className="hidden"
+                    onChange={handleProfilChange}
+                />
+            </div>
+
+            {/* Bagian Nama, Tahun Lulus, dan Alamat */}
+            <div className="mt-4 sm:mt-12 sm:ml-8 text-center sm:text-left">
+                {!editMode ? (
+                <>
+                    <p className="text-2xl sm:text-3xl font-bold text-blue-900 tracking-tight">{alumni.name}</p>
+                    <div className="mt-2 text-gray-700 space-y-1">
+                        <div className="flex items-center gap-2 justify-center sm:justify-start">
+                        <FaGraduationCap className="text-blue-500" />
+                        <p className="text-sm sm:text-base">{alumni.tahun_lulus}</p>
+                        </div>
+                        <div className="flex items-center gap-2 justify-center sm:justify-start">
+                        <FaMapMarkerAlt className="text-blue-500" />
+                        <p className="text-sm sm:text-base break-words whitespace-pre-line text-center sm:text-left">{alumni.alamat}</p>
+                        </div>
+                    </div>
+                </>
+                ) : (
+                <form className="mt-4 text-gray-700 space-y-4 w-full" onSubmit={handleSubmit} autoComplete="off">
+                    {formError && (
+                    <div className="bg-red-50 text-red-600 px-4 py-3 rounded-lg text-sm flex items-center gap-2 border border-red-100">
+                        <FaExclamationTriangle className="text-red-400" /> {formError}
+                    </div>
+                    )}
+                    {formSuccess && (
+                    <div className="bg-green-50 text-green-700 px-4 py-3 rounded-lg text-sm flex items-center gap-2 border border-green-100">
+                        <FaCheckCircle className="text-green-400" /> {formSuccess}
+                    </div>
+                    )}
+                    <div className="flex flex-col gap-1">
+                        <label className="font-semibold text-blue-900 flex items-center gap-2" htmlFor="name">
+                            Nama
+                        </label>
+                        <input
+                            className="w-full border border-blue-200 focus:border-blue-400 rounded-lg px-4 py-3 bg-blue-50 focus:bg-white transition text-sm sm:text-base shadow-sm focus:ring-2 focus:ring-blue-200"
+                            id="name"
+                            name="name"
+                            value={form.name}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="font-semibold text-blue-900 flex items-center gap-2" htmlFor="tahun_lulus">
+                            Tahun Lulus
+                        </label>
+                        <input
+                            className="w-full border border-blue-200 focus:border-blue-400 rounded-lg px-4 py-3 bg-blue-50 focus:bg-white transition text-sm sm:text-base shadow-sm focus:ring-2 focus:ring-blue-200"
+                            id="tahun_lulus"
+                            name="tahun_lulus"
+                            type="number"
+                            value={form.tahun_lulus}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col gap-1">
+                        <label className="font-semibold text-blue-900 flex items-center gap-2" htmlFor="alamat">
+                            Alamat
+                        </label>
+                        <input
+                            className="w-full border border-blue-200 focus:border-blue-400 rounded-lg px-4 py-3 bg-blue-50 focus:bg-white transition text-sm sm:text-base shadow-sm focus:ring-2 focus:ring-blue-200"
+                            id="alamat"
+                            name="alamat"
+                            value={form.alamat}
+                            onChange={handleInputChange}
+                            required
+                        />
+                    </div>
+                    <div className="flex flex-col-reverse sm:flex-row items-stretch sm:items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-2 justify-end w-full">
+                        <button
+                            type="button"
+                            className="flex items-center justify-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-6 py-3 rounded-lg shadow text-sm sm:text-base transition disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto font-medium"
+                            onClick={handleCancel}
+                            disabled={saving}
+                        >
+                            <FaTimesCircle /> Batal
+                        </button>
+                        <button
+                            type="submit"
+                            className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg shadow text-sm sm:text-base transition disabled:opacity-60 disabled:cursor-not-allowed w-full sm:w-auto font-medium"
+                            disabled={saving}
+                        >
+                            {saving ? (
+                                <>
+                                    <FaSpinner className="animate-spin" /> Menyimpan...
+                                </>
+                            ) : (
+                                <>
+                                    <FaCheckCircle /> Simpan
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
+                )}
+            </div>
         </div>
       </div>
     </div>

@@ -129,8 +129,8 @@ export default function PengalamanCard() {
   const breakWordClass = "break-words whitespace-pre-line";
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-8 group relative h-full"> {/* Perbaikan di sini */}
-      <div className="absolute top-6 right-6 z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-2">
+    <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 md:p-8 group relative h-full w-full max-w-3xl mx-auto">
+      <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity duration-200 flex items-center space-x-2">
         <button
           className="p-2 rounded-full bg-blue-600 hover:bg-blue-700 border border-blue-700 text-white hover:text-white transition"
           title="Tambah Pengalaman"
@@ -141,12 +141,12 @@ export default function PengalamanCard() {
           <FaPlus className="h-4 w-4" />
         </button>
       </div>
-      <h4 className="text-xl text-black font-bold">Pengalaman</h4>
+      <h4 className="text-lg sm:text-xl text-black font-bold">Pengalaman</h4>
       {/* ... (kode form) ... */}
       {showAddPengalaman && (
         <form className="mt-4 mb-4 text-black space-y-3" onSubmit={handlePengalamanSubmit} autoComplete="off">
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <label className="font-bold w-32" htmlFor="jenis">Jenis:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="font-bold w-full sm:w-32" htmlFor="jenis">Jenis:</label>
             <select
               className="flex-1 border rounded px-2 py-1"
               id="jenis"
@@ -161,8 +161,8 @@ export default function PengalamanCard() {
               <option value="lainnya">Lainnya</option>
             </select>
           </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <label className="font-bold w-32" htmlFor="nama">Nama Instansi:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="font-bold w-full sm:w-32" htmlFor="nama">Nama Instansi:</label>
             <input
               className="flex-1 border rounded px-2 py-1"
               id="nama"
@@ -172,8 +172,8 @@ export default function PengalamanCard() {
               required
             />
           </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <label className="font-bold w-32" htmlFor="posisi">Posisi:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="font-bold w-full sm:w-32" htmlFor="posisi">Posisi:</label>
             <input
               className="flex-1 border rounded px-2 py-1"
               id="posisi"
@@ -183,8 +183,8 @@ export default function PengalamanCard() {
               required
             />
           </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <label className="font-bold w-32" htmlFor="lokasi">Lokasi:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="font-bold w-full sm:w-32" htmlFor="lokasi">Lokasi:</label>
             <input
               className="flex-1 border rounded px-2 py-1"
               id="lokasi"
@@ -194,8 +194,8 @@ export default function PengalamanCard() {
               required
             />
           </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <label className="font-bold w-32" htmlFor="tanggal_mulai">Tanggal Mulai:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="font-bold w-full sm:w-32" htmlFor="tanggal_mulai">Tanggal Mulai:</label>
             <input
               className="flex-1 border rounded px-2 py-1"
               id="tanggal_mulai"
@@ -206,8 +206,8 @@ export default function PengalamanCard() {
               required
             />
           </div>
-          <div className="flex flex-col md:flex-row md:items-center gap-2">
-            <label className="font-bold w-32" htmlFor="tanggal_selesai">Tanggal Selesai:</label>
+          <div className="flex flex-col sm:flex-row sm:items-center gap-2">
+            <label className="font-bold w-full sm:w-32" htmlFor="tanggal_selesai">Tanggal Selesai:</label>
             <input
               className="flex-1 border rounded px-2 py-1"
               id="tanggal_selesai"
@@ -217,7 +217,7 @@ export default function PengalamanCard() {
               onChange={handlePengalamanFormChange}
               disabled={pengalamanForm.masih_berjalan}
             />
-            <label className="flex items-center ml-2">
+            <label className="flex items-center ml-0 sm:ml-2">
               <input
                 type="checkbox"
                 name="masih_berjalan"
@@ -228,8 +228,8 @@ export default function PengalamanCard() {
               Masih berjalan
             </label>
           </div>
-          <div className="flex flex-col md:flex-row md:items-start gap-2">
-            <label className="font-bold w-32" htmlFor="deskripsi">Deskripsi:</label>
+          <div className="flex flex-col sm:flex-row sm:items-start gap-2">
+            <label className="font-bold w-full sm:w-32" htmlFor="deskripsi">Deskripsi:</label>
             <textarea
               className={`flex-1 border rounded px-2 py-1 ${breakWordClass}`}
               id="deskripsi"
@@ -242,17 +242,17 @@ export default function PengalamanCard() {
           {pengalamanError && (
             <div className="bg-red-100 text-red-700 px-3 py-2 rounded text-sm">{pengalamanError}</div>
           )}
-          <div className="flex items-center space-x-2 mt-2">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 mt-2">
             <button
               type="submit"
-              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm"
+              className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded text-sm w-full sm:w-auto"
               disabled={pengalamanSaving}
             >
               {pengalamanSaving ? "Menyimpan..." : "Simpan"}
             </button>
             <button
               type="button"
-              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm"
+              className="bg-gray-300 hover:bg-gray-400 text-gray-800 px-4 py-2 rounded text-sm w-full sm:w-auto"
               onClick={() => {
                 setShowAddPengalaman(false);
                 setPengalamanError("");
@@ -274,31 +274,40 @@ export default function PengalamanCard() {
           </div>
         </form>
       )}
-      <div className="relative px-4 mt-4">
-        <div className="absolute h-full border border-dashed border-opacity-20 border-secondary"></div>
+      <div className="relative px-0 sm:px-4 mt-4">
+        <div className="absolute left-2 sm:left-4 h-full border border-dashed border-opacity-20 border-secondary"></div>
         {loadingPengalaman ? (
           <div className="text-gray-500">Memuat pengalaman...</div>
         ) : pengalaman.length === 0 ? (
           <div className="text-gray-500">Belum ada pengalaman.</div>
         ) : (
           pengalaman.map((item, idx) => (
-            <div className="flex items-start w-full my-6 -ml-1.5" key={item._id || idx}>
-              <div className="w-1/12 z-10 pt-2">
-                <div className="w-3.5 h-3.5 bg-blue-600 rounded-full"></div>
+            <div
+              className="flex flex-row items-start w-full my-6 -ml-0 sm:-ml-1.5"
+              key={item._id || idx}
+            >
+              <div className="w-6 sm:w-1/12 z-10 pt-2 flex-shrink-0 flex justify-center">
+                <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 bg-blue-600 rounded-full"></div>
               </div>
-              <div className="w-11/12">
-                <div className="flex items-center space-x-2">
+              <div className="w-full sm:w-11/12">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="font-bold text-black text-base">{item.posisi}</span>
-                  <span className="text-black text-sm">di</span>
+                  <span className="text-black text-sm hidden sm:inline">di</span>
                   <span className="text-black text-base">{item.nama}</span>
                   {item.jenis && (
-                    <span className="ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded">{item.jenis}</span>
+                    <span className="mt-1 sm:mt-0 sm:ml-2 text-xs bg-gray-200 text-gray-700 px-2 py-0.5 rounded w-fit">
+                      {item.jenis}
+                    </span>
                   )}
                 </div>
                 <div className="text-black text-sm">{item.lokasi}</div>
                 <div className="text-black text-sm">
                   {formatMonthYear(item.tanggal_mulai)} -{" "}
-                  {item.masih_berjalan ? "Sekarang" : item.tanggal_selesai ? formatMonthYear(item.tanggal_selesai) : "-"}
+                  {item.masih_berjalan
+                    ? "Sekarang"
+                    : item.tanggal_selesai
+                    ? formatMonthYear(item.tanggal_selesai)
+                    : "-"}
                 </div>
                 {item.deskripsi && (
                   <div className={`text-black text-sm mt-1 ${breakWordClass}`}>{item.deskripsi}</div>

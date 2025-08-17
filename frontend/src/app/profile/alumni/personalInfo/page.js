@@ -416,8 +416,8 @@ export default function PersonalInfoCard() {
 
   if (loading) {
     return (
-      <div className="h-full bg-gray-100 p-8 flex items-center justify-center">
-        <span className="text-gray-500 flex items-center gap-2">
+      <div className="h-full bg-gray-100 p-4 sm:p-8 flex items-center justify-center">
+        <span className="text-gray-500 flex items-center gap-2 text-base sm:text-lg">
           <FaUser className="inline-block text-blue-500" /> Loading...
         </span>
       </div>
@@ -426,8 +426,8 @@ export default function PersonalInfoCard() {
 
   if (!alumni) {
     return (
-      <div className="h-full bg-gray-100 p-8 flex items-center justify-center">
-        <span className="text-red-500 flex items-center gap-2">
+      <div className="h-full bg-gray-100 p-4 sm:p-8 flex items-center justify-center">
+        <span className="text-red-500 flex items-center gap-2 text-base sm:text-lg">
           <FaUser className="inline-block text-red-500" /> Failed to load alumni data.
         </span>
       </div>
@@ -453,9 +453,9 @@ export default function PersonalInfoCard() {
   };
 
   return (
-    <div className="h-full p-0 flex items-start justify-center w-full">
-      <div className="w-full max-w-none bg-white rounded-b-lg shadow-lg p-8 relative">
-        <div className="absolute top-5 right-5 z-10">
+    <div className="w-full px-0 sm:px-0 md:px-0 lg:px-0 xl:px-0 2xl:px-0 max-w-none">
+      <div className="w-full bg-white p-4 sm:p-8 relative max-w-none mx-auto">
+        <div className="absolute top-3 right-3 sm:top-5 sm:right-5 z-10">
           {!editMode && (
             <button
               className="p-2 rounded-full bg-gray-50 hover:bg-gray-200 border border-gray-200 text-gray-400 hover:text-gray-600 transition"
@@ -469,62 +469,61 @@ export default function PersonalInfoCard() {
             </button>
           )}
         </div>
-        <h4 className="text-2xl text-gray-800 font-semibold mb-6 text-center flex items-center justify-center gap-2">
+        <h4 className="text-xl sm:text-2xl text-gray-800 font-semibold mb-4 sm:mb-6 text-center flex items-center justify-center gap-2">
           <FaUser className="text-blue-300" /> Personal Info
         </h4>
         {formError && (
-          <div className="bg-red-50 text-red-600 px-3 py-2 rounded mb-2 text-sm flex items-center gap-2 border border-red-100">
+          <div className="bg-red-50 text-red-600 px-3 py-2 rounded mb-2 text-xs sm:text-sm flex items-center gap-2 border border-red-100">
             <FaExclamationTriangle className="text-red-500" /> {formError}
           </div>
         )}
         {formSuccess && (
-          <div className="bg-green-50 text-green-600 px-3 py-2 rounded mb-2 text-sm flex items-center gap-2 border border-green-100">
+          <div className="bg-green-50 text-green-600 px-3 py-2 rounded mb-2 text-xs sm:text-sm flex items-center gap-2 border border-green-100">
             <FaCheckCircle className="text-green-500" /> {formSuccess}
           </div>
         )}
         {!editMode ? (
           <ul className="mt-2 text-gray-700 space-y-2">
-            <li className="flex items-center gap-2 py-1">
+            <li className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.nim}
-              <span className="font-medium w-36">NIM</span>
+              <span className="font-medium w-32 sm:w-36">NIM</span>
               <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.nim}</span>
             </li>
-            <li className="flex items-center gap-2 py-1">
+            <li className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.tanggal_lahir}
-              <span className="font-medium w-36">Birthday</span>
+              <span className="font-medium w-32 sm:w-36">Birthday</span>
               <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{formatDate(alumni.tanggal_lahir)}</span>
             </li>
-            <li className="flex items-center gap-2 py-1">
+            <li className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.tahun_lulus}
-              <span className="font-medium w-36">Graduation Year</span>
+              <span className="font-medium w-32 sm:w-36">Graduation Year</span>
               <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.tahun_lulus}</span>
             </li>
-            <li className="flex items-center gap-2 py-1">
+            <li className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.nohp}
-              <span className="font-medium w-36">Mobile</span>
+              <span className="font-medium w-32 sm:w-36">Mobile</span>
               <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.nohp}</span>
             </li>
-            <li className="flex items-center gap-2 py-1">
+            <li className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.email}
-              <span className="font-medium w-36">Email</span>
+              <span className="font-medium w-32 sm:w-36">Email</span>
               <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.email}</span>
             </li>
-            <li className="flex items-center gap-2 py-1">
+            <li className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.program_studi}
-              <span className="font-medium w-36">Program Studi</span>
+              <span className="font-medium w-32 sm:w-36">Program Studi</span>
               <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.program_studi}</span>
             </li>
-            <li className="flex items-start gap-2 py-1">
-              {fieldIcons.skill}
-              <span className="font-medium w-36 pt-1">Skills</span>
+            <li className="flex flex-col sm:flex-row items-start gap-1 sm:gap-2 py-1">
+              <div className="flex items-center">{fieldIcons.skill}</div>
+              <span className="font-medium w-32 sm:w-36 pt-1">Skills</span>
               <span className="flex-1 text-gray-700">
                 <span className="flex flex-wrap gap-2">
                   {Array.isArray(alumni.skill) && alumni.skill.length > 0 ? (
                     alumni.skill.map((s, i) => (
                       <span
                         key={i}
-                        className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs"
-                        style={{ maxWidth: "110px" }}
+                        className="inline-flex items-center gap-1 bg-gray-100 text-gray-700 px-2 py-1 rounded text-xs max-w-[110px] truncate"
                       >
                         <FaStar className="text-yellow-400" />
                         {s}
@@ -537,10 +536,10 @@ export default function PersonalInfoCard() {
               </span>
             </li>
             {/* Media Sosial */}
-            <li className="flex items-center gap-2 py-1">
+            <li className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.media_sosial}
-              <span className="font-medium w-36">Media Sosial</span>
-              <span className="flex-1 flex items-center gap-2">
+              <span className="font-medium w-32 sm:w-36">Media Sosial</span>
+              <span className="flex-1 flex flex-wrap items-center gap-2">
                 {mediaSosial.length > 0 ? (
                   mediaSosial.map((item, idx) => {
                     const Icon = getSocialIcon(item.platform);
@@ -567,11 +566,11 @@ export default function PersonalInfoCard() {
           </ul>
         ) : (
           <form className="mt-2 text-gray-700 space-y-3" onSubmit={handleSubmit} autoComplete="off">
-            <div className="flex items-center gap-2 py-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.nim}
-              <label className="font-medium w-36" htmlFor="nim">NIM</label>
+              <label className="font-medium w-32 sm:w-36" htmlFor="nim">NIM</label>
               <input
-                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass}`}
+                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass} text-sm`}
                 id="nim"
                 name="nim"
                 value={form.nim}
@@ -579,11 +578,11 @@ export default function PersonalInfoCard() {
                 required
               />
             </div>
-            <div className="flex items-center gap-2 py-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.nohp}
-              <label className="font-medium w-36" htmlFor="nohp">Mobile</label>
+              <label className="font-medium w-32 sm:w-36" htmlFor="nohp">Mobile</label>
               <input
-                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass}`}
+                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass} text-sm`}
                 id="nohp"
                 name="nohp"
                 value={form.nohp}
@@ -591,11 +590,11 @@ export default function PersonalInfoCard() {
                 required
               />
             </div>
-            <div className="flex items-center gap-2 py-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.program_studi}
-              <label className="font-medium w-36" htmlFor="program_studi">Program Studi</label>
+              <label className="font-medium w-32 sm:w-36" htmlFor="program_studi">Program Studi</label>
               <input
-                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass}`}
+                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass} text-sm`}
                 id="program_studi"
                 name="program_studi"
                 value={form.program_studi}
@@ -603,11 +602,11 @@ export default function PersonalInfoCard() {
                 required
               />
             </div>
-            <div className="flex items-center gap-2 py-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.tahun_lulus}
-              <label className="font-medium w-36" htmlFor="tahun_lulus">Graduation Year</label>
+              <label className="font-medium w-32 sm:w-36" htmlFor="tahun_lulus">Graduation Year</label>
               <input
-                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass}`}
+                className={`flex-1 border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass} text-sm`}
                 id="tahun_lulus"
                 name="tahun_lulus"
                 type="number"
@@ -616,11 +615,11 @@ export default function PersonalInfoCard() {
                 required
               />
             </div>
-            <div className="flex items-center gap-2 py-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.email}
-              <label className="font-medium w-36" htmlFor="email">Email</label>
+              <label className="font-medium w-32 sm:w-36" htmlFor="email">Email</label>
               <input
-                className={`flex-1 border border-gray-100 rounded px-2 py-1 bg-gray-100 cursor-not-allowed text-gray-400 ${breakWordClass}`}
+                className={`flex-1 border border-gray-100 rounded px-2 py-1 bg-gray-100 cursor-not-allowed text-gray-400 ${breakWordClass} text-sm`}
                 id="email"
                 name="email"
                 type="email"
@@ -629,12 +628,12 @@ export default function PersonalInfoCard() {
                 disabled
               />
             </div>
-            <div className="flex items-center gap-2 py-1 relative">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1 relative">
               {fieldIcons.skill}
-              <label className="font-medium w-36" htmlFor="skill">Skills</label>
-              <div className="flex-1 relative">
+              <label className="font-medium w-32 sm:w-36" htmlFor="skill">Skills</label>
+              <div className="flex-1 relative w-full">
                 <input
-                  className={`w-full border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass}`}
+                  className={`w-full border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 ${breakWordClass} text-sm`}
                   id="skill"
                   name="skill"
                   value={skillInput}
@@ -646,7 +645,7 @@ export default function PersonalInfoCard() {
                 />
                 {/* Dropdown suggestion */}
                 {showSkillDropdown && skillSuggestions.length > 0 && (
-                  <ul className="absolute z-20 left-0 right-0 bg-white border border-gray-100 rounded shadow mt-1 max-h-48 overflow-auto">
+                  <ul className="absolute z-20 left-0 right-0 bg-white border border-gray-100 rounded shadow mt-1 max-h-48 overflow-auto text-xs sm:text-sm">
                     {skillSuggestions.map((s, idx) => (
                       <li
                         key={s}
@@ -667,14 +666,14 @@ export default function PersonalInfoCard() {
               </div>
             </div>
             {/* Media Sosial Edit */}
-            <div className="flex items-start gap-2 py-1">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-2 py-1">
               {fieldIcons.media_sosial}
-              <label className="font-medium w-36 pt-1">Media Sosial</label>
-              <div className="flex-1 flex flex-col gap-2">
+              <label className="font-medium w-32 sm:w-36 pt-1">Media Sosial</label>
+              <div className="flex-1 flex flex-col gap-2 w-full">
                 {mediaSosialInput.length === 0 && (
                   <button
                     type="button"
-                    className="flex items-center gap-1 text-gray-500 text-sm hover:underline"
+                    className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm hover:underline"
                     onClick={handleAddMediaSosial}
                     tabIndex={0}
                   >
@@ -682,9 +681,9 @@ export default function PersonalInfoCard() {
                   </button>
                 )}
                 {mediaSosialInput.map((item, idx) => (
-                  <div key={idx} className="flex items-center gap-2">
+                  <div key={idx} className="flex flex-col sm:flex-row items-start sm:items-center gap-2 w-full">
                     <select
-                      className="border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200"
+                      className="border border-gray-200 rounded px-2 py-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 text-xs sm:text-sm w-full sm:w-auto"
                       value={item.platform || ""}
                       onChange={e =>
                         handleMediaSosialChange(idx, "platform", e.target.value)
@@ -699,7 +698,7 @@ export default function PersonalInfoCard() {
                       ))}
                     </select>
                     <input
-                      className="border border-gray-200 rounded px-2 py-1 flex-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200"
+                      className="border border-gray-200 rounded px-2 py-1 flex-1 bg-gray-50 focus:outline-none focus:ring-1 focus:ring-gray-200 text-xs sm:text-sm w-full"
                       type="url"
                       placeholder="URL"
                       value={item.url || ""}
@@ -721,7 +720,7 @@ export default function PersonalInfoCard() {
                 ))}
                 <button
                   type="button"
-                  className="flex items-center gap-1 text-gray-500 text-sm hover:underline mt-1"
+                  className="flex items-center gap-1 text-gray-500 text-xs sm:text-sm hover:underline mt-1"
                   onClick={handleAddMediaSosial}
                   tabIndex={0}
                 >
@@ -729,10 +728,10 @@ export default function PersonalInfoCard() {
                 </button>
               </div>
             </div>
-            <div className="flex items-center space-x-2 mt-4 justify-end">
+            <div className="flex flex-col sm:flex-row items-center space-y-2 sm:space-y-0 sm:space-x-2 mt-4 justify-end">
               <button
                 type="submit"
-                className="flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded text-sm transition"
+                className="flex items-center gap-2 bg-gray-700 hover:bg-gray-800 text-white px-4 py-2 rounded text-xs sm:text-sm transition w-full sm:w-auto justify-center"
                 disabled={saving}
               >
                 <FaPencilAlt className="text-white" />
@@ -740,7 +739,7 @@ export default function PersonalInfoCard() {
               </button>
               <button
                 type="button"
-                className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-sm transition"
+                className="flex items-center gap-2 bg-gray-200 hover:bg-gray-300 text-gray-700 px-4 py-2 rounded text-xs sm:text-sm transition w-full sm:w-auto justify-center"
                 onClick={handleCancel}
                 disabled={saving}
               >
