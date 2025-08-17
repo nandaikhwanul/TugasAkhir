@@ -1,6 +1,29 @@
 import Lowongan from "../models/Lowongan.js";
 import { spawn } from "child_process";
 import Pelamar from "../models/Pelamar.js";
+import cron from "node-cron"; // Tambahkan import node-cron
+
+// Scheduled job: tutup otomatis lowongan jika sudah melewati batas_lamaran
+// Job ini akan dijalankan setiap 5 menit (bisa diubah sesuai kebutuhan)
+cron.schedule("*/5 * * * *", async () => {
+    try {
+        // Cari semua lowongan yang statusnya "open" dan batas_lamaran sudah lewat
+        const now = new Date();
+        const expiredLowongans = await Lowongan.find({
+            status: "open",
+            batas_lamaran: { $lte: now }
+        });
+
+        for (const lowongan of expiredLowongans) {
+            lowongan.status = "closed";
+            await lowongan.save();
+            // Bisa tambahkan log jika ingin
+            // console.log(`Lowongan ${lowongan._id} otomatis ditutup karena melewati batas_lamaran`);
+        }
+    } catch (err) {
+        // console.error("Gagal menjalankan scheduled job tutup lowongan:", err);
+    }
+});
 
 // Create Lowongan (Input) - hanya bisa dibuat oleh role perusahaan
 export const createLowongan = async (req, res) => {
@@ -884,4 +907,3 @@ export const filterLowongan = async (req, res) => {
         res.status(500).json({ msg: error.message });
     }
 };
-

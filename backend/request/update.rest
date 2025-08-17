@@ -11,16 +11,7 @@ Content-Length: 370
     "nomor_telp": "0217654321",
     "deskripsi_perusahaan": "Perusahaan teknologi dan inovasi terkemuka di Indonesia.",
     "logo_perusahaan": "https://example.com/logo_baru.png",
-    "foto": ["https://example.com/foto_perusahaan_baru.jpg"],
     "foto_cover": "https://example.com/foto_cover_perusahaan_baru.jpg",
-    "website": "https://majujaya2.com",
-    "media_sosial": {
-        "instagram": "https://instagram.com/majujaya2",
-        "linkedin": "https://linkedin.com/company/majujaya2",
-        "facebook": "https://facebook.com/majujaya2"
-    },
-    "password": "123456",
-    "confPassword": "123456"
 }
 
 

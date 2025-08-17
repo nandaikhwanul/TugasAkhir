@@ -6,14 +6,21 @@ import {
     getAdminMe, 
     deleteAlumni,
     deletePerusahaan,
-    deleteAllLowongan // tambahkan import controller deleteAllLowongan
+    deleteAllLowongan
 } from "../controllers/Admin.js";
 import { verifyUser, adminOnly } from "../middleware/AuthUser.js";
 import { updateAlumni, validateUpdateAlumni } from "../controllers/Alumni.js";
 import { updatePerusahaan } from "../controllers/Perusahaan.js";
-
-// Tambahan: import controller previewLowonganForAdmin
 import { previewLowonganForAdmin } from "../controllers/Lowongan.js";
+
+// Tambahan: import statistik dashboard admin
+import { 
+    getDashboardStats, 
+    getAlumniPerTahun, 
+    getAlumniPerJurusan, 
+    getLowonganStatus, 
+    getPerusahaanPerBidang 
+} from "../controllers/DashboardAdmin.js";
 
 const router = express.Router();
 
@@ -50,5 +57,24 @@ router.get('/lowongan/preview', verifyUser, adminOnly, previewLowonganForAdmin);
 
 // Tambahkan route untuk hapus semua lowongan (hanya admin)
 router.delete('/lowongan', verifyUser, adminOnly, deleteAllLowongan);
+
+// =====================
+// Tambahan: Statistik Dashboard Admin
+// =====================
+
+// Card statistik utama (total alumni, perusahaan, lowongan)
+router.get('/dashboard/stats', verifyUser, adminOnly, getDashboardStats);
+
+// Grafik alumni per tahun (line chart)
+router.get('/dashboard/alumni-per-tahun', verifyUser, adminOnly, getAlumniPerTahun);
+
+// Grafik alumni per jurusan (pie chart)
+router.get('/dashboard/alumni-per-jurusan', verifyUser, adminOnly, getAlumniPerJurusan);
+
+// Grafik status lowongan (doughnut chart)
+router.get('/dashboard/lowongan-status', verifyUser, adminOnly, getLowonganStatus);
+
+// Grafik perusahaan per bidang (bar chart)
+router.get('/dashboard/perusahaan-per-bidang', verifyUser, adminOnly, getPerusahaanPerBidang);
 
 export default router;
