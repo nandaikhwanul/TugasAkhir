@@ -1,10 +1,8 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { FaPlus } from "react-icons/fa";
+import { FaPlus, FaTrash } from "react-icons/fa";
 import { getTokenFromSessionStorage } from "../../../sessiontoken";
-
-// ... (kode formatMonthYear, state, dan handler tidak diubah) ...
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return "-";
@@ -31,29 +29,33 @@ export default function PengalamanCard() {
   });
   const [pengalamanError, setPengalamanError] = useState("");
   const [pengalamanSaving, setPengalamanSaving] = useState(false);
+  const [deletingId, setDeletingId] = useState(null);
+
+  // Fetch pengalaman
+  const fetchPengalaman = async () => {
+    setLoadingPengalaman(true);
+    const token = getTokenFromSessionStorage();
+    if (!token) {
+      setPengalaman([]);
+      setLoadingPengalaman(false);
+      return;
+    }
+    try {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!res.ok) throw new Error("Gagal mengambil pengalaman");
+      const data = await res.json();
+      setPengalaman(Array.isArray(data.data) ? data.data : []);
+    } catch (err) {
+      setPengalaman([]);
+    }
+    setLoadingPengalaman(false);
+  };
 
   useEffect(() => {
-    async function fetchPengalaman() {
-      setLoadingPengalaman(true);
-      const token = getTokenFromSessionStorage();
-      if (!token) {
-        setPengalaman([]);
-        setLoadingPengalaman(false);
-        return;
-      }
-      try {
-        const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!res.ok) throw new Error("Gagal mengambil pengalaman");
-        const data = await res.json();
-        setPengalaman(Array.isArray(data.data) ? data.data : []);
-      } catch (err) {
-        setPengalaman([]);
-      }
-      setLoadingPengalaman(false);
-    }
     fetchPengalaman();
+    // eslint-disable-next-line
   }, []);
 
   const handlePengalamanFormChange = (e) => {
@@ -111,21 +113,46 @@ export default function PengalamanCard() {
         tanggal_selesai: "",
         masih_berjalan: false,
       });
-      setLoadingPengalaman(true);
-      const pengalamanRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pengalaman/me", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (pengalamanRes.ok) {
-        const data = await pengalamanRes.json();
-        setPengalaman(Array.isArray(data.data) ? data.data : []);
-      }
-      setLoadingPengalaman(false);
+      await fetchPengalaman();
     } catch (err) {
       setPengalamanError(err.message || "Gagal menambah pengalaman.");
       setPengalamanSaving(false);
     }
+    setPengalamanSaving(false);
   };
-  
+
+  // Handler untuk hapus pengalaman
+  const handleDeletePengalaman = async (id) => {
+    if (!window.confirm("Yakin ingin menghapus pengalaman ini?")) return;
+    setDeletingId(id);
+    setPengalamanError("");
+    const token = getTokenFromSessionStorage();
+    if (!token) {
+      setPengalamanError("Token tidak ditemukan.");
+      setDeletingId(null);
+      return;
+    }
+    try {
+      const res = await fetch(
+        `https://tugasakhir-production-6c6c.up.railway.app/pengalaman/${id}`,
+        {
+          method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      if (!res.ok) {
+        const errData = await res.json().catch(() => ({}));
+        throw new Error(errData.message || "Gagal menghapus pengalaman.");
+      }
+      await fetchPengalaman();
+    } catch (err) {
+      setPengalamanError(err.message || "Gagal menghapus pengalaman.");
+    }
+    setDeletingId(null);
+  };
+
   const breakWordClass = "break-words whitespace-pre-line";
 
   return (
@@ -142,7 +169,6 @@ export default function PengalamanCard() {
         </button>
       </div>
       <h4 className="text-lg sm:text-xl text-black font-bold">Pengalaman</h4>
-      {/* ... (kode form) ... */}
       {showAddPengalaman && (
         <form className="mt-4 mb-4 text-black space-y-3" onSubmit={handlePengalamanSubmit} autoComplete="off">
           <div className="flex flex-col sm:flex-row sm:items-center gap-2">
@@ -283,13 +309,13 @@ export default function PengalamanCard() {
         ) : (
           pengalaman.map((item, idx) => (
             <div
-              className="flex flex-row items-start w-full my-6 -ml-0 sm:-ml-1.5"
+              className="flex flex-row items-start w-full my-6 -ml-0 sm:-ml-1.5 group"
               key={item._id || idx}
             >
               <div className="w-6 sm:w-1/12 z-10 pt-2 flex-shrink-0 flex justify-center">
                 <div className="w-3 h-3 sm:w-3.5 sm:h-3.5 bg-blue-600 rounded-full"></div>
               </div>
-              <div className="w-full sm:w-11/12">
+              <div className="w-full sm:w-11/12 relative">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:space-x-2">
                   <span className="font-bold text-black text-base">{item.posisi}</span>
                   <span className="text-black text-sm hidden sm:inline">di</span>
@@ -299,6 +325,21 @@ export default function PengalamanCard() {
                       {item.jenis}
                     </span>
                   )}
+                  {/* Tombol hapus */}
+                  <button
+                    type="button"
+                    title="Hapus pengalaman"
+                    className="ml-auto sm:ml-2 p-1 rounded-full bg-red-100 hover:bg-red-200 text-red-600 hover:text-red-700 transition-opacity opacity-100 sm:opacity-0 sm:group-hover:opacity-100"
+                    style={{ transition: "opacity 0.2s" }}
+                    onClick={() => handleDeletePengalaman(item._id)}
+                    disabled={deletingId === item._id}
+                  >
+                    {deletingId === item._id ? (
+                      <span className="text-xs px-2">Menghapus...</span>
+                    ) : (
+                      <FaTrash className="h-4 w-4" />
+                    )}
+                  </button>
                 </div>
                 <div className="text-black text-sm">{item.lokasi}</div>
                 <div className="text-black text-sm">
@@ -315,6 +356,9 @@ export default function PengalamanCard() {
               </div>
             </div>
           ))
+        )}
+        {pengalamanError && (
+          <div className="bg-red-100 text-red-700 px-3 py-2 rounded text-sm mt-2">{pengalamanError}</div>
         )}
       </div>
     </div>

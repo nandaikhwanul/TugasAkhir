@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import NavbarPage from "../../navbar/page";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { getTokenFromSessionStorage } from "../../sessiontoken";
 
 // Komponen QRCode sederhana (tanpa import eksternal)
 function SimpleQRCode({ text, size = 256, onLoad }) {
@@ -37,7 +38,19 @@ export default function BotPesanQRCodePage() {
     setQrImgLoading(true);
     setError("");
     try {
-      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-qr");
+      const token = getTokenFromSessionStorage();
+      if (!token) {
+        setError("Token tidak ditemukan.");
+        setQrString("");
+        setQrImgLoading(false);
+        if (showLoading) setLoading(false);
+        return;
+      }
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-qr", {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
       if (!res.ok) throw new Error("whatsapp bot sudah ready. testing dengan mengirim pesan. jika tidak bisa, maka logout dan generate ulang code qr nya.");
       const data = await res.json();
       if (data && data.qr) {
@@ -70,15 +83,25 @@ export default function BotPesanQRCodePage() {
   async function handleBuatQR() {
     setActionLoading(true);
     setError("");
-    // setLogoutMessage(""); // dihapus
     setQrString(""); // Kosongkan QR sebelum fetch baru
     setLoading(true);
     setQrImgLoading(true);
     try {
+      const token = getTokenFromSessionStorage();
+      if (!token) {
+        setError("Token tidak ditemukan.");
+        setLoading(false);
+        setQrImgLoading(false);
+        setActionLoading(false);
+        return;
+      }
       // Gunakan endpoint POST https://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-init
       const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-init", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error("Gagal menginisialisasi WhatsApp Client dan trigger QR code");
@@ -92,7 +115,11 @@ export default function BotPesanQRCodePage() {
       const maxPolling = 15; // polling max 15x (sekitar 15 detik)
       while (!success && pollingCount < maxPolling) {
         try {
-          const qrRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-qr");
+          const qrRes = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-qr", {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          });
           if (!qrRes.ok) {
             // Jika error, cek apakah errornya "bot sudah ready"
             const errText = await qrRes.text();
@@ -144,11 +171,21 @@ export default function BotPesanQRCodePage() {
   async function handleLogoutQR() {
     setActionLoading(true);
     setError("");
-    // setLogoutMessage(""); // dihapus
     try {
+      const token = getTokenFromSessionStorage();
+      if (!token) {
+        setError("Token tidak ditemukan.");
+        setLoading(false);
+        setQrImgLoading(false);
+        setActionLoading(false);
+        return;
+      }
       const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/pesan/whatsapp-logout", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({}),
       });
       if (!res.ok) throw new Error("Gagal logout WhatsApp Bot");
@@ -163,7 +200,6 @@ export default function BotPesanQRCodePage() {
         // fallback jika response bukan json
         msg = "Berhasil logout dari WhatsApp.";
       }
-      // setLogoutMessage(msg || "Berhasil logout dari WhatsApp."); // dihapus
       toast.success(msg || "Berhasil logout dari WhatsApp.");
       setQrString("");
       setLoading(false);
@@ -184,7 +220,6 @@ export default function BotPesanQRCodePage() {
     setQrString("");
     setLoading(false);
     setQrImgLoading(false);
-    // setLogoutMessage(""); // dihapus
 
     // Fetch QR code di awal
     fetchQR();
@@ -236,10 +271,6 @@ export default function BotPesanQRCodePage() {
               ? "Scan QR code di bawah ini menggunakan WhatsApp di ponsel Anda untuk login bot WhatsApp."
               : "Memuat QR code untuk login bot WhatsApp..."}
           </p>
-          {/* Tampilkan pesan sukses logout jika ada */}
-          {/* {logoutMessage && (
-            <div className="text-green-600 mb-4">{logoutMessage}</div>
-          )} */}
           {error ? (
             <div className="text-red-500">{error}</div>
           ) : qrString ? (

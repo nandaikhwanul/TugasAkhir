@@ -136,7 +136,7 @@ export default function AlumniDashboardPage() {
               {loadingNama ? (
                 <span className="text-gray-400">...</span>
               ) : namaUser ? (
-                <span>{namaUser}</span>
+                <span>{namaUser.split(" ")[0]}</span>
               ) : (
                 <span className="text-gray-400">User</span>
               )}{" "}
