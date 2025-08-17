@@ -1,7 +1,8 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import Link from "next/link";
-import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
+// Hapus import sorting icon
+// import { FaSortAmountDown, FaSortAmountUp } from "react-icons/fa";
 import { useRouter } from "next/navigation";
 import { getTokenFromSessionStorage } from "../../sessiontoken";
 
@@ -155,8 +156,8 @@ export default function SavedLowonganPage() {
   };
 
   // TAMPILAN SAJA
-  // Untuk tampilan dropdown sort (dummy, tidak ada aksi)
-  const localSortOrder = "desc";
+  // Hapus variabel dan tampilan sorting
+  // const localSortOrder = "desc";
   const totalSaved = savedLowongan.length;
 
   return (
@@ -170,31 +171,7 @@ export default function SavedLowonganPage() {
                 ({loading ? "..." : totalSaved} total)
               </span>
             </div>
-            {/* Dropdown sorting (dummy, tidak ada aksi) */}
-            <div className="mt-3 sm:mt-0 flex items-center gap-2">
-              <label htmlFor="sort-lowongan" className="text-[#444] text-[15px] font-medium mr-2">
-                Urutkan:
-              </label>
-              <div className="relative">
-                <select
-                  id="sort-lowongan"
-                  className="appearance-none border border-[#e0e0e0] rounded-lg py-1.5 pl-9 pr-6 text-[15px] text-[#222] bg-white focus:outline-none focus:ring-2 focus:ring-[#4fc3f7] transition"
-                  value={localSortOrder}
-                  style={{ minWidth: 120, cursor: "pointer" }}
-                  readOnly
-                >
-                  <option value="desc">Terbaru</option>
-                  <option value="asc">Terlama</option>
-                </select>
-                <span className="absolute left-2 top-1.5 text-[#4fc3f7] pointer-events-none">
-                  {localSortOrder === "desc" ? (
-                    <FaSortAmountDown size={18} />
-                  ) : (
-                    <FaSortAmountUp size={18} />
-                  )}
-                </span>
-              </div>
-            </div>
+            {/* Hapus Dropdown sorting */}
           </div>
           <div
             className="w-full flex-1 overflow-y-auto pb-4 px-0 md:mb-52 mb-[295px]"
