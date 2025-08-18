@@ -6,9 +6,10 @@ import { getTokenFromSessionStorage } from "../../sessiontoken";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import Navbar from "../../navbar/page"; // Import Navbar
+import { FaTrash } from "react-icons/fa";
 
-// Base URL for the API. Change this if your server runs on a different address/port.
-const API_BASE_URL = 'http://localhost:5000';
+// Ganti ke endpoint lokal sesuai instruksi
+const API_BASE_URL = 'https://tugasakhir-production-6c6c.up.railway.app';
 
 const initialFileForm = {
   judul: '',
@@ -292,6 +293,27 @@ const Home = () => {
     }
   };
 
+  // Handler for delete
+  const handleDelete = async (id) => {
+    if (!window.confirm("Yakin ingin menghapus konten ini?")) return;
+    try {
+      const token = getTokenFromSessionStorage();
+      const response = await fetch(`${API_BASE_URL}/pelatihandanpodcast/${id}`, {
+        method: "DELETE",
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) {
+        const data = await response.json().catch(() => ({}));
+        throw new Error(data.message || data.msg || "Gagal menghapus konten.");
+      }
+      toast.success("Konten berhasil dihapus!");
+      // Hapus dari state tanpa reload
+      setData((prev) => prev.filter((item) => item._id !== id));
+    } catch (err) {
+      toast.error("Gagal menghapus: " + err.message);
+    }
+  };
+
   // ContentCard: show contentUrl for both file and url, and use title/contentType
   const ContentCard = ({ item }) => {
     // item: { title, contentUrl, contentType, ... }
@@ -317,7 +339,14 @@ const Home = () => {
       // If embed fails, browser will show error or blank
 
       return (
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-auto">
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-auto relative">
+          <button
+            className="absolute top-2 right-2 z-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 transition"
+            title="Hapus"
+            onClick={() => handleDelete(item._id)}
+          >
+            <FaTrash className="w-5 h-5" />
+          </button>
           <div className="aspect-w-16 h-96 w-full">
             <iframe
               className="w-full h-full"
@@ -344,7 +373,14 @@ const Home = () => {
 
     // Jika file lokal, tampilkan video tag
     return (
-      <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-auto">
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-auto relative">
+        <button
+          className="absolute top-2 right-2 z-10 bg-red-100 hover:bg-red-200 text-red-600 rounded-full p-2 transition"
+          title="Hapus"
+          onClick={() => handleDelete(item._id)}
+        >
+          <FaTrash className="w-5 h-5" />
+        </button>
         <div className="aspect-w-16 aspect-h-9 w-full bg-gray-900 flex items-center justify-center">
           <video
             src={`${API_BASE_URL}/${item.contentUrl.replace(/\\/g, "/")}`}
@@ -619,7 +655,7 @@ const Home = () => {
             <div>
               <div className="flex items-center space-x-4 mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-8 h-8 text-indigo-600">
-                    <path fill="currentColor" d="M15 13.5v-3c0-.3-.2-.5-.5-.5H8c-.3 0-.5.2-.5.5v3c0 .3.2.5.5.5h6.5c.3 0 .5-.2.5-.5zM20 5v14c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2zm-1 0H5v14h14V5z"/>
+                    <path fill="currentColor" d="M15 13.5v-3c0-.3-.2-.5-.5-.5H8c-.3 0-.5.2-.5.5v3c0 .3.2.5.5.5h6.5c.3 0 .5-.2.5-.5zM20 5v14c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h12c1.1 0 2-.9 2 2zm-1 0H5v14h14V5z"/>
                 </svg>
                 <h2 className="text-2xl font-bold text-gray-800">Video Pelatihan</h2>
               </div>
