@@ -47,6 +47,20 @@ function setTokenCookie(token, options = {}) {
   console.debug("Set token cookie:", cookie);
 }
 
+// Helper untuk deteksi superadmin dari responseData
+function isSuperAdmin(responseData) {
+  if (!responseData) return false;
+  const role = responseData.role || (responseData.user && responseData.user.role);
+  if (typeof role === "string" && role.toLowerCase() === "superadmin") {
+    return true;
+  }
+  // Alternatif, jika backend hanya mengirimkan flag
+  if (responseData.isSuperAdmin === true) {
+    return true;
+  }
+  return false;
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -66,18 +80,25 @@ export default function LoginPage() {
     }
   }, []);
 
-  // Cek token dari sessionStorage sebelum render login
+  // Cek token dari sessionStorage dan redirect
   useEffect(() => {
     const token = getTokenFromSessionStorage();
-    console.debug("Token from sessionStorage:", token);
+    const role = typeof window !== "undefined" ? window.sessionStorage.getItem("role") : null;
+    console.debug("Checking for existing token and role:", { token, role });
+
     if (token) {
-      console.debug("Token found, redirecting to /dashboard");
-      router.replace("/dashboard");
+      // Perbaikan di sini: arahkan ke /superadmin/ jika role superadmin
+      if (role && role.toLowerCase() === "superadmin") {
+        console.debug("Token and superadmin role found, redirecting to /superadmin/");
+        router.replace("/superadmin/");
+      } else {
+        console.debug("Token found, redirecting to /dashboard");
+        router.replace("/dashboard");
+      }
       return;
     }
     setCheckingToken(false);
-    // eslint-disable-next-line
-  }, []); // <--- HAPUS router dari dependency array, hanya [] saja
+  }, [router]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -108,98 +129,73 @@ export default function LoginPage() {
       const payload = { email, password };
       console.debug("Submitting login payload:", payload);
 
-      // Ganti ke fetch agar bisa ambil cookie dari body JSON response
-      fetch("https://tugasakhir-production-6c6c.up.railway.app/login", {
+      const res = await fetch("https://tugasakhir-production-6c6c.up.railway.app/login", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        credentials: "include", // agar cookie dari server tetap dikirim/disimpan browser
+        credentials: "include",
         body: JSON.stringify(payload),
-      })
-        .then(async (res) => {
-          setLoading(false);
-          let responseData = {};
-          try {
-            responseData = await res.json();
-          } catch (e) {
-            responseData = {};
+      });
+
+      setLoading(false);
+      let responseData = {};
+      try {
+        responseData = await res.json();
+      } catch (e) {
+        responseData = {};
+      }
+
+      if (res.ok) {
+        let token = responseData.token || (responseData.cookie && responseData.cookie.match(/token=([^;]+)/)?.[1]);
+        if (token) {
+          if (typeof window !== "undefined") {
+            window.sessionStorage.setItem("token", token);
+            console.debug("Token set to sessionStorage from response body.");
           }
+        }
+        
+        const role = responseData.role || (responseData.user && responseData.user.role);
+        if (role) {
+            window.sessionStorage.setItem("role", role);
+            console.debug("Role set to sessionStorage:", role);
+        }
 
-          if (res.ok) {
-            // Ambil cookie/token dari body JSON response
-            let token = null;
-            if (responseData.cookie) {
-              // Jika backend mengirimkan cookie string (misal: "token=xxx; Path=/; ...")
-              // Ambil nilai token dari string cookie
-              const match = responseData.cookie.match(/token=([^;]+)/);
-              if (match) {
-                token = match[1];
-              }
-            }
-            // Atau jika backend mengirimkan token langsung
-            if (!token && responseData.token) {
-              token = responseData.token;
-            }
+        if (rememberMe) {
+          saveLoginInfo(email, password);
+        } else {
+          clearLoginInfo();
+        }
 
-            if (token) {
-              // Simpan token ke sessionStorage
-              if (typeof window !== "undefined") {
-                window.sessionStorage.setItem("token", token);
-                console.debug("Token set to sessionStorage from response body (cookie/token field)");
-              }
-              // (Opsional) juga set cookie jika ingin, tapi source of truth sessionStorage
-              setTokenCookie(token, {
-                maxAge: 1800,
-                path: "/",
-                secure: false,
-                sameSite: "None",
-              });
-            }
-
-            if (rememberMe) {
-              saveLoginInfo(email, password);
-            } else {
-              clearLoginInfo();
-            }
-            console.debug("Redirecting to /dashboard after successful login");
-            router.push("/dashboard");
-          } else {
-            let msg = "Terjadi kesalahan pada server. Silakan coba lagi.";
-            msg = responseData.message || responseData.msg || msg;
-            let newError = { email: "", password: "", general: "" };
-            if (
-              /email/i.test(msg) &&
-              (/tidak ditemukan|not found|invalid|salah|required|wajib/i.test(msg) || /email/i.test(msg))
-            ) {
-              newError.email = msg;
-            } else if (
-              /password/i.test(msg) &&
-              (/salah|invalid|required|wajib/i.test(msg) || /password/i.test(msg))
-            ) {
-              newError.password = msg;
-            } else {
-              newError.general = msg;
-            }
-            setError(newError);
-            console.error("Login error:", msg);
-          }
-        })
-        .catch((err) => {
-          setLoading(false);
-          setError({
-            email: "",
-            password: "",
-            general: "Terjadi kesalahan pada server. Silakan coba lagi.",
-          });
-          console.error("Login error: Network/Server error", err);
-        });
+        if (isSuperAdmin(responseData)) {
+          // Perbaikan di sini: arahkan ke /superadmin/ setelah login berhasil
+          console.debug("Redirecting to /superadmin/ after successful superadmin login");
+          router.push("/superadmin/");
+        } else {
+          console.debug("Redirecting to /dashboard after successful login");
+          router.push("/dashboard");
+        }
+      } else {
+        let msg = responseData.message || responseData.msg || "Terjadi kesalahan pada server. Silakan coba lagi.";
+        let newError = { email: "", password: "", general: "" };
+        if (/email/i.test(msg)) {
+          newError.email = msg;
+        } else if (/password/i.test(msg)) {
+          newError.password = msg;
+        } else {
+          newError.general = msg;
+        }
+        setError(newError);
+        console.error("Login error:", msg);
+      }
     } catch (err) {
       setLoading(false);
-      let newError = { email: "", password: "", general: "" };
-      newError.general = "Terjadi kesalahan pada server. Silakan coba lagi.";
-      setError(newError);
-      console.error("Login error:", err);
+      setError({
+        email: "",
+        password: "",
+        general: "Terjadi kesalahan koneksi. Silakan coba lagi.",
+      });
+      console.error("Login error: Network/Server error", err);
     }
   };
 
@@ -209,7 +205,6 @@ export default function LoginPage() {
   };
 
   if (checkingToken) {
-    console.debug("Checking token, not rendering login form yet.");
     return null;
   }
 
@@ -218,7 +213,6 @@ export default function LoginPage() {
     return /tidak ditemukan|not found/i.test(msg);
   }
 
-  // Framer Motion variants
   const containerVariants = {
     hidden: { opacity: 0, y: 40 },
     visible: { opacity: 1, y: 0, transition: { staggerChildren: 0.12, delayChildren: 0.1 } },
