@@ -11,7 +11,7 @@ function ConfirmDeleteModal({ open, onClose, onConfirm }) {
   if (!open) return null;
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/40">
-      <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-sm">
+      <div className="rounded-lg shadow-lg p-6 w-full max-w-sm">
         <h2 className="text-lg font-semibold mb-2 text-gray-800">Konfirmasi Hapus</h2>
         <p className="mb-4 text-gray-600">Yakin ingin menghapus data alumni ini?</p>
         <div className="flex justify-end gap-2">

@@ -59,9 +59,7 @@ export default function SettingPerusahaanPage() {
     email_perusahaan: "",
     bidang_perusahaan: "",
     alamat: "",
-    nomor_telp: "",
-    npwp: "",
-    deskripsi_perusahaan: "",
+    nama_brand: "",
   });
 
   useEffect(() => {
@@ -136,9 +134,7 @@ export default function SettingPerusahaanPage() {
           email_perusahaan: "",
           bidang_perusahaan: "",
           alamat: "",
-          nomor_telp: "",
-          npwp: "",
-          deskripsi_perusahaan: "",
+          nama_brand: "",
         });
         // Refresh data
         setPerusahaan((prev) =>
@@ -305,9 +301,7 @@ export default function SettingPerusahaanPage() {
       email_perusahaan: p.email_perusahaan || "",
       bidang_perusahaan: p.bidang_perusahaan || "",
       alamat: p.alamat || "",
-      nomor_telp: p.nomor_telp || "",
-      npwp: p.npwp || "",
-      deskripsi_perusahaan: p.deskripsi_perusahaan || "",
+      nama_brand: p.nama_brand || "",
     });
   };
 
@@ -476,43 +470,16 @@ export default function SettingPerusahaanPage() {
                               />
                             </div>
                             <div>
-                              <span className="text-blue-700 font-semibold">No. Telp: </span>
+                              <span className="text-blue-700 font-semibold">Nama Brand: </span>
                               <input
                                 type="text"
                                 className="bg-blue-50 rounded px-2 py-0.5 text-blue-700 border w-full"
-                                value={editData.nomor_telp}
+                                value={editData.nama_brand}
                                 onChange={e =>
-                                  setEditData(d => ({ ...d, nomor_telp: e.target.value }))
+                                  setEditData(d => ({ ...d, nama_brand: e.target.value }))
                                 }
-                                placeholder="No. Telp"
+                                placeholder="Nama Brand"
                                 required
-                              />
-                            </div>
-                            <div>
-                              <span className="text-blue-700 font-semibold">NPWP: </span>
-                              <input
-                                type="text"
-                                className="bg-blue-50 rounded px-2 py-0.5 text-blue-700 border w-full"
-                                value={editData.npwp}
-                                onChange={e =>
-                                  setEditData(d => ({ ...d, npwp: e.target.value }))
-                                }
-                                placeholder="NPWP"
-                                required
-                              />
-                            </div>
-                            <div>
-                              <span className="text-blue-700 font-semibold">Deskripsi: </span>
-                              <textarea
-                                className="bg-blue-50 rounded px-2 py-0.5 text-blue-700 border w-full"
-                                value={editData.deskripsi_perusahaan}
-                                onChange={e =>
-                                  setEditData(d => ({ ...d, deskripsi_perusahaan: e.target.value }))
-                                }
-                                placeholder="Deskripsi Perusahaan"
-                                rows={2}
-                                required
-                                style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
                               />
                             </div>
                           </div>
@@ -531,21 +498,8 @@ export default function SettingPerusahaanPage() {
                               <span className="bg-blue-50 rounded px-2 py-0.5 text-blue-700">{p.alamat}</span>
                             </div>
                             <div>
-                              <span className="text-blue-700 font-semibold">No. Telp: </span>
-                              <span className="bg-blue-50 rounded px-2 py-0.5 text-blue-700">{p.nomor_telp}</span>
-                            </div>
-                            <div>
-                              <span className="text-blue-700 font-semibold">NPWP: </span>
-                              <span className="bg-blue-50 rounded px-2 py-0.5 text-blue-700">{p.npwp}</span>
-                            </div>
-                            <div>
-                              <span className="text-blue-700 font-semibold">Deskripsi: </span>
-                              <span
-                                className="bg-blue-50 rounded px-2 py-0.5 text-blue-700 break-words whitespace-pre-wrap"
-                                style={{ wordBreak: "break-word", whiteSpace: "pre-wrap" }}
-                              >
-                                {p.deskripsi_perusahaan}
-                              </span>
+                              <span className="text-blue-700 font-semibold">Nama Brand: </span>
+                              <span className="bg-blue-50 rounded px-2 py-0.5 text-blue-700">{p.nama_brand}</span>
                             </div>
                           </div>
                         )}
@@ -605,9 +559,7 @@ export default function SettingPerusahaanPage() {
                                     email_perusahaan: "",
                                     bidang_perusahaan: "",
                                     alamat: "",
-                                    nomor_telp: "",
-                                    npwp: "",
-                                    deskripsi_perusahaan: "",
+                                    nama_brand: "",
                                   });
                                 }}
                               >
@@ -649,9 +601,7 @@ export default function SettingPerusahaanPage() {
                                     email_perusahaan: "",
                                     bidang_perusahaan: "",
                                     alamat: "",
-                                    nomor_telp: "",
-                                    npwp: "",
-                                    deskripsi_perusahaan: "",
+                                    nama_brand: "",
                                   });
                                 }}
                               >
