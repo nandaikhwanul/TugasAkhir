@@ -13,11 +13,11 @@ import LowonganRoute from "./routes/lowongan.js";
 import PelamarRoute from "./routes/pelamar.js";
 import PesanRoute from "./routes/pesan.js";
 import FotoPerusahaanRoute from "./routes/fotoPerusahaan.js";
-import ContentRoute from "./routes/content.js";
 import pesanBebasRoute from "./routes/pesanBebas.js"; // importkan pesanBebasRoute
 import PengalamanRoute from "./routes/pengalaman.js"; // import pengalaman route
 import TambahAlumniRoute from "./routes/tambahAlumni.js"; // tambahkan import route tambahAlumni
 import CVRoute from "./routes/CV.js"; // import route CV
+import PelatihanDanPodcastRoute from "./routes/pelatihandanpodcast.js"; // tambahkan import pelatihandanpodcast
 
 // Import semua forum routes
 import forumPostRoutes from "./routes/forumPostRoutes.js";
@@ -69,11 +69,11 @@ app.use('/admin', AdminRoute);
 app.use('/superadmin', SuperAdminRoute); // pasang route superadmin
 app.use('/pesan', PesanRoute);
 app.use('/foto-perusahaan', FotoPerusahaanRoute);
-app.use('/content', ContentRoute);
 app.use('/pesan-bebas', pesanBebasRoute); // pasang pesanBebasRoute
 app.use('/pengalaman', PengalamanRoute); // pasang pengalaman route
 app.use('/tambah-alumni', TambahAlumniRoute); // pasang route tambahAlumni
 app.use('/cv', CVRoute); // daftarkan route CV
+app.use('/pelatihandanpodcast', PelatihanDanPodcastRoute); // daftarkan route pelatihandanpodcast
 
 // Pasang semua forum routes
 app.use('/forum/posts', forumPostRoutes);

@@ -1,0 +1,34 @@
+### CREATE pelatihan/podcast
+POST http://localhost:5000/pelatihandanpodcast
+Content-Type: application/json
+Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OWFlMTBkZGYyODNiN2JlMDkyY2RhYiIsInVzZXJuYW1lIjoiYWRtaW5iYXJ1MSIsImVtYWlsIjoiYWRtaW5iYXJ1MUBleGFtcGxlLmNvbSIsInJvbGUiOiJhZG1pbiIsImlhdCI6MTc1NTUyMjUyNywiZXhwIjoxNzU1NTI0MzI3fQ.0IsM1PhEj3YyTWb7Tgq75LYV2h--NCCoPvIP4cYHBTY7tJf24WvlSkWLUj0-abFSfHrvnF0HEAGlAgGs8ILzVStVZylmUMm_cP5ZoCsa9cbim85okSCSjYV4uKLqc3L1z3FSTojAOOnHk58uL67DaSCVozfkAbkIkpRAOTV-2AgsGURrTmhLMxihHTaW-GkWFPfj4SeLwAKmI8HXvY1bRmyAE1i1kkD0CIrOesPxIGI9Pd-K92fez6ljWuD0F7KKLAlw1IJSbIg-3qgxSr3fm7gLSaJOlhnGBbC9_QaAJz0n5A1tVSA4DvThWVSCyfTTFUqU-GwXxz6KYWMPxguj8w
+
+{
+  "judul": "Pelatihan Public Speaking",
+  "deskripsi": "Pelatihan untuk meningkatkan kemampuan berbicara di depan umum.",
+  "tipe": "pelatihan",
+  "videoPelatihanUrl": "https://example.com/pelatihan-public-speaking"
+}
+
+### GET semua pelatihan/podcast
+GET http://localhost:5000/pelatihandanpodcast
+
+### GET pelatihan/podcast by id
+GET http://localhost:5000/pelatihandanpodcast/1
+
+### UPDATE pelatihan/podcast
+PUT http://localhost:5000/pelatihandanpodcast/1
+Content-Type: application/json
+Authorization: Bearer {{token}}
+
+{
+  "judul": "Pelatihan Public Speaking (Update)",
+  "deskripsi": "Update deskripsi pelatihan.",
+  "tipe": "pelatihan",
+  "tanggal": "2024-07-02",
+  "link": "https://example.com/pelatihan-public-speaking-update"
+}
+
+### DELETE pelatihan/podcast
+DELETE http://localhost:5000/pelatihandanpodcast/1
+Authorization: Bearer {{token}}

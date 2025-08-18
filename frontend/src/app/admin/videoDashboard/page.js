@@ -1,547 +1,662 @@
-"use client";
+"use client"
+import { useState, useEffect } from 'react';
+import { format } from 'date-fns';
+import { id } from 'date-fns/locale';
+import { getTokenFromSessionStorage } from "../../sessiontoken";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import Navbar from "../../navbar/page"; // Import Navbar
 
-import React, { useRef, useState } from "react";
-import { FiUploadCloud, FiLink2 } from "react-icons/fi";
-import { MdOutlineCastForEducation } from "react-icons/md";
-import { FaPodcast } from "react-icons/fa";
-import Navbar from "../../navbar/page";
+// Base URL for the API. Change this if your server runs on a different address/port.
+const API_BASE_URL = 'http://localhost:5000';
 
-// Helper untuk membagi array menjadi chunk
-function chunkArray(array, size) {
-  const result = [];
-  for (let i = 0; i < array.length; i += size) {
-    result.push(array.slice(i, i + size));
+const initialFileForm = {
+  judul: '',
+  deskripsi: '',
+  tipe: 'pelatihan',
+};
+
+const initialLinkForm = {
+  judul: '',
+  deskripsi: '',
+  tipe: 'pelatihan',
+  videoPelatihanUrl: '',
+  videoPodcastUrl: '',
+};
+
+// Helper: Convert YouTube URL to embed format if possible
+function getYouTubeEmbedUrl(url) {
+  if (!url) return url;
+  // Handle youtu.be short links
+  if (url.match(/^https?:\/\/youtu\.be\//)) {
+    const id = url.split('youtu.be/')[1].split(/[?&]/)[0];
+    return `https://www.youtube.com/embed/${id}`;
   }
-  return result;
+  // Handle youtube.com/watch?v= links
+  if (url.match(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=/)) {
+    const id = url.split('v=')[1].split('&')[0];
+    return `https://www.youtube.com/embed/${id}`;
+  }
+  // Handle already embed
+  if (url.match(/^https?:\/\/(www\.)?youtube\.com\/embed\//)) {
+    return url;
+  }
+  // Handle youtube.com/shorts/ links
+  if (url.match(/^https?:\/\/(www\.)?youtube\.com\/shorts\//)) {
+    const id = url.split('/shorts/')[1].split(/[?&]/)[0];
+    return `https://www.youtube.com/embed/${id}`;
+  }
+  return url;
 }
 
-// Helper untuk validasi link embed (sederhana, bisa dikembangkan)
-function isValidEmbedLink(link) {
-  // Youtube, TikTok, Twitter, Facebook, dst (basic check)
-  return (
-    /youtube\.com|youtu\.be|tiktok\.com|twitter\.com|facebook\.com|fb\.watch/.test(link)
-  );
+// Helper: Convert Instagram URL to embed format if possible
+function getInstagramEmbedUrl(url) {
+  if (!url) return url;
+  // Instagram embed: https://www.instagram.com/p/xxxx/ => https://www.instagram.com/p/xxxx/embed
+  const match = url.match(/^https?:\/\/(www\.)?instagram\.com\/(p|reel|tv)\/([^/?#&]+)/);
+  if (match) {
+    return `https://www.instagram.com/${match[2]}/${match[3]}/embed`;
+  }
+  return url;
 }
 
-/**
- * INSTRUKSI PENGGUNA:
- * - Pilih tab "Pelatihan" atau "Podcast" sesuai kategori video yang ingin diupload.
- * - Pilih mode upload: "Upload File" untuk upload file, atau "Upload Link" untuk menambah video dari link.
- * - Untuk upload file: pilih file, isi judul & deskripsi, lalu klik tombol "Upload".
- * - Untuk upload link: masukkan link video, isi judul & deskripsi, lalu klik tombol "Upload".
- * - Video yang diupload akan langsung muncul di tab yang aktif.
- */
+// Helper: General embed URL for known platforms
+function getEmbedUrl(url) {
+  if (!url) return url;
+  if (url.includes('youtube.com') || url.includes('youtu.be')) {
+    return getYouTubeEmbedUrl(url);
+  }
+  if (url.includes('instagram.com')) {
+    return getInstagramEmbedUrl(url);
+  }
+  // Add more platforms if needed
+  return url;
+}
 
-export default function AdminDashboardUpload() {
-  // State untuk daftar video
-  const [pelatihanVideos, setPelatihanVideos] = useState([
-    {
-      id: 1,
-      title: "Pelatihan React Dasar",
-      url: "https://www.youtube.com/embed/dGcsHMXbSOA",
-      desc: "Belajar React dari dasar untuk pemula.",
-    },
-    {
-      id: 2,
-      title: "Pelatihan UI/UX Design",
-      url: "https://www.youtube.com/embed/3tYp4UQISp8",
-      desc: "Dasar-dasar UI/UX untuk pengembangan aplikasi.",
-    },
-    // Tambahkan data lain jika ingin menguji 6 data
-  ]);
-  const [podcastVideos, setPodcastVideos] = useState([
-    {
-      id: 1,
-      title: "Podcast Karir IT",
-      url: "https://www.youtube.com/embed/2Xc9gXyf2G4",
-      desc: "Diskusi seputar karir di bidang IT.",
-    },
-    {
-      id: 2,
-      title: "Podcast Sukses Alumni",
-      url: "https://www.youtube.com/embed/5qap5aO4i9A",
-      desc: "Cerita sukses alumni dan tips berkarir.",
-    },
-    // Tambahkan data lain jika ingin menguji 6 data
-  ]);
+const Home = () => {
+  const [data, setData] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [selectedFile, setSelectedFile] = useState(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [message, setMessage] = useState('');
+  const [formType, setFormType] = useState('file'); // 'file' or 'link'
 
-  // State upload
-  const [dragActive, setDragActive] = useState(false);
-  const [fileName, setFileName] = useState("");
-  const [fileObject, setFileObject] = useState(null);
-  const [activeTab, setActiveTab] = useState("pelatihan");
-  const [uploadMode, setUploadMode] = useState("file"); // "file" | "link"
-  const [linkInput, setLinkInput] = useState("");
-  const [linkError, setLinkError] = useState("");
-  const [linkSuccess, setLinkSuccess] = useState("");
-  const [showUploadBox, setShowUploadBox] = useState(true); // for animation
-  const [titleInput, setTitleInput] = useState("");
-  const [descInput, setDescInput] = useState("");
-  const [fileError, setFileError] = useState("");
-  const [fileSuccess, setFileSuccess] = useState("");
-  const inputRef = useRef(null);
+  // Form states for file upload
+  const [fileForm, setFileForm] = useState(initialFileForm);
 
-  // Animasi transisi upload box
-  const handleSwitchMode = (mode) => {
-    if (uploadMode === mode) return;
-    setShowUploadBox(false);
-    setTimeout(() => {
-      setUploadMode(mode);
-      setShowUploadBox(true);
-      setFileName("");
-      setFileObject(null);
-      setLinkInput("");
-      setLinkError("");
-      setLinkSuccess("");
-      setTitleInput("");
-      setDescInput("");
-      setFileError("");
-      setFileSuccess("");
-      // Reset file input value to avoid uncontrolled warning
-      if (inputRef.current) {
-        inputRef.current.value = "";
-      }
-    }, 250); // match with transition duration
+  // Form states for link upload (for pelatihan, use videoPelatihanUrl; for podcast, use videoPodcastUrl)
+  const [linkForm, setLinkForm] = useState(initialLinkForm);
+
+  // Fetch data from the API
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const token = getTokenFromSessionStorage();
+      const response = await fetch(`${API_BASE_URL}/pelatihandanpodcast`, {
+        headers: token ? { Authorization: `Bearer ${token}` } : {},
+      });
+      if (!response.ok) throw new Error('Gagal mengambil data');
+      const result = await response.json();
+      // result.data sesuai controller
+      setData(result.data || []);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      setMessage('Error: ' + error.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleDrag = (e) => {
+  useEffect(() => {
+    fetchData();
+  }, []);
+
+  // Handle drag and drop events
+  const handleDragOver = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    if (e.type === "dragenter" || e.type === "dragover") {
-      setDragActive(true);
-    } else if (e.type === "dragleave") {
-      setDragActive(false);
-    }
+    setIsDragOver(true);
+  };
+
+  const handleDragLeave = (e) => {
+    e.preventDefault();
+    setIsDragOver(false);
   };
 
   const handleDrop = (e) => {
     e.preventDefault();
-    e.stopPropagation();
-    setDragActive(false);
-    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-      setFileName(e.dataTransfer.files[0].name);
-      setFileObject(e.dataTransfer.files[0]);
-      // Set file input value to empty to avoid uncontrolled warning
-      if (inputRef.current) {
-        inputRef.current.value = "";
+    setIsDragOver(false);
+    const file = e.dataTransfer.files[0];
+    if (file) {
+      setSelectedFile(file);
+    }
+  };
+
+  // Handle form changes for file upload
+  const handleFileFormChange = (e) => {
+    setFileForm({ ...fileForm, [e.target.name]: e.target.value });
+  };
+
+  // Handle form changes for link upload
+  const handleLinkFormChange = (e) => {
+    const { name, value } = e.target;
+    setLinkForm({ ...linkForm, [name]: value });
+  };
+
+  // Handle file selection via input button
+  const handleFileChange = (e) => {
+    setSelectedFile(e.target.files[0]);
+  };
+
+  // Submit form for file upload
+  const handleFileSubmit = async (e) => {
+    e.preventDefault();
+    if (!selectedFile) {
+      setMessage('Silakan pilih file untuk diunggah.');
+      return;
+    }
+
+    setIsUploading(true);
+    setMessage('');
+
+    // Create FormData object
+    const formData = new FormData();
+    formData.append('judul', fileForm.judul);
+    formData.append('deskripsi', fileForm.deskripsi);
+    formData.append('tipe', fileForm.tipe);
+    // formData.append('tanggal', new Date().toISOString().split('T')[0]); // tanggal tidak dipakai di controller
+    formData.append('video', selectedFile); // fieldname HARUS "video" sesuai controller
+
+    try {
+      const token = getTokenFromSessionStorage();
+      // Penting: Jangan set Content-Type ke application/json saat upload file!
+      // fetch akan otomatis set Content-Type ke multipart/form-data jika body adalah FormData
+      const response = await fetch(`${API_BASE_URL}/pelatihandanpodcast`, {
+        method: 'POST',
+        body: formData,
+        headers: token ? { Authorization: `Bearer ${token}` } : undefined,
+      });
+
+      // Cek apakah response berupa JSON, jika tidak, tangani error HTML
+      let result;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        // Jika bukan JSON, kemungkinan error HTML
+        const text = await response.text();
+        throw new Error('Gagal mengunggah file. Server mengembalikan respons tidak valid: ' + text.slice(0, 100));
       }
+
+      if (!response.ok) {
+        throw new Error(result.msg || 'Gagal mengunggah file.');
+      }
+      // Success: pakai react-toastify
+      toast.success('File berhasil diunggah!');
+      setFileForm(initialFileForm);
+      setSelectedFile(null);
+      setMessage('');
+      // fetchData();
+      // Refresh browser setelah berhasil upload
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      setMessage('Error: ' + error.message);
+      toast.error('Error: ' + error.message);
+    } finally {
+      setIsUploading(false);
     }
   };
 
-  const handleChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFileName(e.target.files[0].name);
-      setFileObject(e.target.files[0]);
-    } else {
-      setFileName("");
-      setFileObject(null);
-    }
-  };
-
-  const handleClick = () => {
-    if (uploadMode === "file") {
-      if (inputRef.current) inputRef.current.click();
-    }
-  };
-
-  // Upload file ke list video (simulasi, hanya menambah ke state)
-  const handleFileUpload = (e) => {
+  // Submit form for link upload
+  const handleLinkSubmit = async (e) => {
     e.preventDefault();
-    setFileError("");
-    setFileSuccess("");
-    if (!fileName || !fileObject) {
-      setFileError("Pilih file terlebih dahulu.");
-      return;
+    setIsUploading(true);
+    setMessage('');
+
+    try {
+      const token = getTokenFromSessionStorage();
+      let body = {
+        judul: linkForm.judul,
+        deskripsi: linkForm.deskripsi,
+        tipe: linkForm.tipe,
+        // tanggal: new Date().toISOString().split('T')[0], // tanggal tidak dipakai di controller
+      };
+
+      // If tipe is pelatihan, use videoPelatihanUrl
+      if (linkForm.tipe === 'pelatihan') {
+        body.videoPelatihanUrl = linkForm.videoPelatihanUrl;
+      } else if (linkForm.tipe === 'podcast') {
+        body.videoPodcastUrl = linkForm.videoPodcastUrl;
+      }
+
+      // Validate YouTube/Instagram embed for podcast
+      if (linkForm.tipe === 'podcast' && linkForm.videoPodcastUrl) {
+        const embedUrl = getEmbedUrl(linkForm.videoPodcastUrl);
+        if (
+          (linkForm.videoPodcastUrl.includes('youtube.com') || linkForm.videoPodcastUrl.includes('youtu.be')) &&
+          !embedUrl.includes('/embed/')
+        ) {
+          toast.error('URL YouTube harus dalam format embed, misal: https://www.youtube.com/embed/xxxx');
+          setIsUploading(false);
+          return;
+        }
+        if (
+          linkForm.videoPodcastUrl.includes('instagram.com') &&
+          !embedUrl.endsWith('/embed')
+        ) {
+          toast.error('URL Instagram harus dalam format embed, misal: https://www.instagram.com/p/xxxx/embed');
+          setIsUploading(false);
+          return;
+        }
+      }
+
+      const response = await fetch(`${API_BASE_URL}/pelatihandanpodcast`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify(body),
+      });
+
+      // Cek apakah response berupa JSON, jika tidak, tangani error HTML
+      let result;
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        result = await response.json();
+      } else {
+        // Jika bukan JSON, kemungkinan error HTML
+        const text = await response.text();
+        throw new Error('Gagal mengunggah link. Server mengembalikan respons tidak valid: ' + text.slice(0, 100));
+      }
+
+      if (!response.ok) {
+        throw new Error(result.msg || 'Gagal mengunggah link.');
+      }
+      // Success: pakai react-toastify
+      toast.success('Link berhasil disimpan!');
+      setLinkForm(initialLinkForm);
+      setMessage('');
+      // fetchData();
+      // Refresh browser setelah berhasil upload link
+      setTimeout(() => {
+        window.location.reload();
+      }, 1000);
+    } catch (error) {
+      setMessage('Error: ' + error.message);
+      toast.error('Error: ' + error.message);
+    } finally {
+      setIsUploading(false);
     }
-    if (!titleInput.trim()) {
-      setFileError("Judul video wajib diisi.");
-      return;
-    }
-    if (!descInput.trim()) {
-      setFileError("Deskripsi video wajib diisi.");
-      return;
-    }
-    // Simulasi: generate url dummy (seharusnya upload ke server dan dapat url)
-    // Untuk demo, gunakan URL.createObjectURL, tapi pada real case harus upload ke server
-    const dummyUrl = URL.createObjectURL(fileObject);
-    const newVideo = {
-      id: Date.now(),
-      title: titleInput,
-      url: dummyUrl,
-      desc: descInput,
-    };
-    if (activeTab === "pelatihan") {
-      setPelatihanVideos((prev) => [newVideo, ...prev]);
-    } else {
-      setPodcastVideos((prev) => [newVideo, ...prev]);
-    }
-    setFileSuccess("Video berhasil diupload!");
-    setFileName("");
-    setFileObject(null);
-    setTitleInput("");
-    setDescInput("");
-    // Reset file input value to avoid uncontrolled warning
-    if (inputRef.current) {
-      inputRef.current.value = "";
-    }
-    // (opsional) setTimeout untuk menghilangkan pesan sukses
-    setTimeout(() => setFileSuccess(""), 2000);
   };
 
-  // Upload link ke list video
-  const handleLinkSubmit = (e) => {
-    e.preventDefault();
-    setLinkError("");
-    setLinkSuccess("");
-    if (!linkInput.trim()) {
-      setLinkError("Link tidak boleh kosong.");
-      return;
-    }
-    if (!isValidEmbedLink(linkInput.trim())) {
-      setLinkError("Link tidak valid atau tidak didukung.");
-      return;
-    }
-    if (!titleInput.trim()) {
-      setLinkError("Judul video wajib diisi.");
-      return;
-    }
-    if (!descInput.trim()) {
-      setLinkError("Deskripsi video wajib diisi.");
-      return;
-    }
-    // Tambahkan ke list video
-    const newVideo = {
-      id: Date.now(),
-      title: titleInput,
-      url: linkInput.trim(),
-      desc: descInput,
-    };
-    if (activeTab === "pelatihan") {
-      setPelatihanVideos((prev) => [newVideo, ...prev]);
-    } else {
-      setPodcastVideos((prev) => [newVideo, ...prev]);
-    }
-    setLinkSuccess("Link berhasil diupload!");
-    setLinkInput("");
-    setTitleInput("");
-    setDescInput("");
-    // (opsional) setTimeout untuk menghilangkan pesan sukses
-    setTimeout(() => setLinkSuccess(""), 2000);
-  };
+  // ContentCard: show contentUrl for both file and url, and use title/contentType
+  const ContentCard = ({ item }) => {
+    // item: { title, contentUrl, contentType, ... }
+    // contentType: "training_video" | "podcast"
+    // contentUrl: bisa url (http...) atau path file lokal (uploads/videos/...)
+    // Tampilkan iframe jika url, video tag jika file lokal
 
-  // Membagi video menjadi baris-baris 5 kolom
-  const pelatihanChunks = chunkArray(pelatihanVideos, 5);
-  const podcastChunks = chunkArray(podcastVideos, 5);
+    // Helper: apakah contentUrl adalah url eksternal?
+    const isExternalUrl = item.contentUrl && (item.contentUrl.startsWith('http://') || item.contentUrl.startsWith('https://'));
 
-  return (
-    <div
-      className="min-h-screen flex flex-col items-center justify-start bg-gray-50 py-12 w-full"
-      style={{
-        width: "99vw",
-        marginLeft: "calc(50% - 50vw)",
-        marginRight: "calc(50% - 50vw)",
-      }}
-    >
-        <Navbar />
-      {/* INSTRUKSI */}
-      <div className="mb-6 w-full max-w-2xl px-4 ">
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 text-blue-800 text-sm">
-          <b>Instruksi:</b>
-          <ol className="list-decimal ml-5 mt-2 space-y-1">
-            <li>Pilih tab <b>Pelatihan</b> atau <b>Podcast</b> sesuai kategori video.</li>
-            <li>Pilih mode upload: <b>Upload File</b> atau <b>Upload Link</b>.</li>
-            <li>Isi <b>judul</b> dan <b>deskripsi</b> video.</li>
-            <li>
-              Untuk <b>Upload File</b>: pilih file video, lalu klik tombol <b>Upload</b>.
-              <br />
-              Untuk <b>Upload Link</b>: masukkan link video, lalu klik tombol <b>Upload</b>.
-            </li>
-            <li>Video akan langsung muncul di daftar sesuai tab yang aktif.</li>
-          </ol>
+    // Tampilkan iframe untuk url eksternal (YouTube, Instagram, dst)
+    if (isExternalUrl) {
+      let src = item.contentUrl;
+
+      // For YouTube/Instagram, always use embed format
+      if (src.includes('youtube.com') || src.includes('youtu.be')) {
+        src = getYouTubeEmbedUrl(src);
+      } else if (src.includes('instagram.com')) {
+        src = getInstagramEmbedUrl(src);
+      }
+
+      // Note: YouTube/Instagram may block embed if not public or not allowed by owner
+      // If embed fails, browser will show error or blank
+
+      return (
+        <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-auto">
+          <div className="aspect-w-16 h-96 w-full">
+            <iframe
+              className="w-full h-full"
+              src={src}
+              title={item.title}
+              frameBorder="0"
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+              allowFullScreen
+            ></iframe>
+          </div>
+          <div className="p-4 flex-grow flex flex-col">
+            <h3 className="text-xl font-semibold text-gray-800 mb-2">{item.title}</h3>
+            {/* <p className="text-gray-600 mb-4 flex-grow">{item.deskripsi}</p> */}
+            <div className="flex items-center text-sm text-gray-500 mt-auto">
+              <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-4 h-4 mr-1 text-green-500">
+                  <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2m3.293 6.293a1 1 0 0 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L10 12.586l4.293-4.293a1 1 0 0 1 1.414 0Z"/>
+              </svg>
+              {/* Tidak ada tanggal di schema, jadi tidak tampilkan */}
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Jika file lokal, tampilkan video tag
+    return (
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden flex flex-col h-auto">
+        <div className="aspect-w-16 aspect-h-9 w-full bg-gray-900 flex items-center justify-center">
+          <video
+            src={`${API_BASE_URL}/${item.contentUrl.replace(/\\/g, "/")}`}
+            className="w-full h-full object-contain"
+            controls
+            onError={(e) => console.log('Video error:', e)}
+          />
+        </div>
+        <div className="p-4 flex-grow flex flex-col">
+          <h3 className="text-xl font-semibold text-gray-800 mb-2">{item.title}</h3>
+          {/* <p className="text-gray-600 mb-4 flex-grow">{item.deskripsi}</p> */}
+          <div className="flex items-center text-sm text-gray-500 mt-auto">
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-4 h-4 mr-1 text-green-500">
+                <path fill="currentColor" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2m3.293 6.293a1 1 0 0 1 1.414 1.414l-5 5a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L10 12.586l4.293-4.293a1 1 0 0 1 1.414 0Z"/>
+            </svg>
+          </div>
         </div>
       </div>
+    );
+  };
 
-      {/* Tombol switch mode upload */}
-      <div className="flex gap-4 mb-6">
-        <button
-          onClick={() => handleSwitchMode("file")}
-          className={`flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow transition-all duration-200
-            ${
-              uploadMode === "file"
-                ? "bg-blue-600 text-white scale-105"
-                : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-            }`}
-          aria-pressed={uploadMode === "file"}
-        >
-          <FiUploadCloud size={20} />
-          Upload File
-        </button>
-        <button
-          onClick={() => handleSwitchMode("link")}
-          className={`flex items-center gap-2 px-5 py-2 rounded-lg font-semibold shadow transition-all duration-200
-            ${
-              uploadMode === "link"
-                ? "bg-blue-600 text-white scale-105"
-                : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-            }`}
-          aria-pressed={uploadMode === "link"}
-        >
-          <FiLink2 size={20} />
-          Upload Link
-        </button>
-      </div>
+  // Pisahkan data berdasarkan contentType
+  const safeData = Array.isArray(data) ? data : [];
+  const trainingVideos = safeData.filter(item => item.contentType === 'training_video');
+  const podcasts = safeData.filter(item => item.contentType === 'podcast');
 
-      {/* Upload Box (animated transition) */}
-      <div
-        className={`w-full max-w-md relative`}
-        style={{ minHeight: 320 }}
-      >
-        <div
-          className={`
-            absolute inset-0 transition-all duration-300
-            ${showUploadBox ? "opacity-100 scale-100 pointer-events-auto" : "opacity-0 scale-95 pointer-events-none"}
-          `}
-        >
-          {uploadMode === "file" ? (
-            <form
-              className={`w-full h-full p-8 bg-white rounded-lg shadow-md border-2 border-dashed flex flex-col items-center justify-center transition-colors ${
-                dragActive ? "border-blue-500 bg-blue-50" : "border-gray-300"
-              }`}
-              onClick={handleClick}
-              onDragEnter={handleDrag}
-              onDragOver={handleDrag}
-              onDragLeave={handleDrag}
-              onDrop={handleDrop}
-              style={{ outline: "none" }}
-              tabIndex={0}
-              onSubmit={handleFileUpload}
-            >
-              <FiUploadCloud size={48} className="text-blue-500 mb-4" />
-              <p className="text-gray-700 mb-2 font-semibold">
-                Drag &amp; drop file di sini, atau{" "}
-                <span className="text-blue-600 underline">klik untuk upload</span>
-              </p>
-              <p className="text-gray-400 text-sm mb-4">
-                Format: MP4, PDF, JPG, PNG, dll.
-              </p>
-              {/* 
-                Perbaikan error: 
-                Jangan pernah set value prop pada input type="file" (baik undefined, null, atau string kosong).
-                Biarkan input file tetap uncontrolled.
-              */}
-              <input
-                type="file"
-                ref={inputRef}
-                className="hidden"
-                onChange={handleChange}
-                accept="video/*,application/pdf,image/*"
-                // Jangan set value prop di sini!
-              />
-              {fileName && (
-                <div className="mt-2 text-green-600 font-medium text-sm">
-                  File dipilih: {fileName}
+  const Spinner = () => (
+    <div className="flex justify-center items-center h-48">
+      <div className="w-12 h-12 rounded-full border-4 border-t-4 border-indigo-200 border-t-indigo-600 animate-spin"></div>
+    </div>
+  );
+
+  return (
+    <div className="bg-gray-100 min-h-screen font-sans">
+      <Navbar />
+      <ToastContainer position="top-right" autoClose={3000} hideProgressBar={false} newestOnTop={true} closeOnClick pauseOnFocusLoss draggable pauseOnHover />
+      <style jsx global>{`
+        @keyframes spin {
+          from {
+            transform: rotate(0deg);
+          }
+          to {
+            transform: rotate(360deg);
+          }
+        }
+        .animate-spin {
+          animation: spin 1s linear infinite;
+        }
+      `}</style>
+      <div className="container mx-auto p-4 sm:p-8">
+        <h1 className="text-3xl sm:text-4xl font-bold text-center text-gray-800 mb-8">Unggah Konten Pelatihan & Podcast</h1>
+
+        {/* Toggle between file and link upload forms */}
+        <div className="flex justify-center space-x-4 mb-8">
+          <button
+            onClick={() => setFormType('file')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-full font-semibold transition-colors duration-300 ${
+              formType === 'file' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-indigo-600 border border-indigo-600'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-5 h-5">
+                <path fill="currentColor" d="M14 2H6c-1.1 0-2 .9-2 2v16c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V8l-6-6zM6 4h7v5h5v11H6V4zm8 15v-3h-2v3h-2v-3h-2v3h-2v-5h10v5h-2z"/>
+            </svg>
+            <span>Unggah File</span>
+          </button>
+          <button
+            onClick={() => setFormType('link')}
+            className={`flex items-center space-x-2 px-4 py-2 rounded-full font-semibold transition-colors duration-300 ${
+              formType === 'link' ? 'bg-indigo-600 text-white shadow-lg' : 'bg-white text-indigo-600 border border-indigo-600'
+            }`}
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-5 h-5">
+                <path fill="currentColor" d="M12 2c-5.523 0-10 4.477-10 10s4.477 10 10 10s10-4.477 10-10S17.523 2 12 2zm0 18c-4.411 0-8-3.589-8-8s3.589-8 8-8s8 3.589 8-8s-3.589-8-8-8zm-1 5h2v6h-2z"/>
+            </svg>
+            <span>Unggah Link</span>
+          </button>
+        </div>
+
+        {/* Upload Section */}
+        <div className="bg-white rounded-xl shadow-xl p-6 sm:p-8 mb-12">
+          {formType === 'file' ? (
+            <form onSubmit={handleFileSubmit}>
+              <div
+                className={`flex flex-col items-center justify-center p-8 border-4 border-dashed rounded-lg transition-colors duration-300 mb-6
+                  ${isDragOver ? 'border-indigo-500 bg-indigo-50' : 'border-gray-300 bg-gray-50'}`}
+                onDragOver={handleDragOver}
+                onDragLeave={handleDragLeave}
+                onDrop={handleDrop}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-12 h-12 text-gray-400 mb-4">
+                    <path fill="currentColor" d="M18.944 11.178A7.994 7.994 0 0 0 12 2.012a8.002 8.002 0 0 0-7.07 12.247A5 5 0 0 0 7 21h10a5 5 0 0 0 1.944-9.822ZM13 14h-2v-3H8l4-5l4 5h-3v3z"/>
+                </svg>
+                <p className="text-gray-600 text-center mb-2">
+                  <span className="font-semibold text-indigo-600">Seret & Jatuhkan</span> file di sini, atau
+                </p>
+                <label className="bg-indigo-500 text-white px-4 py-2 rounded-full font-medium cursor-pointer hover:bg-indigo-600 transition-colors duration-300">
+                  Pilih File
+                  <input type="file" name="video" onChange={handleFileChange} className="hidden" accept="video/mp4,video/webm,video/mkv" />
+                </label>
+              </div>
+
+              {selectedFile && (
+                <div className="bg-indigo-100 border-l-4 border-indigo-500 text-indigo-700 p-4 rounded-lg mb-6" role="alert">
+                  <p className="font-bold">File Terpilih:</p>
+                  <p>{selectedFile.name}</p>
                 </div>
               )}
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded px-4 py-2 mt-4 mb-2 focus:outline-none focus:border-blue-500 transition"
-                placeholder="Judul video"
-                value={titleInput}
-                onChange={e => setTitleInput(e.target.value)}
-              />
-              <textarea
-                className="w-full border border-gray-300 rounded px-4 py-2 mb-2 focus:outline-none focus:border-blue-500 transition"
-                placeholder="Deskripsi video"
-                value={descInput}
-                onChange={e => setDescInput(e.target.value)}
-                rows={2}
-              />
-              {fileError && (
-                <div className="text-red-500 text-sm mb-2">{fileError}</div>
-              )}
-              {fileSuccess && (
-                <div className="text-green-600 text-sm mb-2">{fileSuccess}</div>
-              )}
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="flex flex-col">
+                  <label htmlFor="file-judul" className="font-medium text-gray-700 mb-1">Judul</label>
+                  <input
+                    type="text"
+                    id="file-judul"
+                    name="judul"
+                    value={fileForm.judul}
+                    onChange={handleFileFormChange}
+                    className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="file-tipe" className="font-medium text-gray-700 mb-1">Tipe</label>
+                  <select
+                    id="file-tipe"
+                    name="tipe"
+                    value={fileForm.tipe}
+                    onChange={handleFileFormChange}
+                    className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                  >
+                    <option value="pelatihan">Video Pelatihan</option>
+                    <option value="podcast">Podcast</option>
+                  </select>
+                </div>
+                <div className="md:col-span-2 flex flex-col">
+                  <label htmlFor="file-deskripsi" className="font-medium text-gray-700 mb-1">Deskripsi</label>
+                  <textarea
+                    id="file-deskripsi"
+                    name="deskripsi"
+                    rows="3"
+                    value={fileForm.deskripsi}
+                    onChange={handleFileFormChange}
+                    className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                    required
+                  ></textarea>
+                </div>
+              </div>
+
               <button
                 type="submit"
-                className="mt-2 px-6 py-2 bg-blue-600 text-white rounded font-semibold shadow hover:bg-blue-700 transition"
+                className={`w-full flex items-center justify-center space-x-2 mt-8 px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300
+                  ${isUploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg'}`}
+                disabled={isUploading}
               >
-                Upload
+                {isUploading ? (
+                  <span className="flex items-center space-x-2">
+                    <div className="w-5 h-5 border-t-2 border-r-2 border-white rounded-full animate-spin"></div>
+                    <span>Mengunggah...</span>
+                  </span>
+                ) : (
+                  <span>Unggah File</span>
+                )}
               </button>
             </form>
           ) : (
-            <form
-              className="w-full min-h-[480px] p-8 bg-white rounded-lg shadow-md border-2 border-blue-300 flex flex-col items-center justify-center transition-colors scroll-auto"
-              style={{ outline: "none" }}
-              onSubmit={handleLinkSubmit}
-            >
-              <FiLink2 size={48} className="text-blue-500 mb-4" />
-              <p className="text-gray-700 mb-2 font-semibold">
-                Masukkan link video (YouTube, TikTok, Twitter, Facebook, dll)
-              </p>
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded px-4 py-2 mb-2 focus:outline-none focus:border-blue-500 transition"
-                placeholder="https://youtube.com/..."
-                value={linkInput}
-                onChange={e => setLinkInput(e.target.value)}
-                autoFocus
-              />
-              <input
-                type="text"
-                className="w-full border border-gray-300 rounded px-4 py-2 mb-2 focus:outline-none focus:border-blue-500 transition"
-                placeholder="Judul video"
-                value={titleInput}
-                onChange={e => setTitleInput(e.target.value)}
-              />
-              <textarea
-                className="w-full border border-gray-300 rounded px-4 py-2 mb-2 focus:outline-none focus:border-blue-500 transition"
-                placeholder="Deskripsi video"
-                value={descInput}
-                onChange={e => setDescInput(e.target.value)}
-                rows={2}
-              />
-              {linkError && (
-                <div className="text-red-500 text-sm mb-2">{linkError}</div>
-              )}
-              {linkSuccess && (
-                <div className="text-green-600 text-sm mb-2">{linkSuccess}</div>
-              )}
+            <form onSubmit={handleLinkSubmit}>
+              <div className="space-y-6">
+                <div className="flex flex-col">
+                  <label htmlFor="link-judul" className="font-medium text-gray-700 mb-1">Judul</label>
+                  <input
+                    type="text"
+                    id="link-judul"
+                    name="judul"
+                    value={linkForm.judul}
+                    onChange={handleLinkFormChange}
+                    className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                    required
+                  />
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="link-deskripsi" className="font-medium text-gray-700 mb-1">Deskripsi</label>
+                  <textarea
+                    id="link-deskripsi"
+                    name="deskripsi"
+                    rows="3"
+                    value={linkForm.deskripsi}
+                    onChange={handleLinkFormChange}
+                    className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                    required
+                  ></textarea>
+                </div>
+                <div className="flex flex-col">
+                  <label htmlFor="link-tipe" className="font-medium text-gray-700 mb-1">Tipe</label>
+                  <select
+                    id="link-tipe"
+                    name="tipe"
+                    value={linkForm.tipe}
+                    onChange={handleLinkFormChange}
+                    className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                  >
+                    <option value="pelatihan">Video Pelatihan</option>
+                    <option value="podcast">Podcast</option>
+                  </select>
+                </div>
+                {linkForm.tipe === 'pelatihan' ? (
+                  <div className="flex flex-col">
+                    <label htmlFor="videoPelatihanUrl" className="font-medium text-gray-700 mb-1">URL Video Pelatihan</label>
+                    <input
+                      type="url"
+                      id="videoPelatihanUrl"
+                      name="videoPelatihanUrl"
+                      value={linkForm.videoPelatihanUrl}
+                      onChange={handleLinkFormChange}
+                      className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                      placeholder="Contoh: https://example.com/pelatihan-public-speaking"
+                      required
+                    />
+                  </div>
+                ) : (
+                  <div className="flex flex-col">
+                    <label htmlFor="videoPodcastUrl" className="font-medium text-gray-700 mb-1">URL Video Podcast</label>
+                    <input
+                      type="url"
+                      id="videoPodcastUrl"
+                      name="videoPodcastUrl"
+                      value={linkForm.videoPodcastUrl}
+                      onChange={handleLinkFormChange}
+                      className="p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+                      placeholder="Contoh: https://www.youtube.com/embed/xxxx atau https://www.instagram.com/p/xxxx/embed"
+                      required
+                    />
+                    <span className="text-xs text-gray-500 mt-1">
+                      Untuk YouTube/Instagram, gunakan format embed. Contoh: <br />
+                      <span className="font-mono">https://www.youtube.com/embed/xxxx</span> atau <span className="font-mono">https://www.instagram.com/p/xxxx/embed</span>
+                    </span>
+                  </div>
+                )}
+              </div>
+
               <button
                 type="submit"
-                className="mt-2 px-6 py-2 bg-blue-600 text-white rounded font-semibold shadow hover:bg-blue-700 transition"
+                className={`w-full flex items-center justify-center space-x-2 mt-8 px-6 py-3 rounded-lg font-semibold text-white transition-all duration-300
+                  ${isUploading ? 'bg-gray-400 cursor-not-allowed' : 'bg-indigo-600 hover:bg-indigo-700 shadow-lg'}`}
+                disabled={isUploading}
               >
-                Upload
+                {isUploading ? (
+                  <span className="flex items-center space-x-2">
+                    <div className="w-5 h-5 border-t-2 border-r-2 border-white rounded-full animate-spin"></div>
+                    <span>Menyimpan Link...</span>
+                  </span>
+                ) : (
+                  <span>Simpan Link</span>
+                )}
               </button>
-              <p className="text-gray-400 text-xs mt-3">
-                Link yang didukung: YouTube, TikTok, Twitter, Facebook, dll.
-              </p>
             </form>
           )}
-        </div>
-      </div>
 
-      {/* Tombol Pelatihan & Podcast */}
-      <div className="flex gap-4 mt-8">
-        <button
-          onClick={() => {
-            setActiveTab("pelatihan");
-            setFileError("");
-            setFileSuccess("");
-            setLinkError("");
-            setLinkSuccess("");
-          }}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold shadow transition 
-            ${
-              activeTab === "pelatihan"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-            }`}
-        >
-          <MdOutlineCastForEducation size={22} />
-          Pelatihan
-        </button>
-        <button
-          onClick={() => {
-            setActiveTab("podcast");
-            setFileError("");
-            setFileSuccess("");
-            setLinkError("");
-            setLinkSuccess("");
-          }}
-          className={`flex items-center gap-2 px-6 py-3 rounded-lg font-semibold shadow transition 
-            ${
-              activeTab === "podcast"
-                ? "bg-blue-600 text-white"
-                : "bg-white text-blue-600 border border-blue-600 hover:bg-blue-50"
-            }`}
-        >
-          <FaPodcast size={20} />
-          Podcast
-        </button>
-      </div>
-
-      {/* List Video Pelatihan */}
-      {activeTab === "pelatihan" && (
-        <div className="w-full mt-12">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 px-4">
-            Video Pelatihan
-          </h2>
-          {pelatihanChunks.length === 0 && (
-            <div className="text-gray-500 px-4">Belum ada video pelatihan.</div>
-          )}
-          {pelatihanChunks.map((chunk, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4 mb-6"
-            >
-              {chunk.map((video) => (
-                <div
-                  key={video.id}
-                  className="bg-white rounded-lg shadow p-4 flex flex-col items-center"
-                >
-                  <div className="w-full aspect-video mb-2">
-                    <iframe
-                      src={video.url}
-                      title={video.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-48 rounded"
-                    ></iframe>
-                  </div>
-                  <div className="w-full">
-                    <h3 className="font-semibold text-gray-700">
-                      {video.title}
-                    </h3>
-                    <p className="text-gray-500 text-sm">{video.desc}</p>
-                  </div>
-                </div>
-              ))}
+          {/* message dihilangkan, karena sudah pakai toastify */}
+          {message && (
+            <div className={`mt-6 p-4 rounded-lg font-medium ${message.startsWith('Error') ? 'bg-red-100 text-red-700' : 'bg-green-100 text-green-700'}`}>
+              {message}
             </div>
-          ))}
-        </div>
-      )}
-
-      {/* List Video Podcast */}
-      {activeTab === "podcast" && (
-        <div className="w-full mt-12">
-          <h2 className="text-xl font-bold mb-4 text-gray-800 px-4">
-            Video Podcast
-          </h2>
-          {podcastChunks.length === 0 && (
-            <div className="text-gray-500 px-4">Belum ada video podcast.</div>
           )}
-          {podcastChunks.map((chunk, idx) => (
-            <div
-              key={idx}
-              className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6 px-4 mb-6"
-            >
-              {chunk.map((video) => (
-                <div
-                  key={video.id}
-                  className="bg-white rounded-lg shadow p-4 flex flex-col items-center"
-                >
-                  <div className="w-full aspect-video mb-2">
-                    <iframe
-                      src={video.url}
-                      title={video.title}
-                      allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                      allowFullScreen
-                      className="w-full h-48 rounded"
-                    ></iframe>
-                  </div>
-                  <div className="w-full">
-                    <h3 className="font-semibold text-gray-700">
-                      {video.title}
-                    </h3>
-                    <p className="text-gray-500 text-sm">{video.desc}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ))}
         </div>
-      )}
+
+        {/* Content Display Section */}
+        {loading ? (
+          <Spinner />
+        ) : (
+          <div className="space-y-12">
+            {/* Training Videos Section */}
+            <div>
+              <div className="flex items-center space-x-4 mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-8 h-8 text-indigo-600">
+                    <path fill="currentColor" d="M15 13.5v-3c0-.3-.2-.5-.5-.5H8c-.3 0-.5.2-.5.5v3c0 .3.2.5.5.5h6.5c.3 0 .5-.2.5-.5zM20 5v14c0 1.1-.9 2-2 2H6c-1.1 0-2-.9-2-2V5c0-1.1.9-2 2-2h12c1.1 0 2 .9 2 2zm-1 0H5v14h14V5z"/>
+                </svg>
+                <h2 className="text-2xl font-bold text-gray-800">Video Pelatihan</h2>
+              </div>
+              {trainingVideos.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {trainingVideos.map(item => (
+                    <ContentCard key={item._id} item={item} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">Belum ada video pelatihan yang tersedia.</p>
+              )}
+            </div>
+
+            {/* Podcasts Section */}
+            <div>
+              <div className="flex items-center space-x-4 mb-6">
+                <svg xmlns="http://www.w3.org/2000/svg" width="1em" height="1em" viewBox="0 0 24 24" className="w-8 h-8 text-indigo-600">
+                    <path fill="currentColor" d="M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm-2.45 13.53a.5.5 0 0 1-.77-.45V9.45a.5.5 0 0 1 .77-.45l5.53 2.54a.5.5 0 0 1 0 .91z"/>
+                </svg>
+                <h2 className="text-2xl font-bold text-gray-800">Podcast</h2>
+              </div>
+              {podcasts.length > 0 ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                  {podcasts.map(item => (
+                    <ContentCard key={item._id} item={item} />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-gray-500 text-center py-8">Belum ada podcast yang tersedia.</p>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
-}
+};
+
+export default Home;
