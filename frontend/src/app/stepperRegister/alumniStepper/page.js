@@ -2,6 +2,84 @@
 import { useState, useEffect, useMemo, useRef } from "react";
 import { getTokenFromSessionStorage } from "../../sessiontoken";
 
+// Data jurusan dan program studi
+const JURUSAN_PROGRAM_STUDI = [
+  {
+    jurusan: "Jurusan Teknik Sipil",
+    prodi: [
+      "D-3 Teknik Sipil",
+      "D-4 Perencanaan Perumahan dan Pemukiman",
+      "D-4 Teknologi Rekayasa Konstruksi Jalan dan Jembatan",
+      "D-3 Teknik Sipil (Kampus Kabupaten Kapuas Hulu)",
+    ],
+  },
+  {
+    jurusan: "Jurusan Teknik Mesin",
+    prodi: [
+      "D-1 Operator dan Peralatan Alat Berat",
+      "D-3 Teknik Mesin",
+      "D-4 Teknik Mesin (Konversi Energi)",
+      "D-3 Teknik Mesin (Kampus Kabupaten Sanggau)",
+    ],
+  },
+  {
+    jurusan: "Jurusan Teknik Elektro",
+    prodi: [
+      "D-3 Teknik Listrik",
+      "D-3 Teknik Informatika",
+      "D-4 Teknologi Rekayasa Sistem Elektronika",
+    ],
+  },
+  {
+    jurusan: "Jurusan Administrasi Bisnis",
+    prodi: [
+      "D-3 Administrasi Bisnis",
+      "D-4 Administrasi Negara",
+      "D-4 Administrasi Bisnis Otomotif",
+      "D-4 Pengelolaan Usaha Rekreasi",
+    ],
+  },
+  {
+    jurusan: "Jurusan Akuntansi",
+    prodi: [
+      "D-3 Akuntansi",
+      "D-4 Akuntansi",
+      "D-4 Akuntansi Perpajakan",
+      "D-4 Perbankan dan Keuangan Digital",
+      "D-4 Akuntansi Sektor Publik (Kampus Kabupaten Sukamara)",
+      "D-3 Akuntansi (Kampus Kabupaten Sanggau)",
+    ],
+  },
+  {
+    jurusan: "Jurusan Teknologi Pertanian",
+    prodi: [
+      "D-4 Pengolahan Hasil Perkebunan Terpadu",
+      "D-4 Manajemen Perkebunan",
+      "D-4 Budidaya Tanaman Perkebunan",
+      "D-3 Teknologi Pengolahan Hasil Perkebunan (Kampus Kabupaten Kapuas Hulu)",
+      "D-3 Pengelolaan Hasil Perkebunan (Kampus Kabupaten Sanggau)",
+    ],
+  },
+  {
+    jurusan: "Jurusan Ilmu Kelautan dan Perikanan",
+    prodi: [
+      "D-3 Budidaya Perikanan",
+      "D-3 Teknologi Penangkapan Ikan",
+      "D-4 Pengolahan dan Penyimpanan Hasil Perikanan",
+      "D-3 Teknologi Budidaya Perikanan (Kampus Kabupaten Kapuas Hulu)",
+      "D-3 Budidaya Ikan (Kampus Kabupaten Sukamara)",
+    ],
+  },
+  {
+    jurusan: "Jurusan Arsitektur",
+    prodi: [
+      "D-3 Arsitektur",
+      "D-4 Arsitektur Bangunan Gedung",
+      "D-4 Desain Kawasan Binaan",
+    ],
+  },
+];
+
 // Daftar field yang ingin dicek/lengkapi (tanpa skill, skill di step 2)
 const PROFILE_FIELDS = [
   { label: "Alamat", field: "alamat", placeholder: "Masukkan alamat lengkap" },
@@ -26,6 +104,10 @@ export default function AlumniProfileForm() {
   const [success, setSuccess] = useState("");
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
+
+  // State untuk double dropdown program studi
+  const [selectedJurusan, setSelectedJurusan] = useState("");
+  const [selectedProdi, setSelectedProdi] = useState("");
 
   // Skill state
   const [skillOptions, setSkillOptions] = useState([]);
@@ -90,6 +172,20 @@ export default function AlumniProfileForm() {
           } else if (typeof data.skill === "string" && data.skill.trim() !== "") {
             setSelectedSkills([data.skill]);
           }
+        }
+
+        // Set initial jurusan/prodi jika sudah ada di data
+        if (data && data.program_studi) {
+          // Cari jurusan yang memuat program studi ini
+          let foundJurusan = "";
+          for (const jur of JURUSAN_PROGRAM_STUDI) {
+            if (jur.prodi.includes(data.program_studi)) {
+              foundJurusan = jur.jurusan;
+              break;
+            }
+          }
+          setSelectedJurusan(foundJurusan);
+          setSelectedProdi(data.program_studi);
         }
       } catch (e) {
         // ignore
@@ -164,7 +260,11 @@ export default function AlumniProfileForm() {
     const newErrors = {};
     PROFILE_FIELDS.forEach(({ field, label, type }) => {
       if (inputFields.hasOwnProperty(field)) {
-        const value = inputFields[field];
+        let value = inputFields[field];
+        // Untuk program_studi, gunakan selectedProdi
+        if (field === "program_studi") {
+          value = selectedProdi;
+        }
         if (!value || value.toString().trim() === "") {
           newErrors[field] = `${label} wajib diisi.`;
           valid = false;
@@ -183,6 +283,16 @@ export default function AlumniProfileForm() {
         }
       }
     });
+    // Validasi double dropdown
+    if (inputFields.hasOwnProperty("program_studi")) {
+      if (!selectedJurusan) {
+        newErrors["program_studi"] = "Pilih jurusan terlebih dahulu.";
+        valid = false;
+      } else if (!selectedProdi) {
+        newErrors["program_studi"] = "Pilih program studi.";
+        valid = false;
+      }
+    }
     setErrors(newErrors);
     return valid;
   };
@@ -196,6 +306,36 @@ export default function AlumniProfileForm() {
     setErrors((prev) => ({
       ...prev,
       [name]: "",
+    }));
+  };
+
+  // Handler untuk jurusan/prodi dropdown
+  const handleJurusanChange = (e) => {
+    const jurusan = e.target.value;
+    setSelectedJurusan(jurusan);
+    setSelectedProdi(""); // reset prodi
+    setErrors((prev) => ({
+      ...prev,
+      program_studi: "",
+    }));
+    // Set inputFields.program_studi ke "" agar validasi jalan
+    setInputFields((prev) => ({
+      ...prev,
+      program_studi: "",
+    }));
+  };
+
+  const handleProdiChange = (e) => {
+    const prodi = e.target.value;
+    setSelectedProdi(prodi);
+    setErrors((prev) => ({
+      ...prev,
+      program_studi: "",
+    }));
+    // Set inputFields.program_studi ke prodi terpilih
+    setInputFields((prev) => ({
+      ...prev,
+      program_studi: prodi,
     }));
   };
 
@@ -215,6 +355,10 @@ export default function AlumniProfileForm() {
 
     // Kirim hanya field yang diinput user (inputFields)
     let payload = { ...inputFields };
+    // Untuk program_studi, pastikan ambil dari selectedProdi
+    if (payload.hasOwnProperty("program_studi")) {
+      payload.program_studi = selectedProdi;
+    }
     // Remove _id, __v, createdAt, updatedAt, dsb jika ada
     ["_id", "__v", "createdAt", "updatedAt"].forEach((k) => delete payload[k]);
 
@@ -236,6 +380,7 @@ export default function AlumniProfileForm() {
         setFields((prev) => ({
           ...prev,
           ...inputFields,
+          program_studi: selectedProdi,
         }));
         // Kosongkan inputFields (karena sudah submit)
         setInputFields({});
@@ -356,6 +501,79 @@ export default function AlumniProfileForm() {
     return () => document.removeEventListener("mousedown", handler);
   }, [showSkillDropdown]);
 
+  // Helper: render input atau double dropdown untuk field
+  const renderFieldInput = ({ label, field, placeholder, type }) => {
+    if (field === "program_studi") {
+      // Double dropdown jurusan & prodi
+      return (
+        <div className="mb-4" key={field}>
+          <label className="block text-xs font-semibold text-gray-700 mb-1" htmlFor="jurusan">
+            Jurusan
+          </label>
+          {errors[field] && (
+            <div className="mb-1 text-xs text-red-600">{errors[field]}</div>
+          )}
+          <select
+            id="jurusan"
+            name="jurusan"
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition mb-2"
+            value={selectedJurusan}
+            onChange={handleJurusanChange}
+            required
+          >
+            <option value="">Pilih Jurusan</option>
+            {JURUSAN_PROGRAM_STUDI.map((j) => (
+              <option key={j.jurusan} value={j.jurusan}>
+                {j.jurusan}
+              </option>
+            ))}
+          </select>
+          <label className="block text-xs font-semibold text-gray-700 mb-1" htmlFor={field}>
+            Program Studi
+          </label>
+          <select
+            id={field}
+            name={field}
+            className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition"
+            value={selectedProdi}
+            onChange={handleProdiChange}
+            required
+            disabled={!selectedJurusan}
+          >
+            <option value="">Pilih Program Studi</option>
+            {selectedJurusan &&
+              JURUSAN_PROGRAM_STUDI.find((j) => j.jurusan === selectedJurusan)?.prodi.map((p) => (
+                <option key={p} value={p}>
+                  {p}
+                </option>
+              ))}
+          </select>
+        </div>
+      );
+    }
+    // Default: input biasa
+    return (
+      <div className="mb-4" key={field}>
+        <label className="block text-xs font-semibold text-gray-700 mb-1" htmlFor={field}>
+          {label}
+        </label>
+        {errors[field] && (
+          <div className="mb-1 text-xs text-red-600">{errors[field]}</div>
+        )}
+        <input
+          className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition"
+          placeholder={placeholder}
+          name={field}
+          id={field}
+          type={type || "text"}
+          value={inputFields[field] || ""}
+          onChange={handleChange}
+          required
+        />
+      </div>
+    );
+  };
+
   return (
     <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-xl shadow space-y-6">
       <div className="mb-4">
@@ -379,26 +597,7 @@ export default function AlumniProfileForm() {
           {step === 1 && !allFilled ? (
             <form onSubmit={handleSubmit} autoComplete="off">
               {PROFILE_FIELDS.filter(({ field }) => inputFields.hasOwnProperty(field)).map(
-                ({ label, field, placeholder, type }) => (
-                  <div className="mb-4" key={field}>
-                    <label className="block text-xs font-semibold text-gray-700 mb-1" htmlFor={field}>
-                      {label}
-                    </label>
-                    {errors[field] && (
-                      <div className="mb-1 text-xs text-red-600">{errors[field]}</div>
-                    )}
-                    <input
-                      className="w-full px-3 py-2 border border-gray-200 rounded-lg text-gray-900 focus:ring-2 focus:ring-blue-200 focus:border-blue-400 transition"
-                      placeholder={placeholder}
-                      name={field}
-                      id={field}
-                      type={type || "text"}
-                      value={inputFields[field] || ""}
-                      onChange={handleChange}
-                      required
-                    />
-                  </div>
-                )
+                (fieldObj) => renderFieldInput(fieldObj)
               )}
 
               {errors.global && (
