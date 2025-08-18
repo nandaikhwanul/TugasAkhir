@@ -108,6 +108,45 @@ export const getSuperAdminMe = async (req, res) => {
     }
 };
 
+// Controller untuk mendapatkan list semua admin (hanya superadmin)
+export const getAdmins = async (req, res) => {
+    try {
+        // Pastikan user yang meminta adalah superadmin
+        const superAdminId = req.user && req.user.id;
+        const superAdmin = await SuperAdmin.findById(superAdminId);
+        if (!superAdmin || superAdmin.role !== 'superadmin') {
+            return res.status(403).json({ message: 'Unauthorized. Only superadmin can view admins.' });
+        }
+
+        // Ambil semua admin, exclude password
+        const admins = await Admin.find().select('-password');
+        res.status(200).json({ admins });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
+// Controller untuk mendapatkan detail admin by id (hanya superadmin)
+export const getAdminById = async (req, res) => {
+    try {
+        // Pastikan user yang meminta adalah superadmin
+        const superAdminId = req.user && req.user.id;
+        const superAdmin = await SuperAdmin.findById(superAdminId);
+        if (!superAdmin || superAdmin.role !== 'superadmin') {
+            return res.status(403).json({ message: 'Unauthorized. Only superadmin can view admin.' });
+        }
+
+        const { id } = req.params;
+        const admin = await Admin.findById(id).select('-password');
+        if (!admin) {
+            return res.status(404).json({ message: 'Admin not found.' });
+        }
+        res.status(200).json({ admin });
+    } catch (error) {
+        res.status(500).json({ message: 'Server error', error: error.message });
+    }
+};
+
 // Controller untuk edit admin (oleh superadmin)
 export const editAdmin = async (req, res) => {
     try {

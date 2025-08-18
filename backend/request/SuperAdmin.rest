@@ -38,5 +38,13 @@ Authorization: Bearer eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjY4OTkxNmE2Z
 GET https://tugasakhir-production-6c6c.up.railway.app/superadmin/me
 Authorization: Bearer <your_superadmin_jwt_token_here>
 
+### Get Admin Detail by ID (by SuperAdmin)
+GET https://tugasakhir-production-6c6c.up.railway.app/superadmin/admin/689ae0f7df283b7be092cda3
+Authorization: Bearer <your_superadmin_jwt_token_here>
+
+### Get All Admins (by SuperAdmin)
+GET https://tugasakhir-production-6c6c.up.railway.app/superadmin/admins
+Authorization: Bearer <your_superadmin_jwt_token_here>
+
 
 
