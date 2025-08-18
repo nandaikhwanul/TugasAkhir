@@ -468,7 +468,7 @@ export default function AdminDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
         {/* Alumni per Tahun */}
         <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="font-semibold text-lg mb-4 text-blue-700">Alumni per Tahun</h2>
+          <h2 className="font-semibold text-lg mb-4 text-blue-700">Alumni per Tahun Lulus</h2>
           <div style={{ width: "100%", maxWidth: 350, margin: "0 auto" }}>
             {loadingAlumniYear ? (
               <div className="flex items-center justify-center h-[140px] text-gray-400">Memuat grafik...</div>
