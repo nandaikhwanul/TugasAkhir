@@ -595,7 +595,13 @@ export const getListLamaranAlumni = async (req, res) => {
     // Ambil semua lamaran milik alumni ini, urutkan terbaru dulu
     const daftarLamaran = await Pelamar.find({ alumni: alumniId })
       .sort({ createdAt: -1 })
-      .populate('lowongan') // jika ingin detail lowongan
+      .populate({
+        path: 'lowongan',
+        populate: {
+          path: 'perusahaan',
+          select: 'nama_perusahaan logo_perusahaan'
+        }
+      }) // populate nested perusahaan di lowongan
       .populate('alumni', 'nama email'); // jika ingin info alumni (opsional)
 
     // Pastikan tanggalMelamar dikirim di setiap item response
