@@ -79,9 +79,14 @@ export const lamarLowongan = async (req, res) => {
     // Tambahkan count jumlah_pelamar di collection Lowongan
     await Lowongan.findByIdAndUpdate(lowongan, { $inc: { jumlah_pelamar: 1 } });
 
+    // Pastikan tanggalMelamar dikirim di response
+    const pelamarObj = pelamarBaru.toObject();
     res.status(201).json({
       message: 'Lamaran berhasil dikirim.',
-      pelamar: pelamarBaru
+      pelamar: {
+        ...pelamarObj,
+        tanggalMelamar: pelamarObj.tanggalMelamar
+      }
     });
   } catch (err) {
     // Tangani error jika req.user undefined
@@ -139,11 +144,15 @@ export const getPelamarByLowongan = async (req, res) => {
     // Ambil semua pelamar untuk lowongan ini, populate data alumni
     const pelamarList = await Pelamar.find({ lowongan: lowonganId }).populate('alumni');
 
-    // Tambahkan nomor urut pada setiap pelamar
-    const pelamarWithNumber = pelamarList.map((pelamar, idx) => ({
-      nomor: idx + 1,
-      ...pelamar.toObject()
-    }));
+    // Tambahkan nomor urut pada setiap pelamar dan pastikan tanggalMelamar dikirim
+    const pelamarWithNumber = pelamarList.map((pelamar, idx) => {
+      const obj = pelamar.toObject();
+      return {
+        nomor: idx + 1,
+        ...obj,
+        tanggalMelamar: obj.tanggalMelamar
+      };
+    });
 
     res.status(200).json({
       message: 'Daftar pelamar berhasil diambil.',
@@ -217,9 +226,14 @@ export const detailPelamar = async (req, res) => {
       return res.status(403).json({ message: 'Anda tidak berhak melihat detail pelamar ini.' });
     }
 
+    // Pastikan tanggalMelamar dikirim di response
+    const pelamarObj = pelamar.toObject();
     res.status(200).json({
       message: 'Detail pelamar berhasil diambil.',
-      pelamar: pelamar.toObject()
+      pelamar: {
+        ...pelamarObj,
+        tanggalMelamar: pelamarObj.tanggalMelamar
+      }
     });
   } catch (err) {
     let errorMsg = err && err.message ? err.message : String(err);
@@ -292,6 +306,11 @@ export const getPelamarDiterimaDitolak = async (req, res) => {
         if (p._id && !existing.pelamarId.includes(p._id.toString())) {
           existing.pelamarId.push(p._id.toString());
         }
+
+        // Gabungkan tanggalMelamar
+        if (p.tanggalMelamar && !existing.tanggalMelamar.includes(p.tanggalMelamar)) {
+          existing.tanggalMelamar.push(p.tanggalMelamar);
+        }
       } else {
         pelamarMap.set(alumniId, {
           alumniId,
@@ -300,6 +319,7 @@ export const getPelamarDiterimaDitolak = async (req, res) => {
           status: p.status ? [p.status] : [],
           pelamarId: p._id ? [p._id.toString()] : [],
           alumni: p.alumni, // Simpan data alumni (bisa diubah jika ingin lebih ringkas)
+          tanggalMelamar: p.tanggalMelamar ? [p.tanggalMelamar] : []
         });
       }
     });
@@ -311,7 +331,8 @@ export const getPelamarDiterimaDitolak = async (req, res) => {
       pekerjaan: item.pekerjaan.join(" / "),
       status: item.status.join(" / "),
       pelamarId: item.pelamarId,
-      alumni: item.alumni
+      alumni: item.alumni,
+      tanggalMelamar: item.tanggalMelamar // array tanggalMelamar untuk semua lamaran alumni tsb
     }));
 
     res.status(200).json({
@@ -577,15 +598,23 @@ export const getListLamaranAlumni = async (req, res) => {
       .populate('lowongan') // jika ingin detail lowongan
       .populate('alumni', 'nama email'); // jika ingin info alumni (opsional)
 
+    // Pastikan tanggalMelamar dikirim di setiap item response
+    const daftarLamaranWithTanggal = daftarLamaran.map(lamaran => {
+      const obj = lamaran.toObject();
+      return {
+        ...obj,
+        tanggalMelamar: obj.tanggalMelamar
+      };
+    });
+
     res.status(200).json({
       message: "Daftar lamaran alumni ditemukan.",
-      data: daftarLamaran
+      data: daftarLamaranWithTanggal
     });
   } catch (err) {
     let errorMsg = err && err.message ? err.message : String(err);
     res.status(500).json({ message: "Terjadi kesalahan pada server.", error: errorMsg });
   }
 };
-
 
 
