@@ -2,6 +2,14 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 
+// Fungsi logout: hapus token dari sessionStorage dan redirect ke /login
+function handleLogout() {
+  if (typeof window !== "undefined") {
+    sessionStorage.removeItem("token");
+    window.location.href = "/login";
+  }
+}
+
 // Komponen Hamburger (buka/tutup sidebar)
 function HamburgerButton({ open, setOpen }) {
   return (
@@ -121,6 +129,22 @@ function Sidebar({ open: openProp, setOpen: setOpenProp }) {
             </span>
             <span className="text-base">Edit Admin</span>
           </a>
+          {/* Tombol Logout */}
+          <button
+            type="button"
+            onClick={handleLogout}
+            className="flex items-center gap-3 px-5 py-3 rounded-lg text-white hover:bg-red-700 hover:text-white font-medium transition group mt-4 bg-red-600"
+            style={{ outline: "none", border: "none" }}
+          >
+            <span className="flex items-center justify-center w-8 h-8 rounded-full bg-red-700 group-hover:bg-red-800 transition">
+              {/* Logout icon */}
+              <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" className="inline text-white">
+                <path d="M17 16l4-4m0 0l-4-4m4 4H7" />
+                <path d="M3 21V3" />
+              </svg>
+            </span>
+            <span className="text-base">Logout</span>
+          </button>
         </nav>
         {/* Sidebar footer */}
         <div className="absolute bottom-0 left-0 w-full px-6 py-4 border-t border-blue-800 bg-blue-800">
