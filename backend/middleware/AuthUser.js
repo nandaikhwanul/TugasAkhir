@@ -4,6 +4,7 @@ import path from "path";
 import Alumni from "../models/Alumni.js";
 import Perusahaan from "../models/Perusahaan.js";
 import Admin from "../models/Admin.js";
+import SuperAdmin from "../models/SuperAdmin.js"; // Tambahkan import SuperAdmin
 
 // Untuk menyimpan daftar token yang sudah di-blacklist (misal setelah logout)
 const blacklistedTokens = new Set();
@@ -63,6 +64,12 @@ export const destroyToken = async (req, res) => {
         } else if (decoded.role === "admin") {
             // Model Admin kemungkinan tidak punya field token, tapi jika ada:
             await Admin.updateOne(
+                { _id: decoded.id || decoded._id, token: token },
+                { $set: { token: null } }
+            );
+        } else if (decoded.role === "superadmin") {
+            // Jika SuperAdmin memiliki field token, tambahkan penghapusan token
+            await SuperAdmin.updateOne(
                 { _id: decoded.id || decoded._id, token: token },
                 { $set: { token: null } }
             );
@@ -142,6 +149,17 @@ export const perusahaanOnly = (req, res, next) => {
     }
     if (req.user.role !== "perusahaan") {
         return res.status(403).json({ msg: "Akses terlarang, hanya perusahaan yang dapat mengakses." });
+    }
+    next();
+};
+
+// Middleware hanya untuk superadmin
+export const superAdminOnly = (req, res, next) => {
+    if (!req.user || !req.user.role) {
+        return res.status(401).json({ msg: "Mohon login ke akun Anda!" });
+    }
+    if (req.user.role !== "superadmin") {
+        return res.status(403).json({ msg: "Akses terlarang, hanya superadmin yang dapat mengakses." });
     }
     next();
 };
