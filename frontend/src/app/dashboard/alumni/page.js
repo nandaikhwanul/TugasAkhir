@@ -201,41 +201,10 @@ export default function AlumniDashboardPage() {
         </div>
 
         {/* Pelatihan dan Podcast */}
-        <div className="w-full min-w-0">
+        <div className="w-full min-w-0 h-10">
           <PelatihanDanPodcast />
         </div>
       </div>
-      <style jsx global>{`
-        @media (min-width: 768px) {
-          .font-poppins > div {
-            max-width: 100vw !important;
-            width: 100vw !important;
-            margin-left: 0 !important;
-            margin-right: 0 !important;
-            padding-left: 0 !important;
-            padding-right: 0 !important;
-          }
-        }
-        /* Custom scrollbar for horizontal scroll */
-        .flex::-webkit-scrollbar,
-        .overflow-x-auto::-webkit-scrollbar {
-          height: 8px;
-        }
-        .flex::-webkit-scrollbar-thumb,
-        .overflow-x-auto::-webkit-scrollbar-thumb {
-          background: #e5e7eb;
-          border-radius: 4px;
-        }
-        /* Hide scrollbar only for video horizontal scroll */
-        .hide-scrollbar {
-          scrollbar-width: none !important;
-          -ms-overflow-style: none !important;
-        }
-        .hide-scrollbar::-webkit-scrollbar {
-          display: none !important;
-          height: 0 !important;
-        }
-      `}</style>
     </div>
   );
 }

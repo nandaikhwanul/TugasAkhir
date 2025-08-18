@@ -8,6 +8,51 @@ import {
 } from "react-icons/fa";
 import { getTokenFromSessionStorage } from "@/app/sessiontoken";
 
+// Fungsi untuk mengubah URL video/podcast menjadi embed (khusus YouTube, Vimeo, Spotify, dst)
+function getEmbedUrl(url) {
+  if (!url) return "";
+  // YouTube: https://www.youtube.com/watch?v=xxxx atau https://youtu.be/xxxx
+  if (url.match(/^https?:\/\/(www\.)?youtube\.com\/watch\?v=/)) {
+    const id = url.split("v=")[1].split("&")[0];
+    return `https://www.youtube.com/embed/${id}`;
+  }
+  if (url.match(/^https?:\/\/youtu\.be\//)) {
+    const id = url.split("youtu.be/")[1].split(/[?&]/)[0];
+    return `https://www.youtube.com/embed/${id}`;
+  }
+  // YouTube Shorts
+  if (url.match(/^https?:\/\/(www\.)?youtube\.com\/shorts\//)) {
+    const id = url.split("/shorts/")[1].split(/[?&]/)[0];
+    return `https://www.youtube.com/embed/${id}`;
+  }
+  // Vimeo: https://vimeo.com/xxxx
+  if (url.match(/^https?:\/\/(www\.)?vimeo\.com\//)) {
+    const id = url.split("vimeo.com/")[1].split(/[?&]/)[0];
+    return `https://player.vimeo.com/video/${id}`;
+  }
+  // Spotify Podcast: https://open.spotify.com/episode/xxxx atau https://open.spotify.com/show/xxxx
+  if (url.match(/^https?:\/\/open\.spotify\.com\/(episode|show)\//)) {
+    // Spotify embed: https://open.spotify.com/embed/episode/xxxx
+    return url.replace(
+      /^https:\/\/open\.spotify\.com\/(episode|show)\//,
+      "https://open.spotify.com/embed/$1/"
+    );
+  }
+  // Google Podcast: https://podcasts.google.com/feed/xxxx/episode/xxxx
+  if (url.match(/^https?:\/\/podcasts\.google\.com\//)) {
+    // Google Podcasts embed is not officially supported, fallback to link
+    return url;
+  }
+  // Anchor.fm: https://anchor.fm/xxxx/episodes/xxxx
+  if (url.match(/^https?:\/\/anchor\.fm\/.+\/episodes\//)) {
+    // Try to convert to embed
+    // Example: https://anchor.fm/xxxx/episodes/xxxx -> https://anchor.fm/xxxx/embed/episodes/xxxx
+    return url.replace("/episodes/", "/embed/episodes/");
+  }
+  // Sudah embed atau bukan YouTube/Vimeo/Spotify/Anchor
+  return url;
+}
+
 // Komponen horizontal scroll untuk media dengan tombol panah dan tombol View All
 function MediaHorizontalScroll({ items, isVideo, loading }) {
   const scrollRef = useRef(null);
@@ -77,7 +122,7 @@ function MediaHorizontalScroll({ items, isVideo, loading }) {
                 >
                   <div className="aspect-video bg-black rounded-t-lg overflow-hidden">
                     <iframe
-                      src={item.contentUrl}
+                      src={getEmbedUrl(item.contentUrl)}
                       title={item.title}
                       allow={
                         isVideo
@@ -130,7 +175,7 @@ function MediaHorizontalScroll({ items, isVideo, loading }) {
             >
               <div className="aspect-video bg-black rounded-t-lg overflow-hidden">
                 <iframe
-                  src={item.contentUrl}
+                  src={getEmbedUrl(item.contentUrl)}
                   title={item.title}
                   allow={
                     isVideo
@@ -161,7 +206,7 @@ export default function PelatihanDanPodcastPage() {
   const [mediaData, setMediaData] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Fetch data dari endpoint
+  // Fetch data dari endpoint (GET method)
   useEffect(() => {
     let ignore = false;
     async function fetchData() {
@@ -171,6 +216,7 @@ export default function PelatihanDanPodcastPage() {
         const res = await fetch(
           "https://tugasakhir-production-6c6c.up.railway.app/pelatihandanpodcast",
           {
+            method: "GET",
             headers: {
               Authorization: `Bearer ${token}`,
             },
@@ -178,7 +224,8 @@ export default function PelatihanDanPodcastPage() {
         );
         if (!res.ok) throw new Error("Gagal memuat data pelatihan dan podcast");
         const data = await res.json();
-        if (!ignore) setMediaData(Array.isArray(data) ? data : []);
+        // Perbaikan: ambil data dari data.data, bukan langsung dari data
+        if (!ignore) setMediaData(Array.isArray(data.data) ? data.data : []);
       } catch (e) {
         if (!ignore) setMediaData([]);
       } finally {
@@ -193,14 +240,14 @@ export default function PelatihanDanPodcastPage() {
 
   // Filter data sesuai tab
   const videoList = mediaData.filter(
-    (item) => item.contentType === "video"
+    (item) => item.contentType === "training_video"
   );
   const podcastList = mediaData.filter(
     (item) => item.contentType === "podcast"
   );
 
   return (
-    <div className="min-h-screen bg-gray-100 py-4 px-0 w-full min-w-0">
+    <div className="h-auto bg-gray-100 py-4 px-0 w-full min-w-0">
       <div className="w-full min-w-0 mx-0 space-y-8 px-0">
         {/* Media: Video & Podcast */}
         <div className="w-full min-w-0">

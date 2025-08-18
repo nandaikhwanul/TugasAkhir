@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import AlumniNavbar from "../navbar/alumniNavbar/page";
 import { getTokenFromSessionStorage } from "../sessiontoken";
+import { FaSortAmountDownAlt, FaSortAmountUpAlt } from "react-icons/fa";
 
 // Helper: format tanggal
 function formatDate(dateStr) {
@@ -222,7 +223,7 @@ function LamaranCard({ item }) {
             </svg>
             Dilamar:{" "}
             <span className="ml-1 font-semibold text-[#222]">
-              {item.tanggal_lamaran ? formatDate(item.tanggal_lamaran) : "-"}
+              {item.tanggalMelamar ? formatDate(item.tanggalMelamar) : "-"}
             </span>
           </span>
         </div>
@@ -264,6 +265,7 @@ export default function RiwayatLamaranAlumni() {
   const [lamaran, setLamaran] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [sortOrder, setSortOrder] = useState("desc"); // "desc" = terbaru, "asc" = terlama
 
   useEffect(() => {
     async function fetchLamaran() {
@@ -299,10 +301,21 @@ export default function RiwayatLamaranAlumni() {
     fetchLamaran();
   }, []);
 
+  // Sorting lamaran berdasarkan tanggalMelamar
+  const sortedLamaran = [...lamaran].sort((a, b) => {
+    const dateA = a.tanggalMelamar ? new Date(a.tanggalMelamar) : new Date(0);
+    const dateB = b.tanggalMelamar ? new Date(b.tanggalMelamar) : new Date(0);
+    if (sortOrder === "desc") {
+      return dateB - dateA; // terbaru duluan
+    } else {
+      return dateA - dateB; // terlama duluan
+    }
+  });
+
   return (
     <>
       <AlumniNavbar />
-      <div className="min-h-screen h-screen w-full flex flex-col bg-gray-100">
+      <div className="min-h-screen h-screen w-full flex flex-col bg-gray-100 px-10">
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="w-full font-sans rounded-b-lg flex flex-col flex-1 min-h-0">
             <div className="text-[20px] text-[#222] font-semibold mb-4 px-6 pt-6 text-center">
@@ -311,8 +324,35 @@ export default function RiwayatLamaranAlumni() {
                 ({lamaran.length} total)
               </span>
             </div>
+            {/* Tombol sorting */}
+            <div className="flex justify-center mb-4 gap-2">
+              <button
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg border text-[15px] font-medium transition ${
+                  sortOrder === "desc"
+                    ? "bg-[#4fc3f7] text-white border-[#4fc3f7]"
+                    : "bg-white text-[#4fc3f7] border-[#4fc3f7]"
+                }`}
+                onClick={() => setSortOrder("desc")}
+                aria-label="Urutkan Terbaru"
+              >
+                <FaSortAmountDownAlt className="text-lg" />
+                Terbaru
+              </button>
+              <button
+                className={`flex items-center gap-1 px-4 py-2 rounded-lg border text-[15px] font-medium transition ${
+                  sortOrder === "asc"
+                    ? "bg-[#4fc3f7] text-white border-[#4fc3f7]"
+                    : "bg-white text-[#4fc3f7] border-[#4fc3f7]"
+                }`}
+                onClick={() => setSortOrder("asc")}
+                aria-label="Urutkan Terlama"
+              >
+                <FaSortAmountUpAlt className="text-lg" />
+                Terlama
+              </button>
+            </div>
             <div
-              className="w-full flex-1 overflow-y-auto pb-4 px-0 mb-52"
+              className="w-full flex-1 overflow-y-auto pb-4 px-0 mb-5"
               style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
             >
               <style jsx global>{`
@@ -337,7 +377,7 @@ export default function RiwayatLamaranAlumni() {
               )}
               {!loading &&
                 !fetchError &&
-                lamaran.map((item) => (
+                sortedLamaran.map((item) => (
                   <LamaranCard key={item._id} item={item} />
                 ))}
             </div>
