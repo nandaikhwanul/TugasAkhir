@@ -6,7 +6,7 @@ import {
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-import getTokenFromSessionStorage from "@/utils/getTokenFromSessionStorage";
+import { getTokenFromSessionStorage } from "@/app/sessiontoken";
 
 // Komponen horizontal scroll untuk media dengan tombol panah dan tombol View All
 function MediaHorizontalScroll({ items, isVideo, loading }) {
