@@ -94,6 +94,7 @@ export default function SettingAlumniPage() {
           alumniList.map((a) => ({
             ...a,
             tanggal_lahir: a.tanggal_lahir || a.tgllahir || a.tgl_lahir || "",
+            program_studi: a.program_studi || a.prodi || "",
           }))
         );
       } catch (err) {
@@ -116,6 +117,7 @@ export default function SettingAlumniPage() {
       nohp: a.nohp || a.noHp || a.no_telp || "",
       alamat: a.alamat || "",
       email: a.email || "",
+      program_studi: a.program_studi || a.prodi || "",
       tahun_tanggal_lahir: tahun,
       bulan_tanggal_lahir: bulan,
       tanggal_tanggal_lahir: tanggal,
@@ -153,6 +155,7 @@ export default function SettingAlumniPage() {
       nohp: editData.nohp,
       alamat: editData.alamat,
       email: editData.email,
+      program_studi: editData.program_studi,
       tanggal_lahir,
     };
     if (editData.password || editData.confpassword) {
@@ -184,6 +187,7 @@ export default function SettingAlumniPage() {
                 nohp: payload.nohp,
                 alamat: payload.alamat,
                 email: payload.email,
+                program_studi: payload.program_studi,
                 tanggal_lahir: payload.tanggal_lahir,
                 // password/confpassword are not shown in table, so not set here
               }
@@ -292,13 +296,14 @@ export default function SettingAlumniPage() {
     return "Alumni";
   }
 
-  // Helper: get team (for demo, just show NIM, No HP, Alamat, Tanggal Lahir)
+  // Helper: get team (for demo, just show NIM, No HP, Alamat, Tanggal Lahir, Program Studi)
   function getTeam(a) {
     return [
       { label: "NIM", value: a.nim || "-" },
       { label: "No HP", value: a.nohp || a.noHp || a.no_telp || "-" },
       { label: "Alamat", value: a.alamat || "-" },
       { label: "Tanggal Lahir", value: a.tanggal_lahir || a.tgllahir || a.tgl_lahir || "-" },
+      { label: "Program Studi", value: a.program_studi || a.prodi || "-" },
     ];
   }
 
@@ -479,14 +484,26 @@ export default function SettingAlumniPage() {
                                     ))}
                                   </select>
                                 </div>
+                              ) : editIdx === idx && item.label === "Program Studi" ? (
+                                <input
+                                  type="text"
+                                  name="program_studi"
+                                  className="border rounded px-1 py-0.5 w-40"
+                                  value={editData.program_studi}
+                                  onChange={handleEditChange}
+                                  placeholder="Program Studi"
+                                />
                               ) : (
                                 // Tampilkan tanggal lahir dalam format yyyy-mm-dd (tanpa jam)
                                 (() => {
-                                  const tgl = item.value;
-                                  if (!tgl) return "-";
-                                  // Only show yyyy-mm-dd
-                                  const match = /^(\d{4}-\d{2}-\d{2})/.exec(tgl);
-                                  return match ? match[1] : tgl;
+                                  if (item.label === "Tanggal Lahir") {
+                                    const tgl = item.value;
+                                    if (!tgl) return "-";
+                                    // Only show yyyy-mm-dd
+                                    const match = /^(\d{4}-\d{2}-\d{2})/.exec(tgl);
+                                    return match ? match[1] : tgl;
+                                  }
+                                  return item.value || "-";
                                 })()
                               )}
                             </span>
