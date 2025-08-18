@@ -495,7 +495,7 @@ export default function AdminDashboard() {
         </div>
         {/* Alumni per Jurusan */}
         <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="font-semibold text-lg mb-4 text-green-700">Alumni per Jurusan</h2>
+          <h2 className="font-semibold text-lg mb-4 text-green-700">Alumni per Prodi</h2>
           <div style={{ width: "100%", maxWidth: 350, margin: "0 auto" }}>
             {loadingAlumniJurusan ? (
               <div className="flex items-center justify-center h-[140px] text-gray-400">Memuat grafik...</div>
