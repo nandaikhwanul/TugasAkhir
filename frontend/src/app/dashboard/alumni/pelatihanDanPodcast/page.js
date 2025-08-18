@@ -1,84 +1,15 @@
 "use client";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import {
   FaVideo,
   FaPodcast,
   FaChevronLeft,
   FaChevronRight,
 } from "react-icons/fa";
-
-// Dummy data for videos and podcasts
-const videoList = [
-  {
-    id: 1,
-    title: "Cara Membuat CV Menarik",
-    url: "https://www.youtube.com/embed/1hHMwLxN6EM",
-    type: "video",
-    desc: "Tips membuat CV yang menarik untuk HRD.",
-  },
-  {
-    id: 2,
-    title: "Teknik Interview Kerja",
-    url: "https://www.youtube.com/embed/2vjPBrBU-TM",
-    type: "video",
-    desc: "Strategi sukses interview kerja.",
-  },
-  {
-    id: 3,
-    title: "Membangun Personal Branding",
-    url: "https://www.youtube.com/embed/3fumBcKC6RE",
-    type: "video",
-    desc: "Cara membangun personal branding di dunia kerja.",
-  },
-  {
-    id: 4,
-    title: "Tips Networking Efektif",
-    url: "https://www.youtube.com/embed/4qT7d3eQ6b8",
-    type: "video",
-    desc: "Networking yang efektif untuk karir.",
-  },
-  {
-    id: 5,
-    title: "Mengelola Stress Kerja",
-    url: "https://www.youtube.com/embed/5qap5aO4i9A",
-    type: "video",
-    desc: "Cara mengelola stress di tempat kerja.",
-  },
-];
-
-const podcastList = [
-  {
-    id: 1,
-    title: "Kisah Sukses Alumni: Nanda",
-    url: "https://open.spotify.com/embed/episode/7makk4oTQel546B0PZlDM5?utm_source=generator",
-    type: "podcast",
-    desc: "Dengarkan kisah inspiratif alumni.",
-  },
-  {
-    id: 2,
-    title: "Motivasi Karir di Era Digital",
-    url: "https://open.spotify.com/embed/episode/1B8Q2Q2Q2Q2Q2Q2Q2Q2Q?utm_source=generator",
-    type: "podcast",
-    desc: "Motivasi dan tips karir di era digital.",
-  },
-  {
-    id: 3,
-    title: "Soft Skill Penting di Dunia Kerja",
-    url: "https://open.spotify.com/embed/episode/3B8Q2Q2Q2Q2Q2Q2Q2Q?utm_source=generator",
-    type: "podcast",
-    desc: "Soft skill yang wajib dimiliki.",
-  },
-  {
-    id: 4,
-    title: "Membangun Karir dari Nol",
-    url: "https://open.spotify.com/embed/episode/4B8Q2Q2Q2Q2Q2Q2Q2Q?utm_source=generator",
-    type: "podcast",
-    desc: "Tips membangun karir dari awal.",
-  },
-];
+import getTokenFromSessionStorage from "@/utils/getTokenFromSessionStorage";
 
 // Komponen horizontal scroll untuk media dengan tombol panah dan tombol View All
-function MediaHorizontalScroll({ items, isVideo }) {
+function MediaHorizontalScroll({ items, isVideo, loading }) {
   const scrollRef = useRef(null);
   const [showAll, setShowAll] = useState(false);
 
@@ -124,7 +55,11 @@ function MediaHorizontalScroll({ items, isVideo }) {
           {showAll ? "Kembali" : "View All"}
         </button>
       </div>
-      {!showAll ? (
+      {loading ? (
+        <div className="flex justify-center items-center py-12 text-gray-400">Memuat data...</div>
+      ) : !items.length ? (
+        <div className="flex justify-center items-center py-12 text-gray-400">Tidak ada data ditemukan.</div>
+      ) : !showAll ? (
         <>
           <div className="w-full min-w-0">
             <div
@@ -132,9 +67,9 @@ function MediaHorizontalScroll({ items, isVideo }) {
               style={{ minHeight: 220 }}
               ref={scrollRef}
             >
-              {items.map((item) => (
+              {items.map((item, idx) => (
                 <div
-                  key={item.id}
+                  key={item._id || item.contentUrl || idx}
                   className="min-w-[80vw] xs:min-w-[260px] sm:min-w-[320px] max-w-[95vw] sm:max-w-xs bg-gray-50 border border-gray-200 rounded-lg shadow hover:shadow-lg transition flex flex-col flex-shrink-0"
                   style={{
                     width: "100%",
@@ -142,7 +77,7 @@ function MediaHorizontalScroll({ items, isVideo }) {
                 >
                   <div className="aspect-video bg-black rounded-t-lg overflow-hidden">
                     <iframe
-                      src={item.url}
+                      src={item.contentUrl}
                       title={item.title}
                       allow={
                         isVideo
@@ -155,7 +90,7 @@ function MediaHorizontalScroll({ items, isVideo }) {
                   </div>
                   <div className="p-4 flex-1 flex flex-col min-w-0">
                     <div className="font-semibold text-gray-800 text-base mb-1 truncate">{item.title}</div>
-                    <div className="text-gray-500 text-sm flex-1">{item.desc}</div>
+                    <div className="text-gray-500 text-sm flex-1">{item.deskripsi || "-"}</div>
                   </div>
                 </div>
               ))}
@@ -188,14 +123,14 @@ function MediaHorizontalScroll({ items, isVideo }) {
       ) : (
         // Tampilan grid/list semua item
         <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 w-full min-w-0 mt-2">
-          {items.map((item) => (
+          {items.map((item, idx) => (
             <div
-              key={item.id}
+              key={item._id || item.contentUrl || idx}
               className="bg-gray-50 border border-gray-200 rounded-lg shadow hover:shadow-lg transition flex flex-col"
             >
               <div className="aspect-video bg-black rounded-t-lg overflow-hidden">
                 <iframe
-                  src={item.url}
+                  src={item.contentUrl}
                   title={item.title}
                   allow={
                     isVideo
@@ -208,7 +143,7 @@ function MediaHorizontalScroll({ items, isVideo }) {
               </div>
               <div className="p-4 flex-1 flex flex-col min-w-0">
                 <div className="font-semibold text-gray-800 text-base mb-1 truncate">{item.title}</div>
-                <div className="text-gray-500 text-sm flex-1">{item.desc}</div>
+                <div className="text-gray-500 text-sm flex-1">{item.deskripsi || "-"}</div>
               </div>
             </div>
           ))}
@@ -222,6 +157,47 @@ export default function PelatihanDanPodcastPage() {
   // Dua tab: video atau podcast
   const [sidebarTab, setSidebarTab] = useState("video"); // "video" or "podcast"
   const isVideo = sidebarTab === "video";
+
+  const [mediaData, setMediaData] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch data dari endpoint
+  useEffect(() => {
+    let ignore = false;
+    async function fetchData() {
+      setLoading(true);
+      try {
+        const token = getTokenFromSessionStorage();
+        const res = await fetch(
+          "https://tugasakhir-production-6c6c.up.railway.app/pelatihandanpodcast",
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+        if (!res.ok) throw new Error("Gagal memuat data pelatihan dan podcast");
+        const data = await res.json();
+        if (!ignore) setMediaData(Array.isArray(data) ? data : []);
+      } catch (e) {
+        if (!ignore) setMediaData([]);
+      } finally {
+        if (!ignore) setLoading(false);
+      }
+    }
+    fetchData();
+    return () => {
+      ignore = true;
+    };
+  }, []);
+
+  // Filter data sesuai tab
+  const videoList = mediaData.filter(
+    (item) => item.contentType === "video"
+  );
+  const podcastList = mediaData.filter(
+    (item) => item.contentType === "podcast"
+  );
 
   return (
     <div className="min-h-screen bg-gray-100 py-4 px-0 w-full min-w-0">
@@ -279,6 +255,7 @@ export default function PelatihanDanPodcastPage() {
                 <MediaHorizontalScroll
                   items={isVideo ? videoList : podcastList}
                   isVideo={isVideo}
+                  loading={loading}
                 />
               </div>
             </div>
