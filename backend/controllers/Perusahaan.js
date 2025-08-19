@@ -111,30 +111,30 @@ const uploadLogoPerusahaan = multer({
 // Express-validator rules untuk registerPerusahaan
 export const registerPerusahaanValidation = [
     body('nama_perusahaan')
-        .notEmpty().withMessage('Nama perusahaan wajib diisi')
-        .isLength({ min: 3, max: 100 }).withMessage('Nama perusahaan minimal 3 dan maksimal 100 karakter')
+        .notEmpty().withMessage({ errors: { undefined: 'Nama perusahaan wajib diisi' } })
+        .isLength({ min: 3, max: 100 }).withMessage({ errors: { undefined: 'Nama perusahaan minimal 3 dan maksimal 100 karakter' } })
         .trim()
         .custom(async (value, { req }) => {
             const perusahaan = await Perusahaan.findOne({ nama_perusahaan: value });
             if (perusahaan) {
-                // Gunakan throw dengan objek agar express-validator mengaitkan error ke field yang benar
-                throw { msg: 'Nama perusahaan sudah terdaftar', param: 'nama_perusahaan' };
+                throw { errors: { undefined: 'Nama perusahaan sudah terdaftar' } };
             }
             return true;
         }),
     body('email_perusahaan')
-        .isEmail().withMessage('Email perusahaan tidak valid')
+        .isEmail().withMessage({ errors: { undefined: 'Email perusahaan tidak valid' } })
         .custom(async (value, { req }) => {
             const perusahaan = await Perusahaan.findOne({ email_perusahaan: value });
             if (perusahaan) {
-                throw { msg: 'Email perusahaan sudah terdaftar', param: 'email_perusahaan' };
+                throw { errors: { undefined: 'Email perusahaan sudah terdaftar' } };
             }
             return true;
         }),
-    body('password').isLength({ min: 6 }).withMessage('Password minimal 6 karakter'),
+    body('password')
+        .isLength({ min: 6 }).withMessage({ errors: { undefined: 'Password minimal 6 karakter' } }),
     body('confPassword').custom((value, { req }) => {
         if (value !== req.body.password) {
-            throw { msg: 'Password dan Confirm Password tidak cocok', param: 'confPassword' };
+            throw { errors: { undefined: 'Password dan Confirm Password tidak cocok' } };
         }
         return true;
     }),

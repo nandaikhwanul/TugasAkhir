@@ -87,16 +87,27 @@ export default function RegisterPerusahaan({
         if (err.response.data.errors) {
           const errors = err.response.data.errors;
           const newFieldErrors = {};
-          
-          // Handle nested error object format
-          if (typeof errors === 'object' && !Array.isArray(errors)) {
-            Object.entries(errors).forEach(([field, errorObj]) => {
-              if (errorObj?.msg) {
-                newFieldErrors[field] = errorObj.msg;
-              }
-            });
+
+          // Ambil error nama_perusahaan jika ada (string langsung)
+          if (typeof errors.nama_perusahaan === "string") {
+            newFieldErrors.nama_perusahaan = errors.nama_perusahaan;
           }
-          
+
+          // Ambil error email_perusahaan jika ada (string langsung)
+          if (typeof errors.email_perusahaan === "string") {
+            newFieldErrors.email_perusahaan = errors.email_perusahaan;
+          }
+
+          // Ambil error password jika ada (string langsung)
+          if (typeof errors.password === "string") {
+            newFieldErrors.password = errors.password;
+          }
+
+          // Ambil error confPassword jika ada (string langsung)
+          if (typeof errors.confPassword === "string") {
+            newFieldErrors.confPassword = errors.confPassword;
+          }
+
           setFieldErrors(newFieldErrors);
         }
 

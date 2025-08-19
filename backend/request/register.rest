@@ -11,7 +11,7 @@ Content-Type: application/json
 }
 
 ### Register Perusahaan
-POST http://localhost:5000/perusahaan
+POST https://tugasakhir-production-6c6c.up.railway.app/perusahaan
 Content-Type: application/json
 
 {
