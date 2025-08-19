@@ -88,24 +88,52 @@ export default function RegisterPerusahaan({
           const errors = err.response.data.errors;
           const newFieldErrors = {};
 
-          // Ambil error nama_perusahaan jika ada (string langsung)
+          // Ambil error nama_perusahaan jika ada (string langsung atau objek)
           if (typeof errors.nama_perusahaan === "string") {
             newFieldErrors.nama_perusahaan = errors.nama_perusahaan;
+          } else if (
+            errors.nama_perusahaan &&
+            typeof errors.nama_perusahaan === "object" &&
+            errors.nama_perusahaan.errors &&
+            typeof errors.nama_perusahaan.errors.undefined === "string"
+          ) {
+            newFieldErrors.nama_perusahaan = errors.nama_perusahaan.errors.undefined;
           }
 
-          // Ambil error email_perusahaan jika ada (string langsung)
+          // Ambil error email_perusahaan jika ada (string langsung atau objek)
           if (typeof errors.email_perusahaan === "string") {
             newFieldErrors.email_perusahaan = errors.email_perusahaan;
+          } else if (
+            errors.email_perusahaan &&
+            typeof errors.email_perusahaan === "object" &&
+            errors.email_perusahaan.errors &&
+            typeof errors.email_perusahaan.errors.undefined === "string"
+          ) {
+            newFieldErrors.email_perusahaan = errors.email_perusahaan.errors.undefined;
           }
 
-          // Ambil error password jika ada (string langsung)
+          // Ambil error password jika ada (string langsung atau objek)
           if (typeof errors.password === "string") {
             newFieldErrors.password = errors.password;
+          } else if (
+            errors.password &&
+            typeof errors.password === "object" &&
+            errors.password.errors &&
+            typeof errors.password.errors.undefined === "string"
+          ) {
+            newFieldErrors.password = errors.password.errors.undefined;
           }
 
-          // Ambil error confPassword jika ada (string langsung)
+          // Ambil error confPassword jika ada (string langsung atau objek)
           if (typeof errors.confPassword === "string") {
             newFieldErrors.confPassword = errors.confPassword;
+          } else if (
+            errors.confPassword &&
+            typeof errors.confPassword === "object" &&
+            errors.confPassword.errors &&
+            typeof errors.confPassword.errors.undefined === "string"
+          ) {
+            newFieldErrors.confPassword = errors.confPassword.errors.undefined;
           }
 
           setFieldErrors(newFieldErrors);
