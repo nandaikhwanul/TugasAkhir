@@ -43,9 +43,9 @@ export default function RegisterAlumni(props) {
       [name]: value,
     }));
     // Clear error when typing
-    setFieldErrors(prev => ({
+    setFieldErrors((prev) => ({
       ...prev,
-      [name]: ""
+      [name]: "",
     }));
   };
 
@@ -60,7 +60,7 @@ export default function RegisterAlumni(props) {
       password: "",
       confPassword: "",
     });
-    
+
     setLoading(true);
     try {
       await axios.post(
@@ -77,10 +77,15 @@ export default function RegisterAlumni(props) {
     } catch (err) {
       if (err.response) {
         if (err.response.data?.errors) {
-          // Set field-specific errors
-          setFieldErrors(prev => ({
+          // Map error keys: if "undefined" exists, assign to "name"
+          const errors = { ...err.response.data.errors };
+          if (errors.undefined) {
+            errors.name = errors.undefined;
+            delete errors.undefined;
+          }
+          setFieldErrors((prev) => ({
             ...prev,
-            ...err.response.data.errors
+            ...errors,
           }));
         } else {
           setError(
