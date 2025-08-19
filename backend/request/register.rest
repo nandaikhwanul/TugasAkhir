@@ -1,9 +1,9 @@
 ### Register Alumni
-POST http://localhost:5000/alumni
+POST https://tugasakhir-production-6c6c.up.railway.app/alumni
 Content-Type: application/json
 
 {
-    "name": "Siti Aminah",
+    "name": "Si",
     "email": "siti.aminah@example.com",
     "nim": "3202216125",
     "password": "abcdef",

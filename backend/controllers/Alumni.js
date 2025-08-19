@@ -105,8 +105,11 @@ export const registerAlumniValidation = [
 
 // Register alumni
 export const registerAlumni = async (req, res) => {
+    // Validasi express-validator (termasuk minimal 3 karakter untuk name)
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
+        // Kirim error dengan key "undefined" jika error dari mongoose (misal: name < 3 karakter)
+        // atau key sesuai field jika dari express-validator
         const errorObj = errors.array().reduce((acc, curr) => {
             acc[curr.param] = curr.msg;
             return acc;
@@ -140,15 +143,35 @@ export const registerAlumni = async (req, res) => {
         }
 
         const hashPassword = await argon2.hash(password);
-        const createdAlumni = await Alumni.create({
-            name, nim, email, password: hashPassword,
-            confPassword, role: "alumni"
-        });
-        const { _id, name: resName, nim: resNim, email: resEmail, role: resRole } = createdAlumni;
-        res.status(201).json({
-            msg: "Register Alumni Berhasil",
-            alumni: { _id, name: resName, nim: resNim, email: resEmail, role: resRole }
-        });
+        try {
+            const createdAlumni = await Alumni.create({
+                name, nim, email, password: hashPassword,
+                confPassword, role: "alumni"
+            });
+            const { _id, name: resName, nim: resNim, email: resEmail, role: resRole } = createdAlumni;
+            res.status(201).json({
+                msg: "Register Alumni Berhasil",
+                alumni: { _id, name: resName, nim: resNim, email: resEmail, role: resRole }
+            });
+        } catch (err) {
+            // Tangani error validasi mongoose (misal: name < 3 karakter)
+            if (err.name === "ValidationError") {
+                // Ambil error per field, tapi jika error mongoose, gunakan key "undefined"
+                let firstMsg = "Terjadi kesalahan validasi";
+                for (const field in err.errors) {
+                    if (field === "name" && err.errors[field].kind === "minlength") {
+                        firstMsg = "Nama minimal 3 karakter";
+                        break;
+                    } else if (err.errors[field].message) {
+                        firstMsg = err.errors[field].message;
+                        break;
+                    }
+                }
+                return res.status(400).json({ errors: { undefined: firstMsg } });
+            }
+            // Error lain
+            return res.status(500).json({ msg: err.message });
+        }
     } catch (error) {
         res.status(500).json({ msg: error.message });
     }
