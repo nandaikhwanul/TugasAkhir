@@ -130,6 +130,11 @@ export const registerAlumni = async (req, res) => {
         if (existingNim) {
             duplicateErrors.nim = "Account dengan NIM tersebut sudah ada";
         }
+        // Tambahkan pengecekan email agar tidak terjadi duplikasi
+        const existingEmail = await Alumni.findOne({ email });
+        if (existingEmail) {
+            duplicateErrors.email = "Email sudah terdaftar";
+        }
         if (Object.keys(duplicateErrors).length > 0) {
             return res.status(400).json({ errors: duplicateErrors });
         }
