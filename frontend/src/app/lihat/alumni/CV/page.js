@@ -7,39 +7,31 @@ import { HiOutlineXMark, HiOutlinePlus, HiOutlineMinus, HiOutlineArrowPath } fro
 // Helper: get base API URL (for file serving)
 const API_BASE_URL = "https://tugasakhir-production-6c6c.up.railway.app";
 
-// Helper: get CV file URL from file path (handles local/remote, slashes, etc)
+// Helper: get CV file URL from file path (handles local/remote, slashes, dll)
 function getCVFileUrl(filePath) {
   if (!filePath) return "";
   let normalized = filePath.replace(/\\/g, "/");
-  // If already absolute URL, return as is
   if (/^https?:\/\//.test(normalized)) return normalized;
-  // If path starts with /uploads/, use base url + path
   if (normalized.startsWith("/uploads/")) {
     return `${API_BASE_URL}${normalized}`;
   }
-  // If path starts with uploads/, add slash and base url
   if (normalized.startsWith("uploads/")) {
     return `${API_BASE_URL}/${normalized}`;
   }
-  // If path starts with /, treat as relative to base
   if (normalized.startsWith("/")) {
     return `${API_BASE_URL}${normalized}`;
   }
-  // Otherwise, assume it's a file in uploads/cv/
   return `${API_BASE_URL}/uploads/cv/${normalized}`;
 }
 
-// Komponen utama yang fetch dan tampilkan CV (sebagai gambar)
 function LihatCVAlumniInner() {
   const searchParams = useSearchParams();
   const alumniId = searchParams.get("id");
-  const [cvData, setCvData] = useState(null); // { fileUrl, fileName, ... }
+  const [cvData, setCvData] = useState(null);
   const [loadingCv, setLoadingCv] = useState(true);
 
-  // State untuk modal
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // State dan Ref untuk zoom dan pan
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isPanning, setIsPanning] = useState(false);
@@ -57,7 +49,6 @@ function LihatCVAlumniInner() {
         return;
       }
       try {
-        // GET /cv/alumni/:id
         const res = await fetch(`${API_BASE_URL}/cv/alumni/${alumniId}`, {
           method: "GET",
           headers: {
@@ -68,7 +59,6 @@ function LihatCVAlumniInner() {
           setCvData(null);
         } else {
           const data = await res.json();
-          // API returns { message, cv: { fileUrl, fileName, ... } }
           if (data.cv && data.cv.fileUrl) {
             setCvData(data.cv);
           } else {
@@ -84,24 +74,20 @@ function LihatCVAlumniInner() {
     fetchCV();
   }, [alumniId]);
 
-  // Fungsi untuk membuka/menutup modal
   const openModal = () => setIsModalOpen(true);
   const closeModal = () => {
     setIsModalOpen(false);
-    // Reset zoom dan pan saat modal ditutup
     setZoom(1);
     setPan({ x: 0, y: 0 });
   };
 
-  // Fungsi untuk mengelola zoom
   const handleZoom = (direction) => {
     setZoom((prevZoom) => {
       const newZoom = direction === "in" ? prevZoom * 1.2 : prevZoom / 1.2;
-      return Math.min(Math.max(newZoom, 0.5), 3); // Batasi zoom dari 0.5x hingga 3x
+      return Math.min(Math.max(newZoom, 0.5), 3);
     });
   };
 
-  // Fungsi untuk mengelola pan (drag)
   const handlePanStart = (e) => {
     e.preventDefault();
     setIsPanning(true);
@@ -129,13 +115,11 @@ function LihatCVAlumniInner() {
     setIsPanning(false);
   };
 
-  // Reset zoom dan pan
   const resetView = () => {
     setZoom(1);
     setPan({ x: 0, y: 0 });
   };
 
-  // Efek untuk mengelola event mouse global saat pan
   useEffect(() => {
     if (isPanning) {
       window.addEventListener("mousemove", handlePanMove);
@@ -166,7 +150,6 @@ function LihatCVAlumniInner() {
     );
   }
 
-  // Use helper to get the correct file URL
   const fileUrl = getCVFileUrl(cvData.fileUrl);
 
   return (
@@ -175,38 +158,44 @@ function LihatCVAlumniInner() {
       <div className="flex flex-col items-center justify-center min-h-[60vh] w-full px-2">
         {/* CV Card dengan header di dalamnya */}
         <div
-          className={`
-            relative w-full max-w-2xl rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white flex flex-col items-center justify-center min-h-[400px]
-            sm:max-w-full sm:rounded-lg sm:min-h-[250px] xs:max-w-full xs:rounded-md xs:min-h-[180px]
-          `}
+          className={
+            "relative w-full max-w-2xl rounded-xl overflow-hidden shadow-lg border border-gray-200 bg-white flex flex-col items-center justify-center min-h-[400px] " +
+            "sm:max-w-full sm:rounded-lg sm:min-h-[250px] xs:max-w-full xs:rounded-md xs:min-h-[180px]"
+          }
         >
           {/* Header yang menarik */}
           <div className="w-full">
             <div
-              className={`
-                bg-gradient-to-r from-blue-500 via-sky-400 to-blue-600 rounded-t-xl px-8 py-6 flex flex-col items-center justify-center relative overflow-hidden
-                sm:rounded-t-lg sm:px-4 sm:py-4 xs:rounded-t-md xs:px-2 xs:py-3
-              `}
+              className={
+                "bg-gradient-to-r from-blue-500 via-sky-400 to-blue-600 rounded-t-xl px-8 py-6 flex flex-col items-center justify-center relative overflow-hidden " +
+                "sm:rounded-t-lg sm:px-4 sm:py-4 xs:rounded-t-md xs:px-2 xs:py-3"
+              }
             >
-              <div className="absolute left-0 top-0 w-24 h-24 bg-blue-300 opacity-20 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2
-                sm:w-16 sm:h-16 xs:w-10 xs:h-10
-              "></div>
-              <div className="absolute right-0 bottom-0 w-32 h-32 bg-sky-200 opacity-20 rounded-full blur-2xl translate-x-1/3 translate-y-1/3
-                sm:w-20 sm:h-20 xs:w-12 xs:h-12
-              "></div>
+              <div
+                className={
+                  "absolute left-0 top-0 w-24 h-24 bg-blue-300 opacity-20 rounded-full blur-2xl -translate-x-1/2 -translate-y-1/2 " +
+                  "sm:w-16 sm:h-16 xs:w-10 xs:h-10"
+                }
+              ></div>
+              <div
+                className={
+                  "absolute right-0 bottom-0 w-32 h-32 bg-sky-200 opacity-20 rounded-full blur-2xl translate-x-1/3 translate-y-1/3 " +
+                  "sm:w-20 sm:h-20 xs:w-12 xs:h-12"
+                }
+              ></div>
               <h1
-                className={`
-                  text-3xl md:text-4xl font-extrabold text-white drop-shadow mb-2 tracking-tight text-center
-                  sm:text-2xl xs:text-lg sm:mb-1 xs:mb-1
-                `}
+                className={
+                  "text-3xl md:text-4xl font-extrabold text-white drop-shadow mb-2 tracking-tight text-center " +
+                  "sm:text-2xl xs:text-lg sm:mb-1 xs:mb-1"
+                }
               >
                 Curriculum Vitae Alumni
               </h1>
               <p
-                className={`
-                  text-white/90 text-base md:text-lg font-medium text-center
-                  sm:text-sm xs:text-xs
-                `}
+                className={
+                  "text-white/90 text-base md:text-lg font-medium text-center " +
+                  "sm:text-sm xs:text-xs"
+                }
               >
                 Lihat dokumen CV alumni yang telah diunggah.
               </p>
@@ -214,18 +203,18 @@ function LihatCVAlumniInner() {
           </div>
           {/* Gambar CV yang bisa diklik */}
           <div
-            className={`
-              w-full flex items-center justify-center py-6 px-4
-              sm:py-3 sm:px-2 xs:py-2 xs:px-1
-            `}
+            className={
+              "w-full flex items-center justify-center py-6 px-4 " +
+              "sm:py-3 sm:px-2 xs:py-2 xs:px-1"
+            }
           >
             <img
               src={fileUrl}
               alt="CV Alumni"
-              className={`
-                w-auto max-h-[60vh] object-contain mx-auto cursor-pointer transition-transform duration-200 hover:scale-[1.02]
-                sm:max-h-[40vh] xs:max-h-[28vh]
-              `}
+              className={
+                "w-auto max-h-[60vh] object-contain mx-auto cursor-pointer transition-transform duration-200 hover:scale-[1.02] " +
+                "sm:max-h-[40vh] xs:max-h-[28vh]"
+              }
               onClick={openModal}
             />
           </div>
@@ -238,34 +227,34 @@ function LihatCVAlumniInner() {
       {/* MODAL UNTUK TAMPILAN FULLSCREEN */}
       {isModalOpen && (
         <div
-          className={`
-            fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in
-            sm:p-1 xs:p-0
-          `}
+          className={
+            "fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 animate-fade-in " +
+            "sm:p-1 xs:p-0"
+          }
         >
           <div
-            className={`
-              relative w-full h-full max-w-7xl max-h-screen
-              sm:max-w-full sm:max-h-full xs:max-w-full xs:max-h-full
-            `}
+            className={
+              "relative w-full h-full max-w-7xl max-h-screen " +
+              "sm:max-w-full sm:max-h-full xs:max-w-full xs:max-h-full"
+            }
           >
             {/* Tombol Close */}
             <button
               onClick={closeModal}
-              className={`
-                absolute top-4 right-4 z-10 p-2 bg-gray-800/60 hover:bg-gray-800/80 text-white rounded-full transition-colors
-                sm:top-2 sm:right-2 sm:p-1 xs:top-1 xs:right-1 xs:p-1
-              `}
+              className={
+                "absolute top-4 right-4 z-10 p-2 bg-gray-800/60 hover:bg-gray-800/80 text-white rounded-full transition-colors " +
+                "sm:top-2 sm:right-2 sm:p-1 xs:top-1 xs:right-1 xs:p-1"
+              }
               aria-label="Tutup"
             >
               <HiOutlineXMark className="w-6 h-6 sm:w-5 sm:h-5 xs:w-4 xs:h-4" />
             </button>
             {/* Tombol Kontrol Zoom dan Pan */}
             <div
-              className={`
-                absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex space-x-2 bg-gray-800/60 rounded-full p-2 backdrop-blur-sm
-                sm:bottom-2 sm:p-1 xs:bottom-1 xs:p-1
-              `}
+              className={
+                "absolute bottom-4 left-1/2 -translate-x-1/2 z-10 flex space-x-2 bg-gray-800/60 rounded-full p-2 backdrop-blur-sm " +
+                "sm:bottom-2 sm:p-1 xs:bottom-1 xs:p-1"
+              }
             >
               <button
                 onClick={() => handleZoom("in")}
@@ -302,10 +291,10 @@ function LihatCVAlumniInner() {
                 ref={imageRef}
                 src={fileUrl}
                 alt="CV Alumni"
-                className={`
-                  w-full h-full object-contain mx-auto transition-transform duration-100 ease-out
-                  sm:w-full sm:h-full xs:w-full xs:h-full
-                `}
+                className={
+                  "w-full h-full object-contain mx-auto transition-transform duration-100 ease-out " +
+                  "sm:w-full sm:h-full xs:w-full xs:h-full"
+                }
                 style={{
                   transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
                   transformOrigin: 'center center',
@@ -381,7 +370,6 @@ function LihatCVAlumniInner() {
   );
 }
 
-// Export default dibungkus Suspense
 export default function LihatCVAlumni() {
   return (
     <Suspense fallback={
