@@ -80,7 +80,7 @@ export const getAlumniById = async (req, res) => {
         const alumni = await Alumni.findById(req.userId, [
             'name', 'nim', 'nohp', 'alamat', 'email', 'role',
             'foto_profil', 'foto_sampul', 'deskripsi',
-            'program_studi', 'tahun_lulus', 'tanggal_lahir', 'skill'
+            'program_studi', 'tahun_lulus', 'tanggal_lahir', 'skill', 'media_sosial'
         ]);
         if (!alumni) return res.status(404).json({ msg: "Alumni tidak ditemukan" });
         res.status(200).json(alumni);
