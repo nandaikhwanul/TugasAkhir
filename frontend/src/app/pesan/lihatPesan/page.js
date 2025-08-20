@@ -51,6 +51,18 @@ export default function LihatPesan() {
   const [deleting, setDeleting] = useState(false);
   const [userRole, setUserRole] = useState(null);
 
+  // Untuk deteksi mode mobile (tailwind: md breakpoint = 768px)
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 768);
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
   // Fungsi untuk menandai pesan sudah dibaca
   const markAsRead = async (pesan) => {
     if (pesan.sudah_dibaca) {
@@ -111,7 +123,9 @@ export default function LihatPesan() {
   };
 
   // Fungsi untuk menghapus pesan
-  const handleDeletePesan = async (pesanId) => {
+  const handleDeletePesan = async (pesan) => {
+    // pesan bisa berupa id atau object
+    const pesanId = typeof pesan === "string" ? pesan : pesan?._id;
     if (!pesanId) return;
 
     toast.info(
@@ -251,8 +265,8 @@ export default function LihatPesan() {
 
         setPesanList(pesanData);
 
-        // Pilih pesan pertama secara default
-        if (pesanData && pesanData.length > 0) {
+        // Pilih pesan pertama secara default (hanya di desktop)
+        if (!isMobile && pesanData && pesanData.length > 0) {
           // Jika pesan pertama belum dibaca, tandai sebagai sudah dibaca
           if (!pesanData[0].sudah_dibaca) {
             markAsRead(pesanData[0]);
@@ -268,254 +282,188 @@ export default function LihatPesan() {
     }
     fetchPesan();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isMobile]);
 
-  // Responsive: jika di mobile, sidebar dan detail jadi stack, sidebar bisa collapse
-  const [sidebarOpen, setSidebarOpen] = useState(false);
-
-  // Buka sidebar otomatis di desktop, tutup di mobile
-  React.useEffect(() => {
-    function handleResize() {
-      if (window.innerWidth < 768) {
-        setSidebarOpen(false);
-      } else {
-        setSidebarOpen(true);
-      }
-    }
-    handleResize();
-    window.addEventListener("resize", handleResize);
-    return () => window.removeEventListener("resize", handleResize);
-  }, []);
-
-  // Jika di mobile, klik pesan akan menutup sidebar
-  function handleSelectPesanMobile(pesan) {
+  // Handler untuk memilih pesan (dan menandai sudah dibaca)
+  const handleSelectPesan = (pesan) => {
     markAsRead(pesan);
-    if (window.innerWidth < 768) {
-      setSidebarOpen(false);
-    }
-  }
+  };
+
+  // Handler tombol kembali di mobile
+  const handleBackToList = () => {
+    setSelectedPesan(null);
+  };
 
   return (
     <>
       <ToastContainer />
-      <main className="flex py-4 px-2 md:py-8 md:px-8 bg-white md:h-auto">
-        {/* Tombol menu untuk mobile */}
-        <button
-          className="md:hidden fixed top-4 left-4 z-30 bg-indigo-600 text-white rounded-full p-2 shadow-lg focus:outline-none"
-          style={{ display: sidebarOpen ? "none" : "block" }}
-          onClick={() => setSidebarOpen(true)}
-          aria-label="Buka daftar pesan"
-        >
-          <svg className="w-6 h-6" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-        {/* Sidebar pesan list */}
-        <section
-          className={`
-            fixed z-40 top-0 left-0 h-full w-11/12 max-w-xs bg-white shadow-lg transition-transform duration-300
-            md:relative md:-left-44 md:z-0 md:w-4/12 md:max-w-none md:pr-4 md:ml-52 md:rounded-l-3xl md:h-[600px]
-            flex flex-col
-            ${sidebarOpen ? "translate-x-0" : "-translate-x-full"}
-            md:translate-x-0
-          `}
-          style={{
-            minWidth: 0,
-            maxHeight: "100vh",
-          }}
-        >
-          {/* Tombol close di mobile */}
-          <div className="md:hidden flex justify-end p-4">
-            <button
-              className="text-gray-500 hover:text-red-500 focus:outline-none"
-              onClick={() => setSidebarOpen(false)}
-              aria-label="Tutup daftar pesan"
-            >
-              <svg className="w-7 h-7" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-          </div>
-          <ul className="mt-2 md:mt-6 overflow-y-auto h-full">
-            {loading && (
-              <li className="py-5 px-3 text-gray-400">Memuat pesan...</li>
-            )}
-            {fetchError && (
-              <li className="py-5 px-3 text-red-500">{fetchError}</li>
-            )}
-            {!loading && !fetchError && pesanList.length === 0 && (
-              <li className="py-5 px-3 text-gray-400">Tidak ada pesan.</li>
-            )}
-            {pesanList.map((pesan) => (
-              <li
-                key={pesan._id}
-                className={`py-5 border-b px-3 cursor-pointer transition-colors
-                  ${
-                    selectedPesan && selectedPesan._id === pesan._id
-                      ? "bg-indigo-600 text-white"
-                      : pesan.sudah_dibaca
-                      ? "bg-white text-gray-800"
-                      : "bg-purple-50 text-purple-900"
-                  }
-                  hover:bg-indigo-100 md:hover:bg-indigo-50
-                `}
-                onClick={() =>
-                  window.innerWidth < 768
-                    ? handleSelectPesanMobile(pesan)
-                    : markAsRead(pesan)
-                }
-              >
-                <div className="flex justify-between items-center">
-                  <h3 className="text-lg font-semibold truncate">
-                    {pesan.pengirim_info?.name || "Tanpa Nama"}
-                  </h3>
-                  <p className="text-md text-right">
-                    {timeAgo(pesan.createdAt)}
-                  </p>
-                </div>
-                {/* Truncate isi pesan di sini */}
-                <div
-                  className="text-md break-words"
-                  title={pesan.isi}
-                  style={{
-                    maxWidth: "100%",
-                    display: "-webkit-box",
-                    WebkitLineClamp: 2, // tampilkan maksimal 2 baris
-                    WebkitBoxOrient: "vertical",
-                    overflow: "hidden",
-                    whiteSpace: "normal",
-                    wordBreak: "break-word",
-                  }}
-                >
-                  {truncateTextByWords(pesan.isi, 10)}
-                </div>
-                {!pesan.sudah_dibaca && (
-                  <span className="inline-block mt-2 text-xs bg-red-500 text-white px-2 py-0.5 rounded-full">
-                    Belum dibaca
-                  </span>
+      {/* Responsive: mobile hanya tampilkan list atau detail, desktop tampilkan keduanya */}
+      <div className="flex flex-col md:flex-row h-full w-full gap-4 md:gap-6 p-2 md:p-6 relative top-10">
+        {/* Sidebar daftar pesan */}
+        {/* Mobile: tampilkan hanya jika tidak sedang lihat detail */}
+        {(isMobile && !selectedPesan) || !isMobile ? (
+          <aside
+            className={`md:w-1/3 w-[28rem] bg-white rounded-2xl shadow-md p-0 md:p-2 overflow-hidden flex flex-col max-h-[80vh] ${
+              isMobile ? "" : "w-[2rem]"
+            }`}
+            style={isMobile ? { minWidth: 0 } : {}}
+          >
+            <div className="px-4 py-3 border-b bg-gray-50 flex items-center justify-between">
+              <span className="font-bold text-lg text-sky-800 flex items-center gap-2">
+                Pesan Masuk
+                <span className="inline-flex items-center justify-center bg-red-600 text-white text-xs font-semibold rounded-full h-6 min-w-[1.5rem] px-2 ml-1">
+                  {pesanList.filter((p) => !p.sudah_dibaca).length}
+                </span>
+              </span>
+            </div>
+            <div className="flex-1 overflow-y-auto">
+              {loading ? (
+                <div className="text-center text-gray-400 py-8">Memuat pesan...</div>
+              ) : fetchError ? (
+                <div className="text-center text-red-500 py-8">{fetchError}</div>
+              ) : pesanList.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">Tidak ada pesan</div>
+              ) : (
+                <ul>
+                  {pesanList.map((pesan) => (
+                    <li
+                      key={pesan._id}
+                      className={`flex items-start gap-3 px-4 py-3 border-b cursor-pointer transition
+                        ${
+                          selectedPesan && selectedPesan._id === pesan._id
+                            ? "bg-sky-50"
+                            : pesan.sudah_dibaca
+                            ? "bg-white hover:bg-gray-50"
+                            : "bg-purple-100/40 hover:bg-purple-100"
+                        }
+                      `}
+                      onClick={() => handleSelectPesan(pesan)}
+                    >
+                      {/* Badge bulat inisial */}
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-sky-200 flex items-center justify-center font-bold text-sky-700 text-lg uppercase">
+                        {pesan.pengirim_info?.name
+                          ? pesan.pengirim_info.name
+                              .split(" ")
+                              .map((n) => n[0])
+                              .join("")
+                              .slice(0, 2)
+                          : "?"}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <span className="font-semibold text-gray-800 truncate">
+                            {pesan.pengirim_info?.name || "Tanpa Nama"}
+                          </span>
+                          {!pesan.sudah_dibaca && (
+                            <span className="ml-2 inline-block w-2 h-2 rounded-full bg-red-600" title="Belum dibaca"></span>
+                          )}
+                        </div>
+                        <div className="text-sm text-gray-500 truncate">
+                          {truncateTextByWords(pesan.isi, 10)}
+                        </div>
+                        <div className="text-xs text-gray-400 mt-1">{timeAgo(pesan.createdAt)}</div>
+                      </div>
+                      <button
+                        className="ml-2 text-red-500 hover:text-red-700 p-1"
+                        title="Hapus pesan"
+                        onClick={e => {
+                          e.stopPropagation();
+                          handleDeletePesan(pesan);
+                        }}
+                      >
+                        <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </div>
+          </aside>
+        ) : null}
+
+        {/* Detail pesan */}
+        {/* Mobile: tampilkan hanya jika sedang lihat detail */}
+        {(isMobile && selectedPesan) || !isMobile ? (
+          <section className="flex-1 w-full rounded-2xl p-4 md:p-8 flex flex-col max-h-52 md:w-10">
+            {!selectedPesan ? (
+              <div className="flex items-center justify-center text-gray-400 text-center h-10">
+                Pilih pesan untuk melihat detail
+              </div>
+            ) : (
+              <>
+                {/* Tombol kembali di mobile */}
+                {isMobile && (
+                  <button
+                    className="mb-4 flex items-center gap-2 text-sky-700 hover:text-sky-900 font-medium"
+                    onClick={handleBackToList}
+                  >
+                    <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M15 19l-7-7 7-7" />
+                    </svg>
+                    Kembali ke daftar pesan
+                  </button>
                 )}
-              </li>
-            ))}
-          </ul>
-        </section>
-        {/* Overlay untuk sidebar di mobile */}
-        {sidebarOpen && (
-          <div
-            className="fixed inset-0 backdrop-blur-xs z-20 md:hidden"
-            onClick={() => setSidebarOpen(false)}
-            aria-label="Tutup overlay"
-          />
-        )}
-        {/* Main pesan detail */}
-        <section
-          className={`
-            flex flex-col bg-white rounded-none md:rounded-r-3xl
-            w-full px-2 md:px-4
-            ${/* Responsive height: auto on mobile, fixed on desktop */""}
-            ${typeof window !== "undefined" && window.innerWidth < 768
-              ? ""
-              : "md:h-[600px]"}
-            overflow-y-auto
-            transition-all md:absolute md:w-[650px] md:right-1
-          `}
-          style={{
-            height: typeof window !== "undefined" && window.innerWidth < 768 ? "auto" : undefined,
-          }}
-        >
-          {selectedPesan ? (
-            <>
-              <div className="flex flex-col md:flex-row justify-between items-start md:items-center h-auto md:h-48 border-b-2 mb-4 md:mb-8 pt-4 md:pt-0">
-                <div className="flex space-x-4 items-center w-full md:w-auto">
-                  <div className="h-12 w-12 rounded-full overflow-hidden bg-gray-200 flex items-center justify-center">
-                    {/* Avatar inisial */}
-                    <span className="text-xl font-bold text-indigo-700">
+                <div className="flex flex-col md:flex-row md:items-center gap-4 border-b pb-4 mb-4">
+                  <div className="flex items-center gap-4">
+                    <div className="w-14 h-14 rounded-full bg-sky-200 flex items-center justify-center font-bold text-sky-700 text-2xl uppercase">
                       {selectedPesan.pengirim_info?.name
                         ? selectedPesan.pengirim_info.name
                             .split(" ")
                             .map((n) => n[0])
                             .join("")
-                            .toUpperCase()
+                            .slice(0, 2)
                         : "?"}
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-xl text-black">
+                        {selectedPesan.pengirim_info?.name || "Tanpa Nama"}
+                      </h3>
+                      <p className="text-gray-400 text-sm">
+                        {selectedPesan.pengirim_info?.email || "-"}
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex-1 flex justify-end items-center mt-2 md:mt-0">
+                    <span
+                      className={`inline-block px-3 py-1 rounded-full text-xs font-semibold ${
+                        selectedPesan.sudah_dibaca
+                          ? "bg-green-100 text-green-700"
+                          : "bg-purple-100 text-purple-700"
+                      }`}
+                    >
+                      {selectedPesan.sudah_dibaca ? "Sudah dibaca" : "Belum dibaca"}
                     </span>
-                  </div>
-                  <div className="flex flex-col">
-                    <h3 className="font-semibold text-lg text-black">
-                      {selectedPesan.pengirim_info?.name || "Tanpa Nama"}
-                    </h3>
-                    <p className="text-light text-gray-400">
-                      {selectedPesan.pengirim_info?.email || "-"}
-                    </p>
+                    <button
+                      className="ml-4 text-red-500 hover:text-red-700 p-1"
+                      title="Hapus pesan"
+                      onClick={() => handleDeletePesan(selectedPesan)}
+                    >
+                      <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
                   </div>
                 </div>
-                <div className="mt-4 md:mt-0">
-                  <ul className="flex text-gray-400 space-x-4">
-                    <li className="w-6 h-6">
-                      {/* Tombol hapus */}
-                      <button
-                        type="button"
-                        aria-label="Hapus pesan"
-                        disabled={deleting}
-                        onClick={() => handleDeletePesan(selectedPesan._id)}
-                        className={`transition-colors rounded-full p-0.5 ${
-                          deleting
-                            ? "opacity-50 cursor-not-allowed"
-                            : "hover:text-red-600 focus:text-red-600"
-                        }`}
-                        style={{
-                          outline: "none",
-                          border: "none",
-                          background: "transparent",
-                          cursor: deleting ? "not-allowed" : "pointer",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}
-                      >
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          fill="none"
-                          viewBox="0 0 24 24"
-                          stroke="currentColor"
-                          className="w-6 h-6"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            strokeWidth="2"
-                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                          />
-                        </svg>
-                      </button>
-                    </li>
-                  </ul>
-                </div>
-              </div>
-              <section>
-                <article className="mt-4 md:mt-8 text-gray-500 leading-7 tracking-wider md:relative">
-                  <p className="break-words" style={{wordBreak: "break-word", overflowWrap: "break-word"}}>
-                    {selectedPesan.isi}
-                  </p>
-                  <footer className="mt-8 md:mt-12">
-                    <p>
+                <article className="flex-1 text-gray-700 leading-relaxed break-words">
+                  <p className="mb-8">{selectedPesan.isi}</p>
+                  <footer className="border-t pt-4 text-sm text-gray-500">
+                    <div>
                       <span className="text-gray-400">Dikirim: </span>
                       {new Date(selectedPesan.createdAt).toLocaleString()}
-                    </p>
-                    <p>
+                    </div>
+                    <div>
                       <span className="text-gray-400">Pengirim: </span>
                       {selectedPesan.pengirim_info?.name || "-"}
-                    </p>
+                    </div>
                   </footer>
                 </article>
-              </section>
-              <section className="mt-4 md:mt-6 border rounded-xl bg-gray-50 mb-3"></section>
-            </>
-          ) : (
-            <div className="flex items-center justify-center h-full text-gray-400 text-center px-2">
-              Pilih pesan untuk melihat detail
-            </div>
-          )}
-        </section>
-      </main>
+              </>
+            )}
+          </section>
+        ) : null}
+      </div>
     </>
   );
 }

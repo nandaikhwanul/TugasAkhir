@@ -36,10 +36,10 @@ function LamaranCard({ item }) {
   return (
     <div
       key={item._id}
-      className="relative bg-white rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.06)] flex px-6 py-5 mb-4 min-h-[120px] group transition hover:shadow-lg w-full"
+      className="relative bg-white rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.06)] flex flex-col md:flex-row px-4 md:px-6 py-4 md:py-5 mb-4 min-h-[120px] group transition hover:shadow-lg w-full"
     >
       {/* Status Lamaran */}
-      <div className="absolute top-4 left-4 z-10">
+      <div className="absolute top-3 left-3 md:top-4 md:left-4 z-10">
         <span
           className={`px-3 py-1 rounded-full text-xs font-semibold
             ${
@@ -59,7 +59,7 @@ function LamaranCard({ item }) {
         </span>
       </div>
       {/* Logo */}
-      <div className="w-16 h-16 rounded-xl bg-[#eaf7e6] flex items-center justify-center mr-6 flex-shrink-0 overflow-hidden border border-[#e0e0e0]">
+      <div className="w-14 h-14 md:w-16 md:h-16 rounded-xl bg-[#eaf7e6] flex items-center justify-center mr-0 md:mr-6 mb-3 md:mb-0 flex-shrink-0 overflow-hidden border border-[#e0e0e0] self-center md:self-auto">
         {perusahaan.logo_perusahaan ? (
           <img
             src={
@@ -68,7 +68,7 @@ function LamaranCard({ item }) {
                 : `https://tugasakhir-production-6c6c.up.railway.app${perusahaan.logo_perusahaan}`
             }
             alt={perusahaan.nama_perusahaan || "Logo"}
-            className="w-12 h-12 object-cover rounded-lg"
+            className="w-10 h-10 md:w-12 md:h-12 object-cover rounded-lg"
           />
         ) : (
           <svg width="36" height="36" viewBox="0 0 32 32" fill="none">
@@ -86,17 +86,17 @@ function LamaranCard({ item }) {
       {/* Info Utama */}
       <div className="flex-1 flex flex-col justify-between min-w-0">
         {/* Judul dan perusahaan */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-1">
           <div className="flex flex-col min-w-0">
-            <span className="text-[18px] font-bold text-[#222] truncate">
+            <span className="text-[16px] md:text-[18px] font-bold text-[#222] truncate">
               {low.judul_pekerjaan || low.judul || "-"}
             </span>
-            <span className="text-[15px] text-[#27ae60] font-semibold mt-0.5 truncate">
+            <span className="text-[14px] md:text-[15px] text-[#27ae60] font-semibold mt-0.5 truncate">
               {perusahaan.nama_perusahaan || perusahaan.nama || "-"}
             </span>
           </div>
-          <div className="flex items-center gap-2 mt-1 sm:mt-0">
-            <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
+          <div className="flex flex-wrap items-center gap-2 mt-1 md:mt-0">
+            <span className="flex items-center text-[14px] md:text-[15px] text-[#6c757d] font-medium">
               <svg className="mr-1" width="16" height="16" fill="none" viewBox="0 0 20 20">
                 <path
                   d="M10 2C6.13 2 3 5.13 3 9c0 5.25 7 9 7 9s7-3.75 7-9c0-3.87-3.13-7-7-7zm0 9.5A2.5 2.5 0 1 1 10 6a2.5 2.5 0 0 1 0 5.5z"
@@ -105,7 +105,7 @@ function LamaranCard({ item }) {
               </svg>
               {low.lokasi || "-"}
             </span>
-            <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
+            <span className="flex items-center text-[14px] md:text-[15px] text-[#6c757d] font-medium">
               <svg className="mr-1" width="16" height="16" fill="none" viewBox="0 0 20 20">
                 <path
                   d="M4 10a6 6 0 1 1 12 0A6 6 0 0 1 4 10zm6-8a8 8 0 1 0 0 16A8 8 0 0 0 10 2zm0 3a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1z"
@@ -117,8 +117,8 @@ function LamaranCard({ item }) {
           </div>
         </div>
         {/* Salary dan status lowongan */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2">
-          <span className="flex items-center text-[15px] text-[#4fc3f7] font-bold">
+        <div className="flex flex-wrap items-center gap-x-4 md:gap-x-6 gap-y-1 mt-2">
+          <span className="flex items-center text-[14px] md:text-[15px] text-[#4fc3f7] font-bold">
             <svg className="mr-1" width="16" height="16" fill="none" viewBox="0 0 20 20">
               <path
                 d="M10 18c4.418 0 8-3.582 8-8s-3.582-8-8-8-8 3.582-8 8 3.582 8 8 8zm0-14a6 6 0 1 1 0 12A6 6 0 0 1 10 4zm1 3v2h2a1 1 0 1 1 0 2h-2v2a1 1 0 1 1-2 0v-2H7a1 1 0 1 1 0-2h2V7a1 1 0 1 1 2 0z"
@@ -128,7 +128,7 @@ function LamaranCard({ item }) {
             {low.gaji || "-"}
           </span>
           <span
-            className={`flex items-center text-[15px] font-bold ${
+            className={`flex items-center text-[14px] md:text-[15px] font-bold ${
               low.status === "open"
                 ? "text-[#27ae60]"
                 : low.status === "closed"
@@ -151,19 +151,11 @@ function LamaranCard({ item }) {
               ? "Closed"
               : "-"}
           </span>
-          <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
-            <svg className="mr-1" width="16" height="16" fill="none" viewBox="0 0 20 20">
-              <path
-                d="M3 3h14v2H3V3zm2 4h10v2H5V7zm-2 4h14v2H3v-2zm2 4h10v2H5v-2z"
-                fill="#6c757d"
-              />
-            </svg>
-            {low.kualifikasi || "-"}
-          </span>
+          {/* Kualifikasi dihilangkan sesuai permintaan */}
         </div>
         {/* Info bawah: pelamar, batas pelamar, views, batas, waktu posting, waktu lamaran */}
-        <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2">
-          <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+        <div className="flex flex-wrap items-center gap-x-4 md:gap-x-6 gap-y-1 mt-2">
+          <span className="flex items-center text-[13px] md:text-[14px] text-[#6c757d] font-normal">
             <svg className="mr-1" width="15" height="15" fill="none" viewBox="0 0 20 20">
               <path
                 d="M10 10a4 4 0 1 0 0-8 4 4 0 0 0 0 8zm0 2c-3.31 0-6 2.24-6 5v1h12v-1c0-2.76-2.69-5-6-5z"
@@ -172,7 +164,7 @@ function LamaranCard({ item }) {
             </svg>
             {low.jumlah_pelamar ?? "-"} pelamar
           </span>
-          <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+          <span className="flex items-center text-[13px] md:text-[14px] text-[#6c757d] font-normal">
             <svg className="mr-1" width="15" height="15" fill="none" viewBox="0 0 20 20">
               <path
                 d="M8 2a2 2 0 0 1 4 0v1h2a2 2 0 0 1 2 2v1H4V5a2 2 0 0 1 2-2h2V2zm8 5v10a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V7h12zm-2 2H6v8h8V9z"
@@ -184,7 +176,7 @@ function LamaranCard({ item }) {
               {low.batas_pelamar ?? "-"}
             </span>
           </span>
-          <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+          <span className="flex items-center text-[13px] md:text-[14px] text-[#6c757d] font-normal">
             <svg className="mr-1" width="15" height="15" fill="none" viewBox="0 0 20 20">
               <path
                 d="M2 10a8 8 0 1 1 16 0A8 8 0 0 1 2 10zm8-6a6 6 0 1 0 0 12A6 6 0 0 0 10 4zm0 2a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"
@@ -193,7 +185,7 @@ function LamaranCard({ item }) {
             </svg>
             {low.traffic ?? 0} views
           </span>
-          <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+          <span className="flex items-center text-[13px] md:text-[14px] text-[#6c757d] font-normal">
             <svg className="mr-1" width="15" height="15" fill="none" viewBox="0 0 20 20">
               <path
                 d="M6 2a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V4a2 2 0 0 0-2-2H6zm0 2h8v12H6V4zm2 2v2h4V6H8z"
@@ -205,7 +197,7 @@ function LamaranCard({ item }) {
               {formatDate(low.batas_lamaran)}
             </span>
           </span>
-          <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+          <span className="flex items-center text-[13px] md:text-[14px] text-[#6c757d] font-normal">
             <svg className="mr-1" width="15" height="15" fill="none" viewBox="0 0 20 20">
               <path
                 d="M10 2a8 8 0 1 1 0 16A8 8 0 0 1 10 2zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4zm0 2a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"
@@ -214,7 +206,7 @@ function LamaranCard({ item }) {
             </svg>
             {low.createdAt ? timeAgo(low.createdAt) : "-"}
           </span>
-          <span className="flex items-center text-[14px] text-[#6c757d] font-normal">
+          <span className="flex items-center text-[13px] md:text-[14px] text-[#6c757d] font-normal">
             <svg className="mr-1" width="15" height="15" fill="none" viewBox="0 0 20 20">
               <path
                 d="M10 2a8 8 0 1 1 0 16A8 8 0 0 1 10 2zm0 2a6 6 0 1 0 0 12A6 6 0 0 0 10 4zm0 2a1 1 0 0 1 1 1v3h2a1 1 0 1 1 0 2h-3a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1z"
@@ -229,10 +221,10 @@ function LamaranCard({ item }) {
         </div>
       </div>
       {/* Tombol Apply: tidak aktif, hanya tampilan */}
-      <div className="ml-6 flex flex-col items-end justify-between h-full min-w-[120px]">
-        <div className="mt-14 w-full flex justify-end">
+      <div className="md:ml-6 flex flex-row md:flex-col items-end md:items-end justify-between h-auto md:h-full min-w-[100px] md:min-w-[120px] mt-3 md:mt-0">
+        <div className="w-full flex justify-end">
           <button
-            className={`bg-[#4fc3f7] text-white rounded-lg px-6 py-2.5 font-semibold text-[15px] shadow-[0_2px_8px_0_rgba(79,195,247,0.12)] mb-2 flex items-center justify-center transition opacity-50 pointer-events-none`}
+            className={`bg-[#4fc3f7] text-white rounded-lg px-4 md:px-6 py-2 font-semibold text-[14px] md:text-[15px] shadow-[0_2px_8px_0_rgba(79,195,247,0.12)] mb-2 flex items-center justify-center transition opacity-50 pointer-events-none`}
             aria-label="Apply"
             disabled
             title="Anda sudah melamar"
@@ -315,10 +307,10 @@ export default function RiwayatLamaranAlumni() {
   return (
     <>
       <AlumniNavbar />
-      <div className="min-h-screen h-screen w-full flex flex-col bg-gray-100 px-10">
+      <div className="min-h-screen h-screen w-full flex flex-col bg-gray-100 px-2 sm:px-4 md:px-10">
         <div className="flex-1 min-h-0 flex flex-col">
           <div className="w-full font-sans rounded-b-lg flex flex-col flex-1 min-h-0">
-            <div className="text-[20px] text-[#222] font-semibold mb-4 px-6 pt-6 text-center">
+            <div className="text-[18px] md:text-[20px] text-[#222] font-semibold mb-4 px-2 md:px-6 pt-6 text-center">
               Riwayat Lamaran Saya{" "}
               <span className="text-[#6c757d] font-normal">
                 ({lamaran.length} total)
@@ -327,7 +319,7 @@ export default function RiwayatLamaranAlumni() {
             {/* Tombol sorting */}
             <div className="flex justify-center mb-4 gap-2">
               <button
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg border text-[15px] font-medium transition ${
+                className={`flex items-center gap-1 px-3 md:px-4 py-2 rounded-lg border text-[14px] md:text-[15px] font-medium transition ${
                   sortOrder === "desc"
                     ? "bg-[#4fc3f7] text-white border-[#4fc3f7]"
                     : "bg-white text-[#4fc3f7] border-[#4fc3f7]"
@@ -339,7 +331,7 @@ export default function RiwayatLamaranAlumni() {
                 Terbaru
               </button>
               <button
-                className={`flex items-center gap-1 px-4 py-2 rounded-lg border text-[15px] font-medium transition ${
+                className={`flex items-center gap-1 px-3 md:px-4 py-2 rounded-lg border text-[14px] md:text-[15px] font-medium transition ${
                   sortOrder === "asc"
                     ? "bg-[#4fc3f7] text-white border-[#4fc3f7]"
                     : "bg-white text-[#4fc3f7] border-[#4fc3f7]"
@@ -371,7 +363,7 @@ export default function RiwayatLamaranAlumni() {
                 </div>
               )}
               {!loading && !fetchError && lamaran.length === 0 && (
-                <div className="text-[#6c757d] text-[16px] px-6">
+                <div className="text-[#6c757d] text-[15px] md:text-[16px] px-2 md:px-6">
                   Anda belum pernah melamar lowongan.
                 </div>
               )}

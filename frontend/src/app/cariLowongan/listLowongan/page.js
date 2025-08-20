@@ -445,7 +445,7 @@ export default function ListLowonganPageTampilanSaja({
             </div>
           </div>
           <div
-            className="w-full flex-1 overflow-y-auto pb-4 px-0 md:mb-52 mb-[295px]"
+            className="w-full flex-1 overflow-y-auto pb-4 px-0 md:mb-52 mb-[190px]"
             style={{ msOverflowStyle: "none", scrollbarWidth: "none" }}
           >
             <style jsx global>{`

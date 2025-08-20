@@ -422,7 +422,8 @@ export default function CariLowonganPage() {
         className="w-full bg-white border-b border-gray-200 py-4 px-2 sm:px-4 md:px-8 lg:px-12 flex flex-col gap-4 md:flex-row md:items-center"
         onSubmit={handleSearch}
       >
-        <div className="flex-1 flex items-center bg-[#f4f7fa] rounded-md border border-gray-200 px-3 py-2 min-w-0">
+        {/* Search input - only show on desktop */}
+        <div className="flex-1 flex items-center bg-[#f4f7fa] rounded-md border border-gray-200 px-3 py-2 min-w-0 hidden sm:flex">
           <FiSearch className="text-gray-400 text-lg mr-2" />
           <input
             type="text"
@@ -445,22 +446,23 @@ export default function CariLowonganPage() {
             onClick={() => setShowMobileFilter(true)}
           >
             <HiMenu className="text-xl mr-2" />
-            Filter
+            Menu
           </button>
         </div>
         {/* Filter options for desktop */}
         <div className="hidden sm:flex flex-wrap gap-2 sm:gap-3 w-full md:w-auto">
           <FilterFormContent />
         </div>
+        {/* Search button - only show on desktop */}
         <button
           type="submit"
-          className="w-full md:w-auto ml-0 md:ml-3 bg-blue-600 hover:bg-blue-700 text-white px-7 py-2 rounded-md text-sm font-semibold shadow-sm transition"
+          className="w-full md:w-auto ml-0 md:ml-3 bg-blue-600 hover:bg-blue-700 text-white px-7 py-2 rounded-md text-sm font-semibold shadow-sm transition hidden sm:block"
         >
           Search
         </button>
       </form>
 
-      {/* Mobile Filter Modal */}
+      {/* Mobile Filter Modal (now contains search, filter, and tab) */}
       {showMobileFilter && (
         <div className="fixed inset-0 z-40 flex items-end sm:hidden">
           <div
@@ -468,11 +470,11 @@ export default function CariLowonganPage() {
             onClick={() => setShowMobileFilter(false)}
           ></div>
           <form
-            className="relative w-full bg-white rounded-t-lg shadow-lg max-h-[90vh] overflow-y-auto py-6 px-4 z-50"
+            className="relative w-full bg-white rounded-t-lg shadow-lg max-h-[95vh] overflow-y-auto py-6 px-4 z-50"
             onSubmit={handleSearch}
           >
             <div className="flex justify-between items-center mb-4">
-              <span className="font-semibold text-lg">Filter Lowongan</span>
+              <span className="font-semibold text-lg">Menu Pencarian</span>
               <button
                 type="button"
                 className="text-gray-500 text-2xl"
@@ -481,6 +483,41 @@ export default function CariLowonganPage() {
                 &times;
               </button>
             </div>
+            {/* Search input */}
+            <div className="flex items-center bg-[#f4f7fa] rounded-md border border-gray-200 px-3 py-2 min-w-0 mb-4">
+              <FiSearch className="text-gray-400 text-lg mr-2" />
+              <input
+                type="text"
+                placeholder="Pekerjaan apa yang anda inginkan ?"
+                className="bg-transparent outline-none w-full text-sm text-black"
+                value={searchInput}
+                onChange={(e) => setSearchInput(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter") {
+                    handleSearch(e);
+                  }
+                }}
+              />
+            </div>
+            {/* Filter Tabs (as radio group) */}
+            <div className="flex gap-2 mb-4">
+              {filterMenu.map((item, idx) => (
+                <button
+                  key={item.label}
+                  type="button"
+                  className={classNames(
+                    "flex-1 px-3 py-2 rounded-md text-sm font-semibold transition",
+                    activeFilter === idx
+                      ? "bg-blue-600 text-white"
+                      : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                  )}
+                  onClick={() => handleFilterChange(idx)}
+                >
+                  {item.label}
+                </button>
+              ))}
+            </div>
+            {/* Filter form */}
             <FilterFormContent isMobile={true} onClose={() => setShowMobileFilter(false)} />
           </form>
         </div>
@@ -506,43 +543,8 @@ export default function CariLowonganPage() {
             </button>
           ))}
         </div>
-        {/* Mobile Dropdown */}
-        <div className="flex sm:hidden relative w-full">
-          <button
-            type="button"
-            className={classNames(
-              "w-full flex items-center justify-between px-3 py-2 rounded-t-md text-sm font-semibold border border-gray-200 bg-gray-100 text-gray-700",
-              "focus:outline-none"
-            )}
-            onClick={() => setShowFilterDropdown((v) => !v)}
-            ref={filterDropdownRef}
-          >
-            <span>{getActiveFilterLabel()}</span>
-            <FiChevronDown className={classNames("ml-2 transition-transform", showFilterDropdown ? "rotate-180" : "")} />
-          </button>
-          {showFilterDropdown && (
-            <div
-              className="absolute left-0 right-0 mt-1 bg-white border border-gray-200 rounded-md shadow-lg z-30"
-              ref={filterDropdownRef}
-            >
-              {filterMenu.map((item, idx) => (
-                <button
-                  key={item.label}
-                  type="button"
-                  className={classNames(
-                    "w-full text-left px-4 py-2 text-sm font-semibold transition",
-                    activeFilter === idx
-                      ? "bg-blue-600 text-white"
-                      : "bg-white text-gray-700 hover:bg-gray-100"
-                  )}
-                  onClick={() => handleFilterChange(idx)}
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        {/* Mobile Dropdown - hidden, now in modal */}
+        <div className="hidden sm:hidden relative w-full"></div>
       </div>
 
       {/* Main Content */}
