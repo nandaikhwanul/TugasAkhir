@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { useRouter } from "next/navigation";
 import { getTokenFromSessionStorage } from "../../../sessiontoken"; // gunakan ini untuk token
@@ -98,7 +98,11 @@ export default function CardRekomendasi() {
   const [alumniList, setAlumniList] = useState([]);
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
+  const [hasAnimated, setHasAnimated] = useState(false);
   const router = useRouter();
+
+  // Ref for the cards container
+  const cardsContainerRef = useRef(null);
 
   useEffect(() => {
     async function fetchAlumni() {
@@ -136,6 +140,40 @@ export default function CardRekomendasi() {
     router.push("/dashboard/perusahaan/lihat/alumni/page");
   };
 
+  // Intersection observer for cards animation (once only)
+  useEffect(() => {
+    if (hasAnimated) return; // Don't observe if already animated
+    const container = cardsContainerRef.current;
+    if (!container) return;
+
+    // Find all card elements
+    const cardEls = container.querySelectorAll("[data-animate-card]");
+    if (cardEls.length === 0) return;
+
+    let observer;
+    let animated = false;
+
+    observer = new window.IntersectionObserver(
+      (entries) => {
+        // If any card is visible, trigger animation and disconnect
+        if (!animated && entries.some((entry) => entry.isIntersecting)) {
+          setHasAnimated(true);
+          animated = true;
+          observer.disconnect();
+        }
+      },
+      {
+        threshold: 0.2,
+      }
+    );
+
+    cardEls.forEach((el) => observer.observe(el));
+
+    return () => {
+      if (observer) observer.disconnect();
+    };
+  }, [alumniList, hasAnimated]);
+
   return (
     <div
       className="px-0 py-12 bg-gray-100 min-h-screen w-full max-w-full overflow-x-hidden"
@@ -144,11 +182,20 @@ export default function CardRekomendasi() {
         fontFamily: "'Poppins', 'Segoe UI', 'Arial', sans-serif",
       }}
     >
+      {/* Hide scrollbar for y but allow scroll */}
+      <style>{`
+        .hide-scrollbar {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE 10+ */
+        }
+        .hide-scrollbar::-webkit-scrollbar {
+          display: none; /* Chrome/Safari/Webkit */
+        }
+      `}</style>
       {/* Header */}
       <motion.div
         initial={{ opacity: 0, y: 30 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ amount: 0.3 }}
+        animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6, ease: [0.4, 0, 0.2, 1] }}
         className="flex flex-col md:flex-row md:items-center md:justify-between mb-10 px-8"
       >
@@ -190,8 +237,14 @@ export default function CardRekomendasi() {
         </span>
       </div>
       {/* Cards */}
-      <div className="w-full max-w-full overflow-x-hidden">
-        <div className="flex gap-8 px-8 flex-wrap">
+      <div
+        className="w-full max-w-full overflow-x-hidden hide-scrollbar"
+        style={{
+          overflowY: "auto",
+          maxHeight: "calc(100vh - 180px)", // adjust as needed for your header/footer
+        }}
+      >
+        <div className="flex gap-8 px-8 flex-wrap" ref={cardsContainerRef}>
           {loading ? (
             <div className="w-full flex justify-center items-center py-16">
               <span className="text-gray-500 text-lg">Loading...</span>
@@ -221,9 +274,11 @@ export default function CardRekomendasi() {
                 <motion.div
                   key={alumni.nim || idx}
                   custom={idx}
-                  initial="hidden"
-                  whileInView="visible"
-                  viewport={{ amount: 0.2 }}
+                  data-animate-card
+                  initial={hasAnimated ? false : "hidden"}
+                  animate={hasAnimated ? "visible" : undefined}
+                  whileInView={hasAnimated ? undefined : "visible"}
+                  viewport={hasAnimated ? undefined : { amount: 0.2, once: true }}
                   variants={cardVariants}
                   className="bg-white rounded-2xl shadow-sm border border-[#e3e8f0] w-full sm:w-[340px] p-0 flex flex-col gap-4 relative cursor-pointer transition hover:shadow-lg"
                   style={{
