@@ -150,7 +150,7 @@ export default function AboutCard() {
   return (
     <div className="flex flex-col w-full h-full sm:p-0 md:relative md:right-2">
       <div
-        className="flex-1 bg-gradient-to-br from-blue-50 to-white shadow-lg p-4 sm:p-8 group relative w-full min-h-[260px] border border-blue-100"
+        className="flex-1 bg-white shadow-lg p-4 sm:p-8 group relative w-full min-h-[260px] "
         onMouseEnter={() => setHoveredSection("about")}
         onMouseLeave={() => setHoveredSection(null)}
       >

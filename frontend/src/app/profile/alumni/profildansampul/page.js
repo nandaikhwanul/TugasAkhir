@@ -303,7 +303,7 @@ export default function AlumniPreview() {
 
   return (
     <div className="flex flex-col w-full px-4 sm:px-0 md:px-7">
-      <div className="relative bg-white shadow-xl border border-gray-100 pb-8 overflow-hidden">
+      <div className="relative bg-white shadow-xl  pb-8 overflow-hidden">
         
         {/* Bagian Foto Sampul */}
         <div className="w-full h-[150px] sm:h-[250px] relative group">
