@@ -304,19 +304,6 @@ export default function AlumniPreview() {
   return (
     <div className="flex flex-col w-full px-4 sm:px-0 md:px-7">
       <div className="relative bg-white shadow-xl border border-gray-100 pb-8 overflow-hidden">
-        {/* Tombol Edit untuk data profil */}
-        <div className="absolute top-4 right-4 sm:top-6 sm:right-6 z-10">
-          {!editMode && (
-            <button
-              className="p-3 rounded-full bg-blue-50 hover:bg-blue-100 border border-blue-200 text-blue-400 hover:text-blue-600 transition"
-              title="Edit Profil"
-              onClick={handleEdit}
-              disabled={editMode}
-            >
-              <FaPencilAlt className="h-5 w-5" />
-            </button>
-          )}
-        </div>
         
         {/* Bagian Foto Sampul */}
         <div className="w-full h-[150px] sm:h-[250px] relative group">

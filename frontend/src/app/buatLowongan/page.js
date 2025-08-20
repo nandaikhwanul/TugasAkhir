@@ -189,6 +189,7 @@ export default function BuatLowongan() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedProvinsi, provinsiList, setValue]);
 
+  // Stepper: Responsive, only show step number bar on mobile, show title on sm+
   function Stepper() {
     return (
       <ol className="flex flex-wrap items-center w-full mb-10 gap-y-4 sm:gap-y-0">
@@ -200,8 +201,9 @@ export default function BuatLowongan() {
           return (
             <li
               key={s.title}
-              className="flex-1 flex flex-col items-center relative min-w-[90px] sm:min-w-[120px]"
+              className="flex-1 flex flex-col items-center relative min-w-[50px] sm:min-w-[120px]"
             >
+              {/* Garis penghubung kiri */}
               {!isFirst && (
                 <span
                   className={`
@@ -214,6 +216,7 @@ export default function BuatLowongan() {
                   aria-hidden="true"
                 />
               )}
+              {/* Garis penghubung kanan */}
               {!isLast && (
                 <span
                   className={`
@@ -257,8 +260,9 @@ export default function BuatLowongan() {
                   )}
                 </span>
               </div>
+              {/* Only show step title on sm+ screens */}
               <span
-                className={`mt-2 text-xs font-medium whitespace-nowrap text-center ${
+                className={`mt-2 text-xs font-medium whitespace-nowrap text-center hidden sm:block ${
                   isActive
                     ? "text-blue-700"
                     : isCompleted
