@@ -88,16 +88,44 @@ function AboutCardInner() {
   }
 
   return (
-    <div className="flex flex-col w-full max-w-[91rem] h-full  rounded-none">
-      <div className="flex-1 bg-gradient-to-br from-blue-50 to-white rounded-t-none p-8 relative w-full">
+    <div
+      className="
+        flex flex-col w-full max-w-[91rem] h-full rounded-none
+        sm:rounded-lg
+        sm:p-4
+        sm:shadow
+        sm:bg-white
+        sm:max-w-2xl
+        sm:mx-auto
+        sm:my-4
+        md:max-w-[91rem] md:p-0 md:shadow-none md:bg-transparent md:mx-0 md:my-0
+      "
+      style={{
+        minHeight: "200px",
+      }}
+    >
+      <div
+        className="
+          flex-1
+          bg-gradient-to-br from-blue-50 to-white
+          rounded-t-none
+          p-4
+          sm:p-8
+          relative
+          w-full
+        "
+        style={{
+          minHeight: "180px",
+        }}
+      >
         <div className="flex items-center gap-3 mb-2">
-          <FaUserCircle className="text-blue-300 text-3xl" />
-          <h4 className="text-2xl text-blue-900 font-semibold tracking-tight">Tentang</h4>
+          <FaUserCircle className="text-blue-300 text-2xl sm:text-3xl" />
+          <h4 className="text-lg sm:text-2xl text-blue-900 font-semibold tracking-tight">Tentang</h4>
         </div>
-        <p className="mt-2 text-gray-700 break-words whitespace-pre-line break-all text-base flex items-start gap-2">
+        <p className="mt-2 text-gray-700 break-words whitespace-pre-line break-all text-sm sm:text-base flex items-start gap-2">
           {alumni.deskripsi && alumni.deskripsi.trim() ? (
             <>
-              <FaUserCircle className="text-blue-200 text-xl mt-1" />
+              <FaUserCircle className="text-blue-200 text-lg sm:text-xl mt-1" />
               <span>{alumni.deskripsi}</span>
             </>
           ) : (
