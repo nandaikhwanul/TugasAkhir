@@ -8,10 +8,8 @@ import {
   FaPhoneAlt,
   FaEnvelope,
   FaBook,
-  // FaIdCard, // nim tidak dipakai
 } from "react-icons/fa";
 
-// NOTE: useSearchParams and sessionStorage are client-only, so we must ensure this component only renders on client
 import { useSearchParams } from "next/navigation";
 import { getTokenFromSessionStorage } from "../../../sessiontoken";
 
@@ -58,9 +56,6 @@ function PersonalInfoCardInner() {
         );
         if (!res.ok) throw new Error("Gagal mengambil data alumni");
         const data = await res.json();
-        // console.log("DEBUG alumni data:", data); // debug data pake console.log
-
-        // Use the data object directly, fallback to null if not present
         if (!ignore) setAlumni(data || null);
       } catch (err) {
         if (!ignore) setAlumni(null);
@@ -97,7 +92,6 @@ function PersonalInfoCardInner() {
   // Helper: icon for each field
   const fieldIcons = {
     name: <FaUser className="text-blue-500 mr-2" />,
-    // nim: <FaIdCard className="text-purple-500 mr-2" />, // nim tidak dipakai
     tanggal_lahir: <FaBirthdayCake className="text-pink-400 mr-2" />,
     tahun_lulus: <FaGraduationCap className="text-green-500 mr-2" />,
     nohp: <FaPhoneAlt className="text-emerald-500 mr-2" />,
@@ -111,7 +105,7 @@ function PersonalInfoCardInner() {
     if (!skills || !Array.isArray(skills) || skills.length === 0) return null;
     const limitedSkills = skills.slice(0, 10);
     return (
-      <div className="flex flex-wrap gap-2 justify-end items-start">
+      <div className="flex flex-wrap gap-2 justify-end sm:justify-start items-start">
         {limitedSkills.map((skill, idx) => (
           <span
             key={idx}
@@ -131,87 +125,70 @@ function PersonalInfoCardInner() {
 
   return (
     <div className="h-full p-0 flex items-start justify-center w-full">
-      <div className="w-full max-w-none bg-white rounded-b-lg p-8 relative
-        sm:p-4 sm:rounded-b-md
-        ">
-        <div
-          className="
-            flex flex-row gap-8 items-start
-            sm:flex-col sm:gap-4
-          "
-        >
+      <div className="w-full max-w-none bg-white rounded-b-lg p-8 relative">
+        <div className="flex flex-col sm:flex-row gap-8 items-start">
           {/* Label Personal Info di kiri */}
-          <div
-            className="
-              flex flex-col items-start justify-start min-w-[180px] mr-8
-              sm:min-w-0 sm:mr-0 sm:mb-2
-            "
-          >
-            <h4 className="text-2xl text-gray-800 font-semibold mb-6 flex items-center gap-2
-              sm:text-xl sm:mb-3
-            ">
+          <div className="flex flex-col items-start justify-start w-full sm:w-auto sm:min-w-[180px] sm:mr-8">
+            <h4 className="text-2xl text-gray-800 font-semibold mb-6 flex items-center gap-2">
               <FaUser className="text-blue-300" /> Personal Info
             </h4>
           </div>
+
           {/* Info List */}
-          <ul className="mt-2 text-gray-700 space-y-2 flex-1
-            sm:mt-0
-          ">
-            <li className="flex items-center gap-2 py-1
-              sm:flex-col sm:items-start sm:gap-1
-            ">
-              {fieldIcons.name}
-              <span className="font-medium w-36 sm:w-auto">Name</span>
-              <span className={`flex-1 text-gray-700 ${breakWordClass} sm:w-full`}>{alumni.name || "-"}</span>
+          <ul className="mt-2 text-gray-700 space-y-2 flex-1 w-full sm:w-auto">
+            <li className="flex items-start gap-2 py-1">
+              <div className="flex items-center w-36 sm:w-auto">
+                {fieldIcons.name}
+                <span className="font-medium">Name</span>
+              </div>
+              <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.name || "-"}</span>
             </li>
-            {/* NIM dihilangkan sesuai instruksi */}
-            <li className="flex items-center gap-2 py-1
-              sm:flex-col sm:items-start sm:gap-1
-            ">
-              {fieldIcons.tanggal_lahir}
-              <span className="font-medium w-36 sm:w-auto">Birthday</span>
-              <span className={`flex-1 text-gray-700 ${breakWordClass} sm:w-full`}>{formatDate(alumni.tanggal_lahir)}</span>
+            <li className="flex items-start gap-2 py-1">
+              <div className="flex items-center w-36 sm:w-auto">
+                {fieldIcons.tanggal_lahir}
+                <span className="font-medium">Birthday</span>
+              </div>
+              <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{formatDate(alumni.tanggal_lahir)}</span>
             </li>
-            <li className="flex items-center gap-2 py-1
-              sm:flex-col sm:items-start sm:gap-1
-            ">
-              {fieldIcons.tahun_lulus}
-              <span className="font-medium w-36 sm:w-auto">Graduation Year</span>
-              <span className={`flex-1 text-gray-700 ${breakWordClass} sm:w-full`}>{alumni.tahun_lulus || "-"}</span>
+            <li className="flex items-start gap-2 py-1">
+              <div className="flex items-center w-36 sm:w-auto">
+                {fieldIcons.tahun_lulus}
+                <span className="font-medium">Graduation Year</span>
+              </div>
+              <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.tahun_lulus || "-"}</span>
             </li>
-            <li className="flex items-center gap-2 py-1
-              sm:flex-col sm:items-start sm:gap-1
-            ">
-              {fieldIcons.nohp}
-              <span className="font-medium w-36 sm:w-auto">Mobile</span>
-              <span className={`flex-1 text-gray-700 ${breakWordClass} sm:w-full`}>{alumni.nohp || "-"}</span>
+            <li className="flex items-start gap-2 py-1">
+              <div className="flex items-center w-36 sm:w-auto">
+                {fieldIcons.nohp}
+                <span className="font-medium">Mobile</span>
+              </div>
+              <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.nohp || "-"}</span>
             </li>
-            <li className="flex items-center gap-2 py-1
-              sm:flex-col sm:items-start sm:gap-1
-            ">
-              {fieldIcons.email}
-              <span className="font-medium w-36 sm:w-auto">Email</span>
-              <span className={`flex-1 text-gray-700 ${breakWordClass} sm:w-full`}>{alumni.email || "-"}</span>
+            <li className="flex items-start gap-2 py-1">
+              <div className="flex items-center w-36 sm:w-auto">
+                {fieldIcons.email}
+                <span className="font-medium">Email</span>
+              </div>
+              <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.email || "-"}</span>
             </li>
-            <li className="flex items-center gap-2 py-1
-              sm:flex-col sm:items-start sm:gap-1
-            ">
-              {fieldIcons.program_studi}
-              <span className="font-medium w-36 sm:w-auto">Program Studi</span>
-              <span className={`flex-1 text-gray-700 ${breakWordClass} sm:w-full`}>{alumni.program_studi || "-"}</span>
+            <li className="flex items-start gap-2 py-1">
+              <div className="flex items-center w-36 sm:w-auto">
+                {fieldIcons.program_studi}
+                <span className="font-medium">Program Studi</span>
+              </div>
+              <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.program_studi || "-"}</span>
             </li>
-            <li className="flex items-center gap-2 py-1
-              sm:flex-col sm:items-start sm:gap-1
-            ">
-              {fieldIcons.alamat}
-              <span className="font-medium w-36 sm:w-auto">Alamat</span>
-              <span className={`flex-1 text-gray-700 ${breakWordClass} sm:w-full`}>{alumni.alamat || "-"}</span>
+            <li className="flex items-start gap-2 py-1">
+              <div className="flex items-center w-36 sm:w-auto">
+                {fieldIcons.alamat}
+                <span className="font-medium">Alamat</span>
+              </div>
+              <span className={`flex-1 text-gray-700 ${breakWordClass}`}>{alumni.alamat || "-"}</span>
             </li>
           </ul>
+
           {/* Right: Skill badges */}
-          <div className="flex flex-col items-end min-w-[120px]
-            sm:items-start sm:min-w-0 sm:mt-4
-          ">
+          <div className="flex flex-col items-start sm:items-end min-w-[120px] mt-4 sm:mt-0">
             {renderSkills(alumni.skill)}
           </div>
         </div>

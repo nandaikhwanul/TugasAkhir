@@ -46,18 +46,22 @@ export default function AlumniProfilePage() {
           </div>
         </div>
         {/* PersonalInfo full lebar hingga pojok kanan dan kiri */}
-        <div className="w-full px-8 mt-0">
+        <div className="md:w-full px-8 mt-0 w-[31rem]">
           <PersonalInfo />
         </div>
-        {/* Bagi 1/2 1/2 antara Pengalaman dan UploadCV */}
+        {/* Pengalaman dan UploadCV: berdampingan di desktop, bertumpuk di mobile */}
         <div className="w-full flex justify-center items-start mt-8">
-          <div className="w-full max-w-[1200px] flex gap-8">
-            <div className="w-1/2">
-              <PengalamanCard />
+          <div className="w-full max-w-[1600px] flex flex-col md:flex-row gap-8">
+            <div className="w-full md:w-1/2 mb-4 px-7 flex justify-center">
+              <div className="w-full max-w-[700px]">
+                <PengalamanCard />
+              </div>
             </div>
-            <div className="w-1/2">
-              {/* UploadCV di-load hanya di client-side via dynamic import */}
-              <UploadCV />
+            <div className="w-full md:w-1/2 flex justify-center">
+              <div className="w-full max-w-[700px]">
+                {/* UploadCV di-load hanya di client-side via dynamic import */}
+                <UploadCV />
+              </div>
             </div>
           </div>
         </div>
