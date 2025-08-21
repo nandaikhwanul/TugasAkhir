@@ -335,7 +335,7 @@ export default function SavedLowonganPage() {
                         >
                           <path d="M3 3h14v2H3V3zm2 4h10v2H5V7zm-2 4h14v2H3v-2zm2 4h10v2H5v-2z" fill="#6c757d"/>
                         </svg>
-                        <span className="truncate">
+                        <span className="truncate break-words" style={{ wordBreak: "break-word" }}>
                           {getKualifikasiSingkat(item)}
                         </span>
                       </span>
