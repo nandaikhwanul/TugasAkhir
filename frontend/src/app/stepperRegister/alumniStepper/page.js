@@ -81,7 +81,9 @@ const JURUSAN_PROGRAM_STUDI = [
 ];
 
 // Daftar field yang ingin dicek/lengkapi (tanpa skill, skill di step 2)
+// Tambahkan field email
 const PROFILE_FIELDS = [
+  { label: "Email", field: "email", placeholder: "Masukkan email Anda", type: "email" },
   { label: "Alamat", field: "alamat", placeholder: "Masukkan alamat lengkap" },
   { label: "No HP", field: "nohp", placeholder: "Masukkan nomor HP" },
   { label: "Program Studi", field: "program_studi", placeholder: "Masukkan program studi" },
@@ -267,6 +269,12 @@ export default function AlumniProfileForm() {
         }
         if (!value || value.toString().trim() === "") {
           newErrors[field] = `${label} wajib diisi.`;
+          valid = false;
+        } else if (
+          field === "email" &&
+          !/^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/.test(value)
+        ) {
+          newErrors[field] = "Format email tidak valid.";
           valid = false;
         } else if (
           field === "nohp" &&
