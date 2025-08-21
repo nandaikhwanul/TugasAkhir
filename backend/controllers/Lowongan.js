@@ -843,6 +843,9 @@ export const countPendingLowonganByPerusahaan = async (req, res) => {
 
 // Endpoint: GET /lowongan/filter
 // Query params: lokasi, tipe_kerja, gaji_min, gaji_max, kualifikasi (comma separated)
+// Catatan: Field gaji di MongoDB adalah String, jadi filter numerik tidak bisa presisi.
+// Filter gaji hanya akan melakukan pencarian string/regex, bukan range numerik sebenarnya.
+// Kualifikasi: jika frontend kirim array (misal: kualifikasi=JavaScript&kualifikasi=React), backend akan filter lowongan yang punya semua skill tersebut.
 export const filterLowongan = async (req, res) => {
     try {
         const { lokasi, tipe_kerja, gaji_min, gaji_max, kualifikasi } = req.query;
@@ -860,36 +863,36 @@ export const filterLowongan = async (req, res) => {
             filter.tipe_kerja = { $regex: `^${tipe_kerja}$`, $options: "i" };
         }
 
-        // Karena field gaji di schema adalah String, filter range tidak bisa pakai $gte/$lte.
-        // Maka, filter gaji_min/gaji_max hanya akan mencari lowongan yang gaji-nya mengandung angka minimum/maksimum (string match).
-        // Atau, jika format gaji adalah "5000000-7000000", kita bisa coba parsing angka awal/akhir.
-        // Berikut pendekatan sederhana: cari lowongan yang gaji-nya mengandung angka minimum/maksimum.
+        // Karena gaji bertipe String, filter numerik tidak bisa dilakukan.
+        // Solusi: filter dengan regex, misal gaji < 3000000 akan cari string "3000000" atau "3.000.000"
+        // Ini tidak presisi, hanya cocokkan string saja.
         if (gaji_min || gaji_max) {
-            // Buat regex untuk mencari angka di string gaji
-            let gajiRegex = "";
-            if (gaji_min && gaji_max) {
-                // Cari string gaji yang mengandung range antara gaji_min dan gaji_max
-                // Contoh: "5000000-7000000" atau "Rp 5.000.000 - 7.000.000"
-                // Kita cari string yang mengandung kedua angka
-                gajiRegex = `${gaji_min}.*${gaji_max}|${gaji_max}.*${gaji_min}`;
-            } else if (gaji_min) {
-                gajiRegex = gaji_min;
-            } else if (gaji_max) {
-                gajiRegex = gaji_max;
+            let regexParts = [];
+            function toRegexStr(num) {
+                if (!num) return "";
+                const numStr = num.toString().replace(/\./g, "");
+                const withDot = numStr.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+                return `(${numStr}|${withDot})`;
             }
-            filter.gaji = { $regex: gajiRegex, $options: "i" };
+            if (gaji_min) regexParts.push(toRegexStr(gaji_min));
+            if (gaji_max) regexParts.push(toRegexStr(gaji_max));
+            if (regexParts.length > 0) {
+                filter.gaji = { $regex: regexParts.join("|"), $options: "i" };
+            }
         }
 
+        // Kualifikasi: support array (kualifikasi=JavaScript&kualifikasi=React) atau string (kualifikasi=JavaScript,React)
         if (kualifikasi) {
-            // kualifikasi bisa berupa string (1 skill) atau comma separated
             let skills = [];
             if (Array.isArray(kualifikasi)) {
+                // Jika frontend kirim ?kualifikasi=JavaScript&kualifikasi=React
                 skills = kualifikasi;
             } else if (typeof kualifikasi === "string") {
+                // Jika frontend kirim ?kualifikasi=JavaScript,React
                 skills = kualifikasi.split(",").map(s => s.trim()).filter(Boolean);
             }
             if (skills.length > 0) {
-                // Cari lowongan yang memiliki SEMUA kualifikasi yang diminta
+                // Filter lowongan yang punya SEMUA skill yang diminta
                 filter.kualifikasi = { $all: skills };
             }
         }
