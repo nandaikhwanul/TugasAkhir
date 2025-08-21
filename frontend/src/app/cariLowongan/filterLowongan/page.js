@@ -60,20 +60,6 @@ const gajiRangeOptions = [
   { label: "5jt - 10jt", min: "5000000", max: "10000000" },
   { label: "> 10jt", min: "10000000", max: "" },
 ];
-const kualifikasiOptions = [
-  "",
-  "JavaScript",
-  "React",
-  "Node.js",
-  "Python",
-  "Java",
-  "UI/UX",
-  "SQL",
-  "Golang",
-  "PHP",
-  "C++",
-  "Lainnya",
-];
 
 const filterMenu = [
   { label: "Rekomendasi" },
@@ -121,17 +107,12 @@ export default function CariLowonganPage() {
   const [tipeKerja, setTipeKerja] = useState("");
   const [gajiMin, setGajiMin] = useState("");
   const [gajiMax, setGajiMax] = useState("");
-  const [kualifikasi, setKualifikasi] = useState([]);
 
   const [allLowongan, setAllLowongan] = useState([]);
   const [loading, setLoading] = useState(false);
   const [fetchError, setFetchError] = useState(null);
 
   const token = getTokenFromSessionStorage();
-
-  // For responsive kualifikasi dropdown
-  const [showKualifikasi, setShowKualifikasi] = useState(false);
-  const kualifikasiRef = useRef(null);
 
   // For responsive filter modal
   const [showMobileFilter, setShowMobileFilter] = useState(false);
@@ -143,19 +124,13 @@ export default function CariLowonganPage() {
   useEffect(() => {
     function handleClickOutside(event) {
       if (
-        kualifikasiRef.current &&
-        !kualifikasiRef.current.contains(event.target)
-      ) {
-        setShowKualifikasi(false);
-      }
-      if (
         filterDropdownRef.current &&
         !filterDropdownRef.current.contains(event.target)
       ) {
         setShowFilterDropdown(false);
       }
     }
-    if (showKualifikasi || showFilterDropdown) {
+    if (showFilterDropdown) {
       document.addEventListener("mousedown", handleClickOutside);
     } else {
       document.removeEventListener("mousedown", handleClickOutside);
@@ -163,7 +138,7 @@ export default function CariLowonganPage() {
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, [showKualifikasi, showFilterDropdown]);
+  }, [showFilterDropdown]);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -203,21 +178,21 @@ export default function CariLowonganPage() {
     }
   }
 
-  function handleKualifikasiChange(e) {
-    const value = e.target.value;
-    if (value === "") {
-      setKualifikasi([]);
-    } else if (kualifikasi.includes(value)) {
-      setKualifikasi(kualifikasi.filter((k) => k !== value));
-    } else {
-      setKualifikasi([...kualifikasi, value]);
-    }
-  }
-
+  // Fetch lowongan with filter (for "Semua Lowongan" tab)
   useEffect(() => {
+    if (activeFilter !== 1) return;
     setLoading(true);
     setFetchError(null);
-    const url = `https://tugasakhir-production-6c6c.up.railway.app/lowongan`;
+
+    // Build query params
+    const params = new URLSearchParams();
+    if (search) params.append("search", search);
+    if (lokasi) params.append("lokasi", lokasi);
+    if (tipeKerja) params.append("tipe_kerja", tipeKerja);
+    if (gajiMin) params.append("gaji_min", gajiMin);
+    if (gajiMax) params.append("gaji_max", gajiMax);
+
+    const url = `https://tugasakhir-production-6c6c.up.railway.app/lowongan/filter?${params.toString()}`;
     fetch(url, {
       headers: token ? { Authorization: `Bearer ${token}` } : {},
     })
@@ -235,7 +210,8 @@ export default function CariLowonganPage() {
         setAllLowongan([]);
         setLoading(false);
       });
-  }, [token]);
+    // eslint-disable-next-line
+  }, [token, search, lokasi, tipeKerja, gajiMin, gajiMax, activeFilter]);
 
   // Filter form content (for reuse in desktop and mobile modal)
   function FilterFormContent({ isMobile = false, onClose }) {
@@ -292,101 +268,6 @@ export default function CariLowonganPage() {
               ))}
             </select>
             <FiChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-400 pointer-events-none" />
-          </div>
-          {/* Kualifikasi (multi-select as checkboxes in dropdown) */}
-          <div className="relative w-full sm:w-auto" ref={kualifikasiRef}>
-            <button
-              type="button"
-              className="appearance-none bg-[#f4f7fa] border border-gray-200 rounded-md px-3 py-2 text-sm text-gray-500 pr-8 flex items-center min-w-[120px] w-full sm:w-auto"
-              tabIndex={0}
-              onClick={() => setShowKualifikasi((v) => !v)}
-            >
-              {kualifikasi.length === 0
-                ? "Kualifikasi"
-                : kualifikasi.join(", ")}
-              <FiChevronDown className="ml-2 text-gray-400 pointer-events-none" />
-            </button>
-            {/* Responsive dropdown: absolute on desktop, fixed full on mobile */}
-            <div
-              className={classNames(
-                "z-20",
-                showKualifikasi ? "" : "hidden"
-              )}
-            >
-              {/* Desktop */}
-              <div className="hidden sm:block absolute left-0 mt-1 w-48 bg-white border border-gray-200 rounded-md shadow-lg">
-                <div className="max-h-60 overflow-y-auto py-2 px-2">
-                  {kualifikasiOptions.slice(1).map((opt) => (
-                    <label
-                      key={opt}
-                      className="flex items-center gap-2 px-2 py-1 cursor-pointer text-sm"
-                    >
-                      <input
-                        type="checkbox"
-                        value={opt}
-                        checked={kualifikasi.includes(opt)}
-                        onChange={handleKualifikasiChange}
-                        className="accent-blue-600"
-                      />
-                      {opt}
-                    </label>
-                  ))}
-                  <button
-                    type="button"
-                    className="text-xs text-blue-600 mt-2 ml-2"
-                    onClick={() => setKualifikasi([])}
-                  >
-                    Reset
-                  </button>
-                </div>
-              </div>
-              {/* Mobile */}
-              <div className="sm:hidden fixed inset-0 backdrop-blur-xs flex items-end z-30">
-                <div className="w-full bg-white rounded-t-lg shadow-lg max-h-[70vh] overflow-y-auto py-4 px-4">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold text-base">Kualifikasi</span>
-                    <button
-                      type="button"
-                      className="text-gray-500 text-lg"
-                      onClick={() => setShowKualifikasi(false)}
-                    >
-                      &times;
-                    </button>
-                  </div>
-                  {kualifikasiOptions.slice(1).map((opt) => (
-                    <label
-                      key={opt}
-                      className="flex items-center gap-2 px-2 py-1 cursor-pointer text-sm"
-                    >
-                      <input
-                        type="checkbox"
-                        value={opt}
-                        checked={kualifikasi.includes(opt)}
-                        onChange={handleKualifikasiChange}
-                        className="accent-blue-600"
-                      />
-                      {opt}
-                    </label>
-                  ))}
-                  <div className="flex justify-between mt-4">
-                    <button
-                      type="button"
-                      className="text-xs text-blue-600"
-                      onClick={() => setKualifikasi([])}
-                    >
-                      Reset
-                    </button>
-                    <button
-                      type="button"
-                      className="text-xs text-blue-600"
-                      onClick={() => setShowKualifikasi(false)}
-                    >
-                      Selesai
-                    </button>
-                  </div>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
         {isMobile && (
@@ -573,7 +454,6 @@ export default function CariLowonganPage() {
                   tipeKerja,
                   gajiMin,
                   gajiMax,
-                  kualifikasi,
                 }}
               />
             )}

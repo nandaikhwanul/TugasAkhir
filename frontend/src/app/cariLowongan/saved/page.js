@@ -113,6 +113,13 @@ export default function SavedLowonganPage() {
     }
   };
 
+  // Helper: ambil satu baris pertama kualifikasi
+  function getFirstKualifikasi(kualifikasi) {
+    if (!kualifikasi) return "-";
+    const firstLine = kualifikasi.split('\n').find(line => line.trim() !== "");
+    return firstLine || "-";
+  }
+
   return (
     <div className="w-full font-sans rounded-b-lg h-auto flex flex-col" style={{height: "100vh"}}>
       <div className="text-[20px] text-[#222] font-semibold mb-4 px-6 pt-6">
@@ -142,21 +149,14 @@ export default function SavedLowonganPage() {
             div::-webkit-scrollbar {
               display: none;
             }
-            /* Responsive: hide kualifikasi on small screens, show with break on desktop */
-            .kualifikasi-responsive {
+            /* Hide kualifikasi on small screens, show on sm+ */
+            .kualifikasi-desktop {
               display: none;
             }
             @media (min-width: 640px) {
-              .kualifikasi-responsive {
+              .kualifikasi-desktop {
                 display: flex;
                 align-items: center;
-              }
-              .kualifikasi-break {
-                display: block;
-                width: 100%;
-                height: 0;
-                margin: 0.5rem 0;
-                border: none;
               }
             }
           `}</style>
@@ -168,7 +168,7 @@ export default function SavedLowonganPage() {
             return (
               <div
                 key={item._id || idx}
-                className="relative bg-white rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.06)] flex flex-col sm:flex-row px-4 sm:px-6 py-4 sm:py-5 mb-4 min-h-[120px] group transition hover:shadow-lg w-full"
+                className="relative bg-white rounded-2xl shadow-[0_2px_16px_0_rgba(0,0,0,0.06)] flex px-6 py-5 mb-4 min-h-[120px] group transition hover:shadow-lg w-full"
               >
                 {/* Bookmark Button */}
                 <button
@@ -212,7 +212,7 @@ export default function SavedLowonganPage() {
                   )}
                 </button>
                 {/* Logo */}
-                <div className="w-16 h-16 rounded-xl bg-[#eaf7e6] flex items-center justify-center mr-0 sm:mr-6 mb-3 sm:mb-0 flex-shrink-0 overflow-hidden border border-[#e0e0e0] self-center sm:self-auto">
+                <div className="w-16 h-16 rounded-xl bg-[#eaf7e6] flex items-center justify-center mr-6 flex-shrink-0 overflow-hidden border border-[#e0e0e0]">
                   {logoPerusahaan ? (
                     <img
                       src={logoPerusahaan}
@@ -250,7 +250,7 @@ export default function SavedLowonganPage() {
                         {namaPerusahaan}
                       </span>
                     </div>
-                    <div className="flex items-center gap-2 mt-1 sm:mt-0 flex-wrap">
+                    <div className="flex items-center gap-2 mt-1 sm:mt-0">
                       <span className="flex items-center text-[15px] text-[#6c757d] font-medium">
                         <svg
                           className="mr-1"
@@ -283,7 +283,7 @@ export default function SavedLowonganPage() {
                       </span>
                     </div>
                   </div>
-                  {/* Salary, status, kualifikasi */}
+                  {/* Salary dan status */}
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2">
                     <span className="flex items-center text-[15px] text-[#4fc3f7] font-bold">
                       <svg
@@ -322,8 +322,8 @@ export default function SavedLowonganPage() {
                       </svg>
                       {item.status === "open" ? "Open" : "Closed"}
                     </span>
-                    {/* Kualifikasi hanya tampil di desktop, break di desktop */}
-                    <span className="kualifikasi-responsive flex items-center text-[15px] text-[#6c757d] font-medium">
+                    {/* Kualifikasi hanya tampil di desktop, satu baris saja */}
+                    <span className="kualifikasi-desktop text-[15px] text-[#6c757d] font-medium">
                       <svg
                         className="mr-1"
                         width="16"
@@ -336,10 +336,10 @@ export default function SavedLowonganPage() {
                           fill="#6c757d"
                         />
                       </svg>
-                      {item.kualifikasi || "-"}
+                      <span>
+                        {getFirstKualifikasi(item.kualifikasi)}
+                      </span>
                     </span>
-                    {/* Break di desktop */}
-                    <hr className="kualifikasi-break" />
                   </div>
                   {/* Info bawah: pelamar, batas pelamar, views, batas, waktu posting */}
                   <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-2">
@@ -428,8 +428,8 @@ export default function SavedLowonganPage() {
                   </div>
                 </div>
                 {/* Apply/Detail Button */}
-                <div className="sm:ml-6 mt-4 sm:mt-0 flex flex-row sm:flex-col items-end justify-between h-full min-w-[120px]">
-                  <div className="w-full flex justify-end">
+                <div className="ml-6 flex flex-col items-end justify-between h-full min-w-[120px]">
+                  <div className="mt-14 w-full flex justify-end">
                     <button
                       className={`
                         bg-[#4fc3f7] text-white rounded-lg px-6 py-2.5 font-semibold text-[15px] shadow-[0_2px_8px_0_rgba(79,195,247,0.12)]
